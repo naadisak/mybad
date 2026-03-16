@@ -1,12 +1,35 @@
-<html>
-   <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-      <base target="_top">
-   </head>
-   <body>
-      <iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" src="https://script.google.com/macros/s/AKfycbzTDEkfDhIQfb29KIjsRxyg17csabk5VY3DOYHfd8d1R7MeJ_5t-HO1-ZCK_8UribKfZg/exec">
-    allow="geolocation" 
-    title="ระบบจองสนามระบายแค้น TQM แทนโบนัสที่น้อยนิส..">
-</iframe>
-   </body>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจองสนามระบายแค้น</title>
+    <style>
+        /* ล้างขอบจอให้เว็บฝังเต็มพื้นที่ 100% */
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #f8fafc; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+    <iframe id="gasFrame" title="ระบบจองสนามระบายแค้น" allow="geolocation"></iframe>
+
+    <script>
+        // 1. URL ตัวเต็มของ Google Apps Script
+        let gasUrl = "https://script.google.com/macros/s/AKfycbzTDEkfDhIQfb29KIjsRxyg17csabk5VY3DOYHfd8d1R7MeJ_5t-HO1-ZCK_8UribKfZg/exec";
+
+        // 2. ดึงค่าจาก URL ของ GitHub (ตอนคนสแกน QR หน้าสนาม)
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        const code = urlParams.get('code');
+
+        // 3. ถ้าสแกน QR มา ให้เอาค่าไปต่อท้ายลิงก์ Google Script ด้วย
+        if (action && code) {
+            gasUrl += "?action=" + encodeURIComponent(action) + "&code=" + encodeURIComponent(code);
+        }
+
+        // 4. สั่งให้ Iframe โหลดเว็บ
+        document.getElementById('gasFrame').src = gasUrl;
+    </script>
+</body>
 </html>
