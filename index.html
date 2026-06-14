@@ -1044,7 +1044,7 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 //  CONFIG
 // ══════════════════════════════════════════════════════
 const GAS_URL   = 'https://script.google.com/macros/s/AKfycbzTDEkfDhIQfb29KIjsRxyg17csabk5VY3DOYHfd8d1R7MeJ_5t-HO1-ZCK_8UribKfZg/exec';
-const ADMIN_PIN = '7769';
+let _adminPin   = sessionStorage.getItem('admin_pin') || '';
 
 const TH_M  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
                'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -2913,14 +2913,27 @@ function openAdminPin() {
   setTimeout(()=>document.getElementById('pinIn').focus(),150);
 }
 function closePin(){document.getElementById('pinModal').classList.remove('open')}
-function submitPin() {
-  if (document.getElementById('pinIn').value.trim()===ADMIN_PIN) {
-    closePin();
-    sessionStorage.setItem('admin_verified','1');
-    enterAdmin();
-  } else {
-    setAlert('pinAlert','danger','PIN ไม่ถูกต้อง');
-    document.getElementById('pinIn').value='';
+async function submitPin() {
+  const pin = document.getElementById('pinIn').value.trim();
+  if (!pin) return;
+  const btn = document.getElementById('pinSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ...'; }
+  try {
+    const r = await get('verifyAdminPin', { pin });
+    if (r.ok) {
+      _adminPin = pin;
+      sessionStorage.setItem('admin_pin', pin);
+      sessionStorage.setItem('admin_verified', '1');
+      closePin();
+      enterAdmin();
+    } else {
+      setAlert('pinAlert','danger','PIN ไม่ถูกต้อง');
+      document.getElementById('pinIn').value = '';
+    }
+  } catch {
+    setAlert('pinAlert','danger','เชื่อมต่อ server ไม่ได้');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'ยืนยัน'; }
   }
 }
 
@@ -2928,6 +2941,8 @@ function doLogout() {
   localStorage.removeItem('bk_user');
   localStorage.removeItem('bk_loc');
   sessionStorage.removeItem('admin_verified');
+  sessionStorage.removeItem('admin_pin');
+  _adminPin = '';
   location.reload();
 }
 
@@ -3024,7 +3039,7 @@ function switchAdminTab(tab) {
 
 async function loadAdminStats() {
   try {
-    const r = await get('adminStats', { pin: ADMIN_PIN });
+    const r = await get('adminStats', { pin: _adminPin });
     if (!r.ok) return;
     document.getElementById('aMonth').textContent  = r.totalBookings;
     document.getElementById('aBanned').textContent = r.totalBanned;
@@ -3037,7 +3052,7 @@ async function loadAdminStats() {
     }
   } catch {}
   try {
-    const r2 = await get('adminGetAll', { pin: ADMIN_PIN });
+    const r2 = await get('adminGetAll', { pin: _adminPin });
     if (r2.ok) document.getElementById('aTotal').textContent = r2.bookings?.length || 0;
   } catch {}
 }
@@ -3047,7 +3062,7 @@ async function loadAdminBookings() {
   el.innerHTML = '<div class="load-wrap"><span class="spin-dk"></span></div>';
   const locId = document.getElementById('aFLoc').value;
   const date  = document.getElementById('aFDate').value;
-  const params = { pin: ADMIN_PIN };
+  const params = { pin: _adminPin };
   if (locId) params.locId = locId;
   if (date)  params.date  = date;
   try {
@@ -3078,7 +3093,7 @@ function openAdmCancelConf(id, name, date, time, court) {
     const btn = document.getElementById('btnAdmConfirm');
     loading(btn, true, 'กำลังยกเลิก...');
     try {
-      const r = await post({ action:'adminCancel', pin:ADMIN_PIN, bookingId:id });
+      const r = await post({ action:'adminCancel', pin:_adminPin, bookingId:id });
       if (!r.ok) { setAlert('admConfAlert','danger', r.error||'เกิดข้อผิดพลาด'); return; }
       document.getElementById('admConfOv').classList.remove('open');
       showAdmToast('','ยกเลิกการจองแล้ว');
@@ -3101,7 +3116,7 @@ async function loadAdminBanList() {
   const el = document.getElementById('admBanList');
   el.innerHTML = '<div class="load-wrap"><span class="spin-dk"></span></div>';
   try {
-    const r = await get('getBannedList', { pin: ADMIN_PIN });
+    const r = await get('getBannedList', { pin: _adminPin });
     if (!r.ok) { el.innerHTML=`<div class="alert a-danger">${r.error}</div>`; return; }
     const list = r.banned||[];
     if (!list.length) { el.innerHTML='<div class="empty-state"><div class="empty-ic">✅</div><div class="empty-txt">ไม่มีรายการระงับ</div></div>'; return; }
@@ -3126,7 +3141,7 @@ async function doAdminBan() {
   const btn = document.getElementById('btnAdmBan');
   loading(btn, true, 'กำลังบันทึก...');
   try {
-    const r = await post({ action:'adminBan', pin:ADMIN_PIN, empId, reason, until });
+    const r = await post({ action:'adminBan', pin:_adminPin, empId, reason, until });
     if (!r.ok) { setAlert('aBanAlert','danger', r.error||'เกิดข้อผิดพลาด'); return; }
     setAlert('aBanAlert','success','✅ บันทึกแล้ว');
     document.getElementById('aBanEmpId').value  = '';
@@ -3142,7 +3157,7 @@ function openAdmPardonConf(empId) {
     const btn = document.getElementById('btnAdmConfirm');
     loading(btn, true, 'กำลังปลดแบน...');
     try {
-      const r = await post({ action:'adminPardon', pin:ADMIN_PIN, empId });
+      const r = await post({ action:'adminPardon', pin:_adminPin, empId });
       if (!r.ok) { setAlert('admConfAlert','danger', r.error||'เกิดข้อผิดพลาด'); return; }
       document.getElementById('admConfOv').classList.remove('open');
       showAdmToast('✅','ปลดแบนแล้ว');
