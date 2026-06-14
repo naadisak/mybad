@@ -1,0 +1,3963 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BadmCourt — Admin</title>
+<link rel="icon" href="booking.gif"/>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+.flatpickr-calendar{font-family:var(--font)!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important}
+.flatpickr-months .flatpickr-month,.flatpickr-month{background:var(--brand)!important;color:#fff!important}
+.flatpickr-current-month,.flatpickr-current-month .numInputWrapper input{color:#fff!important}
+.flatpickr-weekdays{background:var(--brand-l)!important}
+.flatpickr-weekday{color:var(--brand)!important;font-weight:700!important}
+.flatpickr-day.selected,.flatpickr-day.selected:hover{background:var(--brand)!important;border-color:var(--brand)!important}
+.flatpickr-day.today{border-bottom:2px solid var(--brand)!important}
+.flatpickr-day:hover{background:var(--brand-l)!important}
+.flatpickr-prev-month,.flatpickr-next-month{color:#fff!important}
+.flatpickr-prev-month svg path,.flatpickr-next-month svg path{fill:#fff!important}
+</style>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand     : #c00;
+  --brand-d   : #a00;
+  --brand-l   : #fff0f0;
+  --sidebar-w : 260px;
+  --topbar-h  : 64px;
+  --bg        : #F1F5F9;
+  --white     : #ffffff;
+  --gray-50   : #F9FAFB;
+  --gray-100  : #F3F4F6;
+  --gray-200  : #E5E7EB;
+  --gray-300  : #D1D5DB;
+  --gray-400  : #9CA3AF;
+  --gray-500  : #6B7280;
+  --gray-600  : #4B5563;
+  --gray-700  : #374151;
+  --gray-800  : #1F2937;
+  --gray-900  : #111827;
+  --green     : #10B981;
+  --green-l   : #D1FAE5;
+  --orange    : #F59E0B;
+  --orange-l  : #FEF3C7;
+  --red       : #EF4444;
+  --red-l     : #FEE2E2;
+  --blue      : #3B82F6;
+  --blue-l    : #DBEAFE;
+  --shadow-sm : 0 1px 3px rgba(0,0,0,.08);
+  --shadow    : 0 4px 16px rgba(0,0,0,.10);
+  --radius    : 12px;
+  --radius-sm : 8px;
+  --font      : 'Sarabun','Inter',system-ui,sans-serif;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--font);font-size:14px;color:var(--gray-800);line-height:1.5}
+
+/* ── Heatmap ─────────────────────────────────────────────── */
+.hm-table{border-collapse:collapse;font-size:12px;min-width:100%}
+.hm-table th{padding:6px 10px;background:var(--gray-50);font-weight:600;
+  color:var(--gray-600);white-space:nowrap;border:1px solid var(--gray-200);
+  position:sticky;top:0;z-index:2}
+.hm-table td.hm-label{padding:6px 12px;font-weight:600;color:var(--gray-700);
+  background:var(--gray-50);white-space:nowrap;border:1px solid var(--gray-200);
+  position:sticky;left:0;z-index:1}
+.hm-table td.hm-cell{padding:0;border:1px solid rgba(255,255,255,.4);
+  text-align:center;min-width:54px;height:38px;transition:opacity .15s;cursor:default}
+.hm-table td.hm-cell:hover{outline:2px solid var(--brand);outline-offset:-2px}
+.hm-cell-inner{display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;font-weight:700;font-size:13px}
+/* ── PIN Gate ─────────────────────────────────────────────── */
+#pinGate{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  z-index:9999
+}
+.pin-card{
+  background:var(--white);border-radius:20px;padding:48px 40px;
+  width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)
+}
+.pin-logo{width:72px;height:72px;margin:0 auto 16px;display:block;object-fit:contain}
+.pin-title{font-size:22px;font-weight:700;color:var(--gray-900);margin-bottom:4px}
+.pin-sub{color:var(--gray-500);font-size:13px;margin-bottom:24px;line-height:1.5}
+.pin-step{display:none}.pin-step.active{display:block}
+/* empId input */
+.pin-empid-input{
+  width:100%;padding:12px 16px;font-size:16px;text-align:center;
+  border:2px solid var(--gray-200);border-radius:var(--radius-sm);
+  font-family:var(--font);transition:border .2s;outline:none;color:var(--gray-900);
+  letter-spacing:1px;box-sizing:border-box
+}
+.pin-empid-input:focus{border-color:var(--brand)}
+/* who card */
+.pin-who{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:var(--green-l);border-radius:10px;margin-bottom:20px;text-align:left}
+.pin-who-name{font-size:14px;font-weight:700;color:#064e3b}
+.pin-who-id{font-size:11px;color:#065f46}
+/* 6-box OTP */
+.otp-row{display:flex;gap:10px;justify-content:center;margin-bottom:6px}
+.otp-box{
+  width:46px;height:58px;border:2px solid var(--gray-200);border-radius:10px;
+  font-size:26px;font-weight:700;text-align:center;font-family:monospace;
+  outline:none;transition:border-color .15s,box-shadow .15s;color:var(--gray-900);
+  caret-color:transparent
+}
+.otp-box:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(21,128,61,.15)}
+.otp-box.filled{border-color:var(--brand);background:rgba(21,128,61,.04)}
+.otp-label{font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:8px;text-align:left}
+.pin-back{background:none;border:none;color:var(--gray-500);font-size:13px;
+  cursor:pointer;padding:4px 0;margin-bottom:16px;display:flex;align-items:center;gap:4px;
+  font-family:var(--font)}
+.pin-back:hover{color:var(--gray-700)}
+.pin-btn{
+  width:100%;margin-top:14px;padding:14px;font-size:15px;font-weight:600;
+  background:var(--brand);color:#fff;border:none;border-radius:var(--radius-sm);
+  cursor:pointer;transition:background .2s
+}
+.pin-btn:hover{background:var(--brand-d)}
+.pin-btn:disabled{opacity:.5;cursor:not-allowed}
+.pin-err{color:var(--red);font-size:13px;margin-top:10px;min-height:20px;text-align:center}
+
+/* ── Layout ───────────────────────────────────────────────── */
+#adminWrap{display:none;width:100%;height:100vh;overflow:hidden}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);
+  background:var(--white);border-right:1px solid var(--gray-200);
+  display:flex;flex-direction:column;overflow:hidden;z-index:100
+}
+.main-area{
+  margin-left:var(--sidebar-w);
+  width:calc(100% - var(--sidebar-w));
+  height:100vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  flex:1;min-width:0
+}
+.topbar{
+  height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--gray-200);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;flex-shrink:0;box-shadow:var(--shadow-sm)
+}
+.page-content{flex:1;overflow-y:auto;padding:24px;width:100%;box-sizing:border-box}
+.section{width:100%}
+.card{width:100%;box-sizing:border-box}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sb-brand{
+  padding:20px 20px 16px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--gray-100)
+}
+.sb-logo{width:38px;height:38px;object-fit:contain;flex-shrink:0}
+.sb-brand-name{font-size:15px;font-weight:700;color:var(--gray-900);line-height:1.2}
+.sb-brand-sub{font-size:11px;color:var(--gray-400)}
+.sb-nav{flex:1;overflow-y:auto;padding:12px 10px}
+.nav-group-label{
+  font-size:10px;font-weight:600;color:var(--gray-400);letter-spacing:.08em;
+  text-transform:uppercase;padding:16px 10px 6px
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:var(--radius-sm);cursor:pointer;color:var(--gray-600);
+  font-size:13.5px;font-weight:500;transition:all .15s;user-select:none;
+  border-left:3px solid transparent;margin-bottom:2px
+}
+.nav-item:hover{background:var(--gray-50);color:var(--gray-900)}
+.nav-item.active{
+  background:var(--brand-l);color:var(--brand);
+  border-left-color:var(--brand);font-weight:600
+}
+.nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.nav-icon-img{width:20px;height:20px;flex-shrink:0;object-fit:contain;display:block}
+.stat-icon img{width:24px;height:24px;object-fit:contain;display:block}
+.sb-footer{
+  padding:16px 20px;border-top:1px solid var(--gray-100);
+  display:flex;align-items:center;gap:10px
+}
+.sb-avatar{
+  width:34px;height:34px;background:var(--brand);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px
+}
+.sb-user-name{font-size:13px;font-weight:600;color:var(--gray-800);flex:1}
+.sb-user-role{font-size:11px;color:var(--gray-400)}
+.sb-logout{
+  color:var(--gray-400);cursor:pointer;font-size:18px;padding:4px;
+  border-radius:6px;transition:color .15s;border:none;background:none
+}
+.sb-logout:hover{color:var(--red)}
+
+/* ── Topbar ──────────────────────────────────────────────── */
+.topbar-title{font-size:17px;font-weight:700;color:var(--gray-900)}
+.topbar-sub{font-size:12px;color:var(--gray-400);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+
+/* ── Notification bell ───────────────────────────────── */
+.notif-btn{position:relative;width:36px;height:36px;border:none;background:var(--gray-100);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gray-600);transition:background .15s}
+.notif-btn:hover{background:var(--gray-200)}
+.notif-badge{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:8px;display:none;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px #fff}
+.notif-badge.show{display:flex}
+.notif-dropdown{position:absolute;top:calc(100% + 10px);right:0;width:320px;background:#fff;border:1px solid var(--gray-200);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:999;display:none;flex-direction:column;overflow:hidden}
+.notif-dropdown.open{display:flex}
+.notif-dropdown-hd{padding:12px 16px;font-size:13px;font-weight:600;color:var(--gray-700);border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
+.notif-list{max-height:320px;overflow-y:auto}
+.notif-item{padding:11px 16px;border-bottom:1px solid var(--gray-50);cursor:pointer;transition:background .12s}
+.notif-item:last-child{border-bottom:none}
+.notif-item:hover{background:var(--gray-50)}
+.notif-item-title{font-size:12px;font-weight:600;color:var(--gray-800)}
+.notif-item-sub{font-size:11px;color:var(--gray-400);margin-top:2px}
+.notif-empty{padding:24px 16px;text-align:center;font-size:12px;color:var(--gray-400)}
+
+/* ── Topbar alert strip ──────────────────────────────── */
+.topbar-alert{position:fixed;top:0;left:0;right:0;z-index:1100;padding:10px 20px;background:#059669;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;transform:translateY(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.topbar-alert.show{transform:translateY(0)}
+.topbar-alert-close{margin-left:auto;background:none;border:none;color:#fff;font-size:16px;cursor:pointer;opacity:.8}
+.topbar-alert-close:hover{opacity:1}
+
+/* ── Court schedule grid (LINE-style) ───────────────── */
+.cs-grid{border:1px solid var(--gray-200);border-radius:10px;overflow:hidden}
+.cs-row{display:flex;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--gray-100);gap:12px}
+.cs-row:last-child{border-bottom:none}
+.cs-cb{width:17px;height:17px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin-top:3px}
+.cs-day-label{width:80px;font-size:13px;color:var(--gray-700);flex-shrink:0;padding-top:2px}
+.cs-slots-col{flex:1;display:flex;flex-direction:column;gap:0}
+.cs-slot{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.cs-time{border:1px solid var(--gray-200);border-radius:6px;padding:5px 8px;font-size:12px;width:88px;color:var(--gray-800);background:#fff;cursor:pointer;appearance:none;-webkit-appearance:none;text-align:center}
+.cs-time:focus{outline:none;border-color:var(--brand)}
+.cs-sep{font-size:12px;color:var(--gray-400);flex-shrink:0}
+.cs-btn-rm{width:24px;height:24px;border:none;background:none;color:var(--gray-300);cursor:pointer;font-size:18px;line-height:1;border-radius:4px;padding:0;flex-shrink:0}
+.cs-btn-rm:hover{background:rgba(239,68,68,.08);color:#dc2626}
+.cs-btn-add{font-size:11px;color:var(--brand);background:none;border:none;cursor:pointer;padding:0;text-align:left;margin-top:2px}
+.cs-btn-add:hover{text-decoration:underline}
+.cs-closed{font-size:12px;color:var(--gray-400);padding-top:2px}
+
+/* ── Status tabs ─────────────────────────────────────── */
+.status-tabs{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap;border-top:1px solid var(--gray-100)}
+.status-tab{padding:5px 14px;border-radius:20px;border:1.5px solid var(--gray-200);background:transparent;font-size:12px;font-weight:600;cursor:pointer;color:var(--gray-500);transition:all .15s;white-space:nowrap}
+.status-tab:hover{border-color:var(--brand);color:var(--brand)}
+.status-tab.active{background:var(--brand);border-color:var(--brand);color:#fff}
+.status-tab.s-pending.active{background:#d97706;border-color:#d97706}
+.status-tab.s-checked.active{background:#059669;border-color:#059669}
+.status-tab.s-noshow.active{background:#dc2626;border-color:#dc2626}
+/* ── Import modal ────────────────────────────────────── */
+.import-dropzone{border:2.5px dashed var(--gray-300);border-radius:12px;background:var(--gray-50);cursor:pointer;transition:all .2s;user-select:none}
+.import-dropzone:hover,.import-dropzone.drop-hover{border-color:var(--brand);background:rgba(21,128,61,.04)}
+.import-col-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.import-col-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-150)}
+.import-col-label{font-size:12px;font-weight:600;color:var(--gray-600);min-width:90px}
+.import-col-select{flex:1;font-size:12px;padding:4px 6px;border:1.5px solid var(--gray-200);border-radius:6px;background:#fff;color:var(--gray-700)}
+.import-preview-tbl{width:100%;font-size:11px;border-collapse:collapse;border-radius:8px;overflow:hidden}
+.import-preview-tbl th{background:var(--brand);color:#fff;padding:5px 8px;font-weight:600;white-space:nowrap}
+.import-preview-tbl td{padding:4px 8px;border-bottom:1px solid var(--gray-100);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.import-preview-tbl tr:last-child td{border-bottom:none}
+.import-preview-tbl tr:nth-child(even) td{background:var(--gray-50)}
+.import-stat-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.import-stat-new{background:#d1fae5;color:#065f46}
+.import-stat-upd{background:#fef3c7;color:#92400e}
+.import-stat-skip{background:#fee2e2;color:#991b1b}
+/* ── Role toggle ─────────────────────────────────────── */
+.role-toggle{display:inline-flex;border-radius:20px;overflow:hidden;border:1.5px solid var(--gray-200);font-size:11px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.role-toggle:hover{opacity:.8}
+.role-toggle[data-role="admin"]{border-color:#fca5a5}
+.role-toggle[data-role="user"]{border-color:var(--gray-300)}
+.role-toggle .rt-pill{padding:3px 10px;transition:background .2s,color .2s}
+.role-toggle[data-role="admin"] .rt-admin{background:#fca5a5;color:#7f1d1d}
+.role-toggle[data-role="admin"] .rt-user{background:transparent;color:var(--gray-400)}
+.role-toggle[data-role="user"] .rt-admin{background:transparent;color:var(--gray-400)}
+.role-toggle[data-role="user"] .rt-user{background:var(--gray-200);color:var(--gray-600)}
+.role-toggle.loading{pointer-events:none;opacity:.5}
+.import-progress{height:4px;border-radius:4px;background:var(--gray-200);overflow:hidden;margin-top:8px;display:none}
+.import-progress-bar{height:100%;background:var(--brand);border-radius:4px;width:0;transition:width .25s}
+/* ── Bulk bar ─────────────────────────────────────────── */
+.bulk-bar{display:none;align-items:center;gap:10px;padding:8px 16px;background:rgba(21,128,61,.07);border-top:1px solid rgba(21,128,61,.18);border-bottom:1px solid rgba(21,128,61,.18)}
+.bulk-bar.show{display:flex}
+.bulk-bar-lbl{font-size:13px;font-weight:600;color:var(--brand);flex:1}
+/* ── Pagination ──────────────────────────────────────── */
+.pager-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 4px 2px;gap:8px;flex-wrap:wrap}
+.pager-info{font-size:12px;color:var(--gray-500)}
+.pager-pages{display:flex;align-items:center;gap:4px}
+.pager-btn{height:30px;min-width:30px;padding:0 10px;border:1px solid var(--gray-200);background:#fff;color:var(--gray-700);border-radius:6px;font-size:12px;cursor:pointer;transition:background .12s}
+.pager-btn:hover:not(:disabled){background:var(--gray-100)}
+.pager-btn:disabled{opacity:.4;cursor:default}
+.pager-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:700}
+.topbar-loc{
+  font-size:12px;color:var(--gray-500);background:var(--gray-100);
+  padding:6px 12px;border-radius:20px;display:flex;align-items:center;gap:6px
+}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:600
+}
+.badge-green{background:var(--green-l);color:#065F46}
+.badge-red{background:var(--red-l);color:#991B1B}
+.badge-orange{background:var(--orange-l);color:#92400E}
+.badge-blue{background:var(--blue-l);color:#1E40AF}
+.badge-gray{background:var(--gray-100);color:var(--gray-600)}
+.badge-brand{background:var(--brand-l);color:var(--brand)}
+
+/* ── Sections ────────────────────────────────────────────── */
+.section{display:none}
+.section.active{display:block}
+
+/* ── Page header ─────────────────────────────────────────── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-header-left h1{font-size:20px;font-weight:700;color:var(--gray-900)}
+.page-header-left p{font-size:13px;color:var(--gray-500);margin-top:2px}
+
+/* ── Stat cards ──────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{
+  background:var(--white);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow-sm);border:1px solid var(--gray-100)
+}
+.stat-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.stat-icon{
+  width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0
+}
+.stat-icon-red{background:var(--brand-l)}
+.stat-icon-green{background:var(--green-l)}
+.stat-icon-orange{background:var(--orange-l)}
+.stat-icon-blue{background:var(--blue-l)}
+.stat-val{font-size:28px;font-weight:700;color:var(--gray-900)}
+.stat-lbl{font-size:12px;color:var(--gray-500);font-weight:500;margin-top:2px}
+.stat-sub{font-size:11px;color:var(--gray-400);margin-top:4px}
+
+/* ── Loc stat mini-cards ─────────────────────────────────── */
+.loc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:24px}
+.loc-card{
+  background:var(--white);border-radius:var(--radius);padding:16px 20px;
+  box-shadow:var(--shadow-sm);border:1px solid var(--gray-100);
+  border-left:4px solid var(--brand)
+}
+.loc-card-name{font-weight:600;font-size:14px;color:var(--gray-800);margin-bottom:4px}
+.loc-card-count{font-size:24px;font-weight:700;color:var(--brand)}
+.loc-card-lbl{font-size:11px;color:var(--gray-400)}
+
+/* ── Card ────────────────────────────────────────────────── */
+.card{
+  background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);
+  box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:20px
+}
+.card-header{
+  padding:16px 20px;border-bottom:1px solid var(--gray-100);
+  display:flex;align-items:center;justify-content:space-between
+}
+.card-header-title{font-size:15px;font-weight:600;color:var(--gray-900);display:flex;align-items:center;gap:8px}
+.card-body{padding:0}
+
+/* ── Filter bar ──────────────────────────────────────────── */
+.filter-bar{
+  padding:14px 20px;background:var(--gray-50);border-bottom:1px solid var(--gray-100);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap
+}
+.filter-bar label{font-size:12px;font-weight:600;color:var(--gray-600)}
+select.fi,input.fi{
+  padding:7px 10px;font-size:13px;border:1px solid var(--gray-200);
+  border-radius:var(--radius-sm);background:var(--white);color:var(--gray-800);
+  font-family:var(--font);outline:none;transition:border .15s;cursor:pointer
+}
+select.fi:focus,input.fi:focus{border-color:var(--brand)}
+
+/* ── Table ───────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{
+  padding:11px 16px;text-align:left;font-size:11px;font-weight:700;
+  color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;
+  background:var(--gray-50);border-bottom:1px solid var(--gray-200);white-space:nowrap
+}
+tbody td{
+  padding:12px 16px;border-bottom:1px solid var(--gray-100);
+  font-size:13.5px;color:var(--gray-700);vertical-align:middle
+}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--gray-50)}
+.tbl-empty{padding:48px 20px;text-align:center;color:var(--gray-400)}
+.tbl-loading{padding:48px 20px;text-align:center;color:var(--gray-400)}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 16px;font-size:13px;font-weight:600;
+  border-radius:var(--radius-sm);border:none;cursor:pointer;
+  transition:all .15s;font-family:var(--font);white-space:nowrap
+}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-d)}
+.btn-outline{background:var(--white);color:var(--gray-700);border:1px solid var(--gray-300)}
+.btn-outline:hover{background:var(--gray-50);border-color:var(--gray-400)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#DC2626}
+.btn-ghost{background:none;color:var(--gray-500);border:none;padding:6px 8px}
+.btn-ghost:hover{background:var(--gray-100);color:var(--gray-700)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#059669}
+
+/* ── Form modal ──────────────────────────────────────────── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  display:none;align-items:center;justify-content:center;z-index:500
+}
+.overlay.open{display:flex}
+.modal{
+  background:var(--white);border-radius:16px;width:520px;max-width:95vw;
+  max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)
+}
+.modal-header{
+  padding:20px 24px 16px;border-bottom:1px solid var(--gray-100);
+  display:flex;align-items:center;justify-content:space-between
+}
+.modal-title{font-size:16px;font-weight:700;color:var(--gray-900)}
+.modal-close{
+  width:32px;height:32px;border-radius:50%;border:none;background:var(--gray-100);
+  cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
+  color:var(--gray-500);transition:all .15s
+}
+.modal-close:hover{background:var(--gray-200);color:var(--gray-800)}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-footer{
+  padding:16px 24px;border-top:1px solid var(--gray-100);
+  display:flex;gap:10px;justify-content:flex-end
+}
+
+/* ── Form fields ─────────────────────────────────────────── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.single{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:600;color:var(--gray-700)}
+.form-label span.req{color:var(--red);margin-left:2px}
+.form-input,.form-select,.form-textarea{
+  padding:9px 12px;font-size:13.5px;border:1px solid var(--gray-200);
+  border-radius:var(--radius-sm);font-family:var(--font);color:var(--gray-800);
+  outline:none;transition:border .15s;background:var(--white)
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(192,0,0,.08)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-hint{font-size:11px;color:var(--gray-400)}
+.sys-cur-hint{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:11px;color:#15803d;font-weight:600}
+.sys-cur-hint::before{content:"📌";font-size:10px}
+.toggle-wrap{display:flex;align-items:center;gap:8px}
+.toggle{
+  position:relative;width:42px;height:24px;
+  appearance:none;-webkit-appearance:none;background:var(--gray-300);
+  border-radius:12px;cursor:pointer;transition:background .2s
+}
+.toggle:checked{background:var(--brand)}
+.toggle::after{
+  content:'';position:absolute;left:2px;top:2px;
+  width:20px;height:20px;border-radius:50%;background:#fff;
+  transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)
+}
+.toggle:checked::after{transform:translateX(18px)}
+.toggle-label{font-size:13px;color:var(--gray-700)}
+.booking-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px 14px;border-bottom:1px solid var(--gray-100)}
+.booking-toggle-title{font-weight:600;font-size:14px;color:var(--gray-800);margin-bottom:6px}
+.booking-status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:600}
+.bsb-open{background:#dcfce7;color:#15803d}
+.bsb-closed{background:#fee2e2;color:#b91c1c}
+.bsb-waiting{background:#fef9c3;color:#854d0e}
+.booking-toggle-hint{font-size:11px;color:var(--gray-400);padding:10px 20px 0;margin-bottom:-4px}
+
+/* ── Confirm dialog ──────────────────────────────────────── */
+#confirmOverlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:600}
+#confirmOverlay.open{display:flex}
+.confirm-card{background:var(--white);border-radius:16px;width:380px;padding:28px;text-align:center;box-shadow:var(--shadow)}
+.confirm-icon{font-size:40px;margin-bottom:12px}
+.confirm-title{font-size:17px;font-weight:700;color:var(--gray-900);margin-bottom:6px}
+.confirm-msg{font-size:13px;color:var(--gray-500);margin-bottom:24px}
+.confirm-actions{display:flex;gap:10px;justify-content:center}
+
+/* ── Toast ───────────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--gray-900);color:#fff;padding:12px 20px;
+  border-radius:10px;font-size:13px;font-weight:500;
+  opacity:0;transform:translateY(10px);transition:all .3s;z-index:999;pointer-events:none
+}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.success{background:#065F46}
+#toast.error{background:#991B1B}
+
+/* ── System config form ──────────────────────────────────── */
+.sys-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px}
+.sys-section-title{
+  grid-column:1/-1;font-size:12px;font-weight:700;color:var(--gray-400);
+  text-transform:uppercase;letter-spacing:.08em;padding-top:8px
+}
+
+/* ── Responsive table actions ────────────────────────────── */
+.action-btns{display:flex;gap:6px;align-items:center}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray-400)}
+
+/* ── Hamburger ───────────────────────────────────────────── */
+.hamburger{display:none;align-items:center;justify-content:center;width:36px;height:36px;
+  background:none;border:none;cursor:pointer;border-radius:var(--radius-sm);
+  color:var(--gray-600);font-size:20px;flex-shrink:0}
+.hamburger:hover{background:var(--gray-100)}
+
+/* ── Sidebar overlay (mobile) ────────────────────────────── */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:150}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(max-width:1024px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-110%);transition:transform .25s ease;z-index:200}
+  .sidebar.sb-open{transform:translateX(0)}
+  .sb-overlay.sb-open{display:block}
+  .main-area{margin-left:0!important;width:100%!important}
+  .hamburger{display:flex}
+  .topbar{padding:0 14px;gap:10px}
+  .topbar>div:first-child{flex:1;min-width:0}
+  .topbar-title{font-size:15px}
+  .topbar-right{gap:8px}
+  .page-content{padding:14px}
+  .card-header{padding:14px 16px}
+  .data-table th,.data-table td{padding:8px 10px}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .page-content{padding:10px}
+  .topbar-loc{display:none}
+  .sys-form-grid{grid-template-columns:1fr!important}
+}
+
+/* ── Flaticon transparent icons ──────────────────────────── */
+img[src*="cdn-icons-gif.flaticon.com"]{mix-blend-mode:multiply;background:transparent!important}
+
+/* ── Location badge filter ───────────────────────────────── */
+.loc-badge-filter{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.loc-badge{
+  padding:5px 14px;border-radius:20px;border:1.5px solid var(--gray-300);
+  background:transparent;cursor:pointer;font-size:12px;font-weight:600;
+  color:var(--gray-600);transition:all .15s;font-family:var(--font);line-height:1.4;
+  white-space:nowrap
+}
+.loc-badge:hover{border-color:var(--brand);color:var(--brand)}
+.loc-badge.active{background:var(--brand);border-color:var(--brand);color:#fff}
+
+/* ── Pagination ──────────────────────────────────────────── */
+.pagination-bar{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;border-top:1px solid var(--gray-100);font-size:13px;color:var(--gray-500);
+  flex-wrap:wrap;gap:8px}
+.pg-btns{display:flex;gap:4px;align-items:center}
+.pg-btn{padding:5px 11px;border:1px solid var(--gray-200);border-radius:6px;
+  background:var(--white);cursor:pointer;font-size:12px;color:var(--gray-700);
+  font-family:var(--font);transition:all .15s}
+.pg-btn:hover:not(:disabled){background:var(--gray-50);border-color:var(--gray-300)}
+.pg-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── QR Modal ────────────────────────────────────────────── */
+.qr-modal-body{text-align:center;padding:8px 0 4px}
+.qr-display{display:flex;justify-content:center;margin:16px 0}
+.qr-url-box{font-size:11px;color:var(--gray-500);word-break:break-all;
+  background:var(--gray-50);padding:8px 12px;border-radius:6px;margin:10px 0;text-align:left;
+  border:1px solid var(--gray-200)}
+.qr-btn-row{display:flex;gap:10px;justify-content:center;margin-top:14px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ PIN GATE ══════════════════ -->
+<div id="pinGate">
+  <div class="pin-card">
+    <img src="booking.gif" alt="logo" class="pin-logo"/>
+    <div class="pin-title">BadmCourt Admin</div>
+
+    <!-- Step 1: empId -->
+    <div class="pin-step active" id="pinStep1">
+      <div class="pin-sub">ใส่รหัสพนักงานเพื่อเข้าสู่ระบบ</div>
+      <input type="text" id="empIdInput" class="pin-empid-input" placeholder="รหัสพนักงาน"
+             maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false"/>
+      <button class="pin-btn" onclick="doCheckEmpId()">ถัดไป →</button>
+      <div class="pin-err" id="pinErr"></div>
+    </div>
+
+    <!-- Step 2: Enter PIN -->
+    <div class="pin-step" id="pinStep2">
+      <button class="pin-back" onclick="goLoginStep(1)">← ย้อนกลับ</button>
+      <div class="pin-who" id="pinWhoCard">
+        <span style="font-size:28px">👤</span>
+        <div><div class="pin-who-name" id="pinWhoName"></div><div class="pin-who-id" id="pinWhoId"></div></div>
+      </div>
+      <div class="otp-label">ใส่ PIN 6 หลัก</div>
+      <div class="otp-row" id="otpRowLogin"></div>
+      <button class="pin-btn" id="pinLoginBtn" onclick="doLogin()" disabled>เข้าสู่ระบบ</button>
+      <div class="pin-err" id="pinErr2"></div>
+    </div>
+
+    <!-- Step 3: First login — set new PIN -->
+    <div class="pin-step" id="pinStep3">
+      <button class="pin-back" onclick="goLoginStep(1)">← ย้อนกลับ</button>
+      <div class="pin-who" id="pinWhoCard3" style="margin-bottom:16px">
+        <span style="font-size:28px">🔐</span>
+        <div><div class="pin-who-name" id="pinWhoName3"></div><div class="pin-who-id" style="color:#065f46">ยังไม่มี PIN — กรุณาตั้งใหม่</div></div>
+      </div>
+      <div class="otp-label">ตั้ง PIN ใหม่ (6 หลัก)</div>
+      <div class="otp-row" id="otpRowNew"></div>
+      <div class="otp-label" style="margin-top:14px">ยืนยัน PIN</div>
+      <div class="otp-row" id="otpRowConfirm"></div>
+      <button class="pin-btn" id="pinSetBtn" onclick="doSetPin()" disabled>ตั้ง PIN และเข้าสู่ระบบ</button>
+      <div class="pin-err" id="pinErr3"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN WRAP ══════════════════ -->
+<div id="adminWrap">
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar">
+    <div class="sb-brand">
+      <img src="booking.gif" alt="logo" class="sb-logo"/>
+      <div>
+        <div class="sb-brand-name">TQM ตบให้ยับ</div>
+        <div class="sb-brand-sub">Admin Dashboard</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <a class="nav-item active" onclick="nav('dashboard')">
+        <img src="https://cdn-icons-gif.flaticon.com/15578/15578463.gif" class="nav-icon-img" alt="dashboard">Dashboard
+      </a>
+      <div class="nav-group-label">ตั้งค่าระบบ</div>
+      <a class="nav-item" onclick="nav('loc-cfg')">
+        <img src="https://cdn-icons-gif.flaticon.com/11201/11201834.gif" class="nav-icon-img" alt="location">สถานที่
+      </a>
+      <a class="nav-item" onclick="nav('court-cfg')">
+        <img src="https://cdn-icons-gif.flaticon.com/19031/19031823.gif" class="nav-icon-img" alt="court">สนาม / ตารางเวลา
+      </a>
+      <a class="nav-item" onclick="nav('sys-cfg')">
+        <img src="https://cdn-icons-gif.flaticon.com/8717/8717906.gif" class="nav-icon-img" alt="settings">ตั้งค่าทั่วไป
+      </a>
+      <a class="nav-item" onclick="nav('holiday-cfg')">
+        <img src="https://cdn-icons-gif.flaticon.com/14659/14659817.gif" class="nav-icon-img" alt="holiday">วันหยุด
+      </a>
+      <a class="nav-item" onclick="nav('vip-cfg')">
+        <img src="https://cdn-icons-gif.flaticon.com/19010/19010128.gif" class="nav-icon-img" alt="vip">VIP
+      </a>
+      <a class="nav-item" onclick="nav('banned')">
+        <img src="https://cdn-icons-gif.flaticon.com/12132/12132914.gif" class="nav-icon-img" alt="ban">แบนพนักงาน
+      </a>
+
+      <div class="nav-group-label">บริหารสมาชิก</div>
+      <a class="nav-item" onclick="nav('members')">
+        <img src="https://cdn-icons-gif.flaticon.com/11260/11260690.gif" class="nav-icon-img" alt="members">สมาชิก
+      </a>
+      <div class="nav-group-label">สถิติ</div>
+      <a class="nav-item" onclick="nav('heatmap')">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style="flex-shrink:0">
+          <rect x="1" y="1" width="4" height="4" rx="1" fill="#86efac"/>
+          <rect x="7" y="1" width="4" height="4" rx="1" fill="#22c55e"/>
+          <rect x="13" y="1" width="4" height="4" rx="1" fill="#16a34a"/>
+          <rect x="1" y="7" width="4" height="4" rx="1" fill="#22c55e"/>
+          <rect x="7" y="7" width="4" height="4" rx="1" fill="#14532d"/>
+          <rect x="13" y="7" width="4" height="4" rx="1" fill="#22c55e"/>
+          <rect x="1" y="13" width="4" height="4" rx="1" fill="#dcfce7"/>
+          <rect x="7" y="13" width="4" height="4" rx="1" fill="#86efac"/>
+          <rect x="13" y="13" width="4" height="4" rx="1" fill="#16a34a"/>
+        </svg>
+        Court Heatmap
+      </a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-avatar">A</div>
+      <div style="flex:1">
+        <div class="sb-user-name" id="sbAdminName">Administrator</div>
+        <div class="sb-user-role" id="sbAdminEmpId">Admin</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <button class="sb-logout" onclick="doLogout()" title="ออกจากระบบ">⏻</button>
+        <button onclick="openChangePinModal()" title="เปลี่ยน PIN" style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--gray-400);padding:0 2px;font-family:var(--font)">🔑 เปลี่ยน PIN</button>
+      </div>
+    </div>
+    <div style="padding:8px 16px;font-size:10px;color:var(--gray-400);text-align:center;border-top:1px solid var(--gray-100)">
+      Icons by <a href="https://www.flaticon.com" target="_blank" rel="noopener" style="color:var(--gray-400)">Flaticon</a>
+    </div>
+  </nav>
+
+  <!-- Sidebar overlay for mobile -->
+  <div class="sb-overlay" id="sbOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ── Main Area ── -->
+  <div class="main-area">
+    <!-- Topbar -->
+    <div class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="เปิด/ปิดเมนู">☰</button>
+      <div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="topbar-sub" id="topbarSub">ภาพรวมระบบจองสนามแบดมินตัน</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-loc">
+          <img src="https://cdn-icons-gif.flaticon.com/6416/6416392.gif" style="width:16px;height:16px;vertical-align:middle;margin-right:4px" alt="calendar"><span id="targetMonthDisplay">—</span>
+        </div>
+        <!-- Notification bell -->
+        <div style="position:relative">
+          <button class="notif-btn" id="notifBtn" onclick="toggleNotifDropdown()" title="การแจ้งเตือน">
+            🔔
+            <span class="notif-badge" id="notifBadge"></span>
+          </button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-hd">
+              <span>การแจ้งเตือน</span>
+              <button onclick="clearNotifs()" style="font-size:11px;color:var(--gray-400);background:none;border:none;cursor:pointer">ล้างทั้งหมด</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <div class="notif-empty">ยังไม่มีการแจ้งเตือน</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="refreshCurrent()">รีเฟรช</button>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+
+      <!-- ════ DASHBOARD ════ -->
+      <div id="sec-dashboard" class="section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <div><div class="stat-val" id="dTotal">—</div><div class="stat-lbl">รายการจอง</div><div class="stat-sub" id="dTargetM">เดือนนี้</div></div>
+              <div class="stat-icon stat-icon-red"><img src="https://cdn-icons-gif.flaticon.com/19016/19016821.gif" alt="bookings"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <div><div class="stat-val" id="dBanned">—</div><div class="stat-lbl">ผู้ถูกแบน</div><div class="stat-sub">รายการปัจจุบัน</div></div>
+              <div class="stat-icon stat-icon-orange"><img src="https://cdn-icons-gif.flaticon.com/12132/12132914.gif" alt="ban"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <div><div class="stat-val" id="dLocCount">—</div><div class="stat-lbl">สถานที่ใช้งาน</div><div class="stat-sub">location_config</div></div>
+              <div class="stat-icon stat-icon-blue"><img src="https://cdn-icons-gif.flaticon.com/11201/11201834.gif" alt="location"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <div><div class="stat-val" id="dMonth">—</div><div class="stat-lbl">เดือนเป้าหมาย</div><div class="stat-sub">TARGET_MONTH</div></div>
+              <div class="stat-icon stat-icon-green"><img src="https://cdn-icons-gif.flaticon.com/6416/6416392.gif" alt="calendar"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:14px;font-weight:600;color:var(--gray-700)">สถิติแต่ละสถานที่</span>
+        </div>
+        <div class="loc-grid" id="dashLocCards">
+          <div style="color:var(--gray-400);font-size:13px">กำลังโหลด…</div>
+        </div>
+
+        <!-- Chart card -->
+        <div class="card" id="bkChartCard" style="display:none">
+          <div class="card-header">
+            <span class="card-header-title">
+              <svg class="chart-icon-anim" viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:6px">
+                <style>
+                  .ci-bar1{animation:ciRise 1.4s ease-out infinite alternate;transform-origin:bottom}
+                  .ci-bar2{animation:ciRise 1.4s .2s ease-out infinite alternate;transform-origin:bottom}
+                  .ci-bar3{animation:ciRise 1.4s .4s ease-out infinite alternate;transform-origin:bottom}
+                  .ci-line{animation:ciDraw 1.8s ease-in-out infinite alternate;stroke-dasharray:28;stroke-dashoffset:0}
+                  @keyframes ciRise{0%{transform:scaleY(.35)}100%{transform:scaleY(1)}}
+                  @keyframes ciDraw{0%{stroke-dashoffset:28}100%{stroke-dashoffset:0}}
+                </style>
+                <!-- bars -->
+                <rect class="ci-bar1" x="2"  y="10" width="4" height="11" rx="1" fill="#15803d"/>
+                <rect class="ci-bar2" x="8"  y="6"  width="4" height="15" rx="1" fill="#16a34a"/>
+                <rect class="ci-bar3" x="14" y="3"  width="4" height="18" rx="1" fill="#22c55e"/>
+                <!-- trend line -->
+                <polyline class="ci-line" points="3,19 10,12 16,7 21,4" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <!-- dots -->
+                <circle cx="3"  cy="19" r="1.4" fill="#f59e0b" opacity=".9"/>
+                <circle cx="10" cy="12" r="1.4" fill="#f59e0b" opacity=".9"/>
+                <circle cx="16" cy="7"  r="1.4" fill="#f59e0b" opacity=".9"/>
+                <circle cx="21" cy="4"  r="1.4" fill="#f59e0b" opacity=".9"/>
+              </svg>
+              จำนวนการจองตามวันที่บันทึก
+            </span>
+            <span id="bkChartLbl" style="font-size:12px;color:var(--gray-400)"></span>
+          </div>
+          <div class="card-body" style="padding-top:4px">
+            <div style="height:180px;position:relative"><canvas id="bkChartCanvas"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header-title"><img src="https://cdn-icons-gif.flaticon.com/19016/19016821.gif" style="width:18px;height:18px;vertical-align:middle;margin-right:6px" alt="bookings">รายการจอง</span>
+            <span id="bkTotalLbl" style="font-size:12px;color:var(--gray-400)"></span>
+          </div>
+          <div class="filter-bar">
+            <label>สถานที่</label>
+            <select class="fi" id="bkFLoc" onchange="_bkFilter()">
+              <option value="">ทุกสถานที่</option>
+            </select>
+            <label>วันที่</label>
+            <input type="text" class="fi fp-date" id="bkFDate" placeholder="เลือกวันที่" onchange="_bkFilter()" autocomplete="off"/>
+            <label>รหัสพนักงาน</label>
+            <input type="text" class="fi" id="bkFEmp" placeholder="ค้นหา..." oninput="_bkFilter()"/>
+            <button class="btn btn-ghost btn-sm" onclick="resetBkFilter()" style="align-self:center;padding:4px 10px;font-size:12px">✕ ล้างตัวกรอง</button>
+            <button class="btn btn-outline btn-sm" onclick="exportBkCsv()" style="align-self:center;padding:4px 12px;font-size:12px;margin-left:auto" title="ส่งออก CSV">⬇ Export CSV</button>
+          </div>
+          <!-- Status tabs -->
+          <div class="status-tabs">
+            <button class="status-tab active" data-s="" onclick="_bkSetStatus('')">ทั้งหมด</button>
+            <button class="status-tab s-pending" data-s="pending" onclick="_bkSetStatus('pending')">⏳ รอเช็คอิน</button>
+            <button class="status-tab s-checked" data-s="checked_in" onclick="_bkSetStatus('checked_in')">✅ เช็คอินแล้ว</button>
+            <button class="status-tab s-noshow" data-s="noshow" onclick="_bkSetStatus('noshow')">❌ No-show</button>
+          </div>
+          <!-- Bulk action bar -->
+          <div class="bulk-bar" id="bkBulkBar">
+            <span class="bulk-bar-lbl" id="bkBulkLbl"></span>
+            <button class="btn btn-primary btn-sm" onclick="bulkCheckin()" style="font-size:12px;padding:5px 14px">✓ เช็คอินที่เลือก</button>
+            <button class="btn btn-ghost btn-sm" onclick="_bkClearSel()" style="font-size:12px">ยกเลิกการเลือก</button>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th style="width:34px;text-align:center"><input type="checkbox" id="bkChkAll" onchange="_bkToggleAll(this.checked)" style="cursor:pointer;width:15px;height:15px;accent-color:var(--brand)"></th>
+                  <th>Booking ID</th><th>รหัสพนักงาน</th><th>ชื่อ-นามสกุล</th>
+                  <th>เบอร์</th><th>Email</th><th>สังกัด</th><th>สถานที่</th>
+                  <th>วันที่</th><th>คอร์ท</th><th>เวลา</th><th>Check-in</th><th>จัดการ</th>
+                </tr></thead>
+                <tbody id="bkTbl"><tr><td colspan="13" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
+
+              </table>
+            </div>
+            <div id="bkPager" class="pager-bar" style="display:none">
+              <span class="pager-info" id="bkPageInfo"></span>
+              <div class="pager-pages" id="bkPageBtns"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ BOOKINGS ════ -->
+      <div id="sec-bookings" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>รายการจอง</h1>
+            <p>จัดการการจองสนามแบดมินตันทุกสถานที่</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:40px 20px">
+            <div style="font-size:2rem;margin-bottom:12px">📋</div>
+            <div style="font-size:15px;font-weight:600;color:var(--gray-700);margin-bottom:6px">ตารางรายการจองย้ายไปที่ Dashboard แล้ว</div>
+            <div style="font-size:13px;color:var(--gray-400);margin-bottom:20px">รายการจองพร้อมตัวกรองและ Pagination อยู่ที่หน้า Dashboard</div>
+            <button class="btn btn-primary" onclick="nav('dashboard')">ไปที่ Dashboard →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ LOCATION CONFIG ════ -->
+      <div id="sec-loc-cfg" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>ตั้งค่าสถานที่</h1>
+            <p>จัดการข้อมูลสถานที่ทั้งหมด (location_config)</p>
+          </div>
+          <button class="btn btn-primary" onclick="openLocModal()">+ เพิ่มสถานที่</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>locId</th><th>ชื่อสถานที่</th><th>ชื่อย่อ</th>
+                  <th>ที่อยู่</th><th>Lat / Lng</th><th>สถานะ</th><th>จัดการ</th>
+                </tr></thead>
+                <tbody id="locTbl"><tr><td colspan="7" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ COURT CONFIG ════ -->
+      <div id="sec-court-cfg" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>ตั้งค่าสนาม / ตารางเวลา</h1>
+            <p>กำหนดสนามและช่วงเวลาเล่น (court_config)</p>
+          </div>
+          <button class="btn btn-primary" onclick="openCourtModal()">+ เพิ่มช่วงเวลา</button>
+        </div>
+        <div class="card">
+          <div class="filter-bar">
+            <label>กรองสถานที่</label>
+            <div class="loc-badge-filter" id="courtLocBadges">
+              <button class="loc-badge active" data-loc="" onclick="setCourtLocFilter(this)">ทุกสถานที่</button>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="resetCourtFilter()" title="ล้างตัวกรอง" style="align-self:center;padding:4px 10px;font-size:12px">✕ ล้างตัวกรอง</button>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Row</th><th>สถานที่</th><th>วัน</th><th>คอร์ท</th><th>เวลา</th><th>จัดการ</th>
+                </tr></thead>
+                <tbody id="courtTbl"><tr><td colspan="6" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="pagination-bar" id="courtPager" style="display:none">
+            <span id="courtPagerInfo" style="font-size:13px;color:var(--gray-500)"></span>
+            <div class="pg-btns" id="courtPagerBtns"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ SYSTEM CONFIG ════ -->
+      <div id="sec-sys-cfg" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>ตั้งค่าทั่วไป</h1>
+            <p>กำหนดรอบการจอง, เงื่อนไข Check-in และ Auto-ban</p>
+          </div>
+          <button class="btn btn-primary" onclick="saveSysConfig()"><img src="https://cdn-icons-gif.flaticon.com/11677/11677503.gif" style="width:14px;height:14px;vertical-align:middle;margin-right:4px" alt="save">บันทึก</button>
+        </div>
+
+        <!-- รอบการจอง -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-header-title"><img src="https://cdn-icons-gif.flaticon.com/6416/6416392.gif" style="width:18px;height:18px;vertical-align:middle;margin-right:6px" alt="cal">รอบการจอง</span>
+          </div>
+          <!-- Booking enabled toggle -->
+          <div class="booking-toggle-row">
+            <div>
+              <div class="booking-toggle-title">เปิด / ปิด ระบบการจองสนาม</div>
+              <div id="sysBookingStatus"><span class="booking-status-badge bsb-waiting">— กำลังโหลด —</span></div>
+            </div>
+            <label class="toggle-wrap" style="cursor:pointer;flex-shrink:0">
+              <input type="checkbox" class="toggle" id="sys_BOOKING_ENABLED" onchange="onToggleBooking()"/>
+              <span class="toggle-label" id="sysBookingToggleLabel">เปิดระบบ</span>
+            </label>
+          </div>
+          <p class="booking-toggle-hint">
+            เมื่อเปิดระบบ ผู้ใช้สามารถจองสนามได้เฉพาะ <strong>เดือนเป้าหมาย</strong> ที่ตั้งค่าไว้ด้านล่าง
+          </p>
+          <div class="sys-form-grid">
+            <div class="form-group">
+              <label class="form-label">เดือนเปิดจอง (TARGET_MONTH)</label>
+              <select class="form-select" id="sys_TARGET_MONTH" onchange="updateBookingStatusUI()">
+                <option value="">— เลือกเดือน —</option>
+              </select>
+              <span class="form-hint sys-cur-hint hidden" id="hint_TARGET_MONTH"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Check-in -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-header-title"><img src="https://cdn-icons-gif.flaticon.com/11201/11201834.gif" style="width:18px;height:18px;vertical-align:middle;margin-right:6px" alt="pin">การ Check-in</span>
+          </div>
+          <div class="sys-form-grid">
+            <div class="form-group">
+              <label class="form-label">รัศมี Check-in (เมตร) — ค่าเริ่มต้นทุกสถานที่</label>
+              <input type="number" min="10" max="5000" step="10" class="form-input" id="sys_CHECKIN_RADIUS" placeholder="150"/>
+              <span class="form-hint">แต่ละสถานที่สามารถกำหนดรัศมีเองได้ใน "สถานที่"</span>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:8px">
+              <div>
+                <label class="form-label">Auto-ban เมื่อไม่ Check-in (No-show)</label>
+                <div class="toggle-wrap" style="margin-top:8px">
+                  <input type="checkbox" class="toggle" id="sys_AUTO_BAN_NOSHOW"/>
+                  <label class="toggle-label" for="sys_AUTO_BAN_NOSHOW">เปิดระบบ Auto-ban อัตโนมัติ (ทุกวัน 23:00)</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ════ HOLIDAY CONFIG ════ -->
+      <div id="sec-holiday-cfg" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>วันหยุด</h1>
+            <p>กำหนดวันหยุดสำหรับแต่ละสถานที่ (holiday_config)</p>
+          </div>
+          <button class="btn btn-primary" onclick="openHolidayModal()">+ เพิ่มวันหยุด</button>
+        </div>
+        <div class="card">
+          <div class="filter-bar">
+            <label>กรองสถานที่</label>
+            <select class="fi" id="holFLoc" onchange="renderHolidayTbl()">
+              <option value="">ทุกสถานที่</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="resetHolFilter()" title="ล้างตัวกรอง" style="align-self:center;padding:4px 10px;font-size:12px">✕ ล้างตัวกรอง</button>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Row</th><th>วันที่</th><th>ชื่อวันหยุด</th><th>สถานที่</th><th>จัดการ</th>
+                </tr></thead>
+                <tbody id="holTbl"><tr><td colspan="5" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ VIP CONFIG ════ -->
+      <div id="sec-vip-cfg" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>VIP Reservation</h1>
+            <p>สล็อตสำรองพิเศษที่ไม่เปิดให้จองทั่วไป (vip_config)</p>
+          </div>
+          <button class="btn btn-primary" onclick="openVipModal()">+ เพิ่ม VIP</button>
+        </div>
+        <div class="card">
+          <div class="filter-bar">
+            <label>กรองสถานที่</label>
+            <select class="fi" id="vipFLoc" onchange="renderVipTbl()">
+              <option value="">ทุกสถานที่</option>
+            </select>
+            <label>วันที่</label>
+            <input type="text" class="fi fp-date" id="vipFDate" placeholder="เลือกวันที่" oninput="renderVipTbl()" autocomplete="off"/>
+            <button class="btn btn-ghost btn-sm" onclick="resetVipFilter()" title="ล้างตัวกรอง" style="align-self:center;padding:4px 10px;font-size:12px">✕ ล้างตัวกรอง</button>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Row</th><th>สถานที่</th><th>วันที่</th><th>คอร์ท</th><th>เวลา</th><th>ผู้จอง</th><th>จัดการ</th>
+                </tr></thead>
+                <tbody id="vipTbl"><tr><td colspan="7" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ BANNED ════ -->
+      <div id="sec-banned" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>แบนพนักงาน</h1>
+            <p>จัดการรายการพนักงานที่ถูกระงับการจอง (banned_users)</p>
+          </div>
+          <button class="btn btn-primary" onclick="openBanModal()">+ เพิ่มการแบน</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>พนักงาน</th><th>วันที่เริ่มแบน</th>
+                  <th>หมายเหตุ</th><th>วันหมดอายุ</th><th>จัดการ</th>
+                </tr></thead>
+                <tbody id="banTbl"><tr><td colspan="5" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ MEMBERS ════ -->
+      <div id="sec-members" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>สมาชิก</h1>
+            <p>จัดการรายชื่อพนักงานและสิทธิ์ (member)</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="confirmClearUsers()" style="font-size:13px;color:var(--red)">🗑 ล้างสมาชิกทั้งหมด</button>
+            <button class="btn btn-outline" onclick="openImportModal()" style="font-size:13px">📥 Import Excel</button>
+            <button class="btn btn-primary" onclick="openMemberModal()">+ เพิ่มสมาชิก</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="filter-bar">
+            <label>ค้นหา</label>
+            <input type="text" class="fi" id="memSearch" placeholder="รหัส / ชื่อ / สังกัด..." oninput="memPage=1;renderMemberTbl()"/>
+            <label>บทบาท</label>
+            <select class="fi" id="memRoleFilter" onchange="memPage=1;renderMemberTbl()">
+              <option value="">ทั้งหมด</option>
+              <option value="admin">admin</option>
+              <option value="user">user</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="resetMemFilter()" title="ล้างตัวกรอง" style="align-self:center;padding:4px 10px;font-size:12px">✕ ล้างตัวกรอง</button>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>รหัสพนักงาน</th><th>ชื่อ</th><th>นามสกุล</th>
+                  <th>สังกัด/แผนก</th><th>บทบาท</th><th>จัดการ</th>
+                </tr></thead>
+                <tbody id="memTbl"><tr><td colspan="6" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
+              </table>
+              <!-- Pagination -->
+              <div class="pagination-bar" id="memPager" style="display:none">
+                <span id="memPagerInfo"></span>
+                <div class="pg-btns" id="memPagerBtns"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ HEATMAP ════ -->
+      <div id="sec-heatmap" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Court Heatmap</h1>
+            <p>ความถี่การจองแต่ละสนาม × ชั่วโมงที่บันทึกการจองลงระบบ</p>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="filter-bar" style="flex-wrap:wrap;gap:10px">
+            <label>สถานที่</label>
+            <select class="fi" id="hmLocId" style="min-width:160px" onchange="loadHeatmap()">
+              <option value="">ทุกสถานที่</option>
+            </select>
+            <label>ช่วงเวลา</label>
+            <select class="fi" id="hmPreset" onchange="onHmPreset()">
+              <option value="month">เดือนนี้</option>
+              <option value="3month">3 เดือนล่าสุด</option>
+              <option value="year">ปีนี้</option>
+              <option value="all">ทั้งหมด</option>
+              <option value="custom">กำหนดเอง</option>
+            </select>
+            <span id="hmCustomRange" style="display:none;align-items:center;gap:6px">
+              <input type="date" class="fi" id="hmFrom" style="width:140px" onchange="loadHeatmap()">
+              <span style="color:var(--gray-400)">–</span>
+              <input type="date" class="fi" id="hmTo"   style="width:140px" onchange="loadHeatmap()">
+            </span>
+            <label>ยกเว้นยกเลิก</label>
+            <span style="color:var(--gray-400);font-size:12px">(รวมอยู่แล้ว)</span>
+          </div>
+        </div>
+        <div class="card">
+          <div id="hmWrap" style="overflow-x:auto;min-height:120px">
+            <div class="tbl-loading" style="padding:40px;text-align:center;color:var(--gray-400)">เลือกช่วงเวลาแล้วรอสักครู่…</div>
+          </div>
+          <!-- Legend -->
+          <div id="hmLegend" style="display:none;margin-top:16px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-500)">
+            <span>น้อย</span>
+            <div style="display:flex;gap:2px">
+              <div style="width:22px;height:16px;border-radius:3px;background:#f0fdf4;border:1px solid #e5e7eb"></div>
+              <div style="width:22px;height:16px;border-radius:3px;background:#bbf7d0"></div>
+              <div style="width:22px;height:16px;border-radius:3px;background:#4ade80"></div>
+              <div style="width:22px;height:16px;border-radius:3px;background:#16a34a"></div>
+              <div style="width:22px;height:16px;border-radius:3px;background:#14532d"></div>
+            </div>
+            <span>มาก</span>
+            <span id="hmTotal" style="margin-left:12px"></span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-area -->
+</div><!-- /adminWrap -->
+
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- QR Code Modal -->
+<div class="overlay" id="qrOverlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">QR Check-in — <span id="qrLocNameDisplay"></span></span>
+      <button class="modal-close" onclick="closeModal('qrOverlay')">✕</button>
+    </div>
+    <div class="modal-body qr-modal-body">
+      <p style="color:var(--gray-500);font-size:13px;margin:0 0 8px">สแกน QR เพื่อไปยังหน้าจองสนามของสถานที่นี้</p>
+      <div class="qr-display"><div id="qrContainer"></div></div>
+      <div class="qr-url-box" id="qrUrlDisplay"></div>
+      <div class="qr-btn-row">
+        <button class="btn btn-primary" onclick="printQR()">🖨️ พิมพ์</button>
+        <button class="btn btn-outline" onclick="downloadQR()">⬇️ บันทึกรูป</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Location Modal -->
+<div class="overlay" id="locOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="locModalTitle">เพิ่มสถานที่</span>
+      <button class="modal-close" onclick="closeModal('locOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">locId <span class="req">*</span></label>
+          <input type="text" class="form-input" id="fLocId" placeholder="เช่น senanikom"/>
+          <span class="form-hint">ตัวอักษรอังกฤษ ไม่มีช่องว่าง</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อย่อ</label>
+          <input type="text" class="form-input" id="fLocShort" placeholder="เช่น เสนา"/>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">ชื่อสถานที่ <span class="req">*</span></label>
+          <input type="text" class="form-input" id="fLocName" placeholder="ชื่อเต็มสถานที่"/>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">ที่อยู่</label>
+          <input type="text" class="form-input" id="fLocAddr" placeholder="ที่อยู่สถานที่"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Latitude</label>
+          <input type="number" step="any" class="form-input" id="fLocLat" placeholder="13.7563"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Longitude</label>
+          <input type="number" step="any" class="form-input" id="fLocLng" placeholder="100.5018"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">รัศมี Check-in (เมตร)</label>
+          <input type="number" min="10" max="5000" step="10" class="form-input" id="fLocCheckinRadius" placeholder="ใช้ค่า default ของระบบ"/>
+          <span class="form-hint">เว้นว่างเพื่อใช้ค่า default จาก System Config</span>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:8px">
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" id="fLocActive" checked/>
+            <label class="toggle-label" for="fLocActive">เปิดใช้งานสถานที่นี้</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('locOverlay')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitLocModal()"><img src="https://cdn-icons-gif.flaticon.com/11677/11677503.gif" style="width:14px;height:14px;vertical-align:middle;margin-right:4px" alt="save">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Court Modal (LINE-style day grid) -->
+<div class="overlay" id="courtOverlay">
+  <div class="modal" style="width:580px">
+    <div class="modal-header">
+      <span class="modal-title" id="courtModalTitle">เพิ่มสนาม</span>
+      <button class="modal-close" onclick="closeModal('courtOverlay')">✕</button>
+    </div>
+    <div class="modal-body" style="padding-bottom:8px">
+      <div class="form-row" style="margin-bottom:16px">
+        <div class="form-group">
+          <label class="form-label">สถานที่ <span class="req">*</span></label>
+          <select class="form-select" id="fCourtLoc">
+            <option value="">-- เลือกสถานที่ --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อคอร์ท <span class="req">*</span></label>
+          <input type="text" class="form-input" id="fCourtName" placeholder="เช่น SENA #สนาม 1"/>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--gray-500);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">ตารางวัน / เวลา</div>
+      <div class="cs-grid" id="csGrid">
+        <!-- Built by csRenderGrid() -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('courtOverlay')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitCourtModal()"><img src="https://cdn-icons-gif.flaticon.com/11677/11677503.gif" style="width:14px;height:14px;vertical-align:middle;margin-right:4px" alt="save">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Holiday Modal -->
+<div class="overlay" id="holidayOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="holModalTitle">เพิ่มวันหยุด</span>
+      <button class="modal-close" onclick="closeModal('holidayOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">วันที่ <span class="req">*</span></label>
+          <input type="text" class="form-input fp-date" id="fHolDate" placeholder="เลือกวันที่" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">สถานที่ (ว่าง = ทุกที่)</label>
+          <select class="form-select" id="fHolLoc">
+            <option value="">ทุกสถานที่</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">ชื่อวันหยุด</label>
+          <input type="text" class="form-input" id="fHolName" placeholder="เช่น วันชาติ"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('holidayOverlay')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitHolidayModal()"><img src="https://cdn-icons-gif.flaticon.com/11677/11677503.gif" style="width:14px;height:14px;vertical-align:middle;margin-right:4px" alt="save">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIP Modal -->
+<datalist id="dlVipCourt"></datalist>
+<datalist id="dlVipTime"></datalist>
+<div class="overlay" id="vipOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="vipModalTitle">เพิ่ม VIP</span>
+      <button class="modal-close" onclick="closeModal('vipOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">สถานที่ <span class="req">*</span></label>
+          <select class="form-select" id="fVipLoc" onchange="onVipLocChange()">
+            <option value="">-- เลือกสถานที่ --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">วันที่ <span class="req">*</span></label>
+          <input type="text" class="form-input fp-date" id="fVipDate" placeholder="เลือกวันที่" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">คอร์ท <span class="req">*</span></label>
+          <span class="form-hint" style="margin-bottom:4px">เลือกจากรายการหรือพิมพ์เพิ่มเอง</span>
+          <input type="text" class="form-input" id="fVipCourt" list="dlVipCourt"
+                 placeholder="เลือกหรือพิมพ์คอร์ท" autocomplete="off" oninput="onVipCourtChange()"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เวลา <span class="req">*</span></label>
+          <span class="form-hint" style="margin-bottom:4px">เลือกจากรายการหรือพิมพ์เพิ่มเอง</span>
+          <input type="text" class="form-input" id="fVipTime" list="dlVipTime"
+                 placeholder="เลือกหรือพิมพ์เวลา" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ผู้จอง</label>
+          <input type="text" class="form-input" id="fVipBooker" placeholder="ชื่อผู้จอง VIP"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ข้อความจิกกัด 😈</label>
+          <input type="text" class="form-input" id="fVipNote"
+                 placeholder="เช่น หัวหน้าจองไว้ ห้ามแตะเด็ดขาด!"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('vipOverlay')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitVipModal()"><img src="https://cdn-icons-gif.flaticon.com/11677/11677503.gif" style="width:14px;height:14px;vertical-align:middle;margin-right:4px" alt="save">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ban Modal -->
+<div class="overlay" id="banOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">เพิ่มการแบนพนักงาน</span>
+      <button class="modal-close" onclick="closeModal('banOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">รหัสพนักงาน <span class="req">*</span></label>
+          <div style="display:flex;gap:8px">
+            <input type="text" class="form-input" id="fBanEmp" placeholder="รหัสพนักงาน"
+                   oninput="clearBanEmpCard()" style="flex:1"/>
+            <button class="btn btn-outline btn-sm" type="button" onclick="lookupBanEmp()" style="white-space:nowrap">🔍 ค้นหา</button>
+          </div>
+          <div id="banEmpCard" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--brand-l);border:1px solid rgba(192,0,0,.2)">
+            <div style="font-weight:700;font-size:.9rem" id="banEmpName">—</div>
+            <div style="font-size:.78rem;color:var(--gray-500);margin-top:2px" id="banEmpDept">—</div>
+          </div>
+          <div id="banEmpError" style="display:none;margin-top:6px;font-size:.78rem;color:var(--red)"></div>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">หมายเหตุ / เหตุผล</label>
+          <input type="text" class="form-input" id="fBanReason" placeholder="เหตุผลที่แบน"/>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">วันสิ้นสุดการแบน (ว่าง = ถาวร)</label>
+          <input type="text" class="form-input fp-date" id="fBanUntil" placeholder="เลือกวันที่ (ว่าง = ถาวร)" autocomplete="off"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('banOverlay')">ยกเลิก</button>
+      <button class="btn btn-danger" onclick="submitBanModal()">แบน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Member Modal -->
+<div class="overlay" id="memberOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="memModalTitle">เพิ่มสมาชิก</span>
+      <button class="modal-close" onclick="closeModal('memberOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">รหัสพนักงาน <span class="req">*</span></label>
+          <input type="text" class="form-input" id="fMemEmp" placeholder="รหัส"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">บทบาท <span class="req">*</span></label>
+          <select class="form-select" id="fMemRole">
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ชื่อ</label>
+          <input type="text" class="form-input" id="fMemName" placeholder="ชื่อ"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">นามสกุล</label>
+          <input type="text" class="form-input" id="fMemSurname" placeholder="นามสกุล"/>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">สังกัด / แผนก</label>
+          <input type="text" class="form-input" id="fMemDept" placeholder="สังกัด"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('memberOverlay')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitMemberModal()"><img src="https://cdn-icons-gif.flaticon.com/11677/11677503.gif" style="width:14px;height:14px;vertical-align:middle;margin-right:4px" alt="save">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Member Import Modal -->
+<div class="overlay" id="importOverlay">
+  <div class="modal" style="max-width:700px;width:95vw">
+    <div class="modal-header">
+      <span>📥 Import สมาชิก จาก Excel / CSV</span>
+      <button class="modal-close" onclick="closeModal('importOverlay')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+
+      <!-- Step 1: Dropzone -->
+      <div id="importStep1">
+        <div class="import-dropzone" id="importDropzone"
+          onclick="document.getElementById('importFileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('drop-hover')"
+          ondragleave="this.classList.remove('drop-hover')"
+          ondrop="event.preventDefault();this.classList.remove('drop-hover');handleImportFile(event.dataTransfer.files[0])">
+          <div style="text-align:center;padding:40px 20px;pointer-events:none">
+            <div style="font-size:48px;margin-bottom:10px">📂</div>
+            <div style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:6px">คลิกหรือลากไฟล์มาวางที่นี่</div>
+            <div style="font-size:12px;color:var(--gray-400)">.xlsx &nbsp;·&nbsp; .xls &nbsp;·&nbsp; .csv &nbsp;— สูงสุด 5,000 แถว</div>
+          </div>
+        </div>
+        <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this.files[0])">
+        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--gray-400)">ยังไม่มีไฟล์?</span>
+          <button class="btn btn-outline btn-sm" onclick="downloadImportTemplate()" style="font-size:12px">⬇ ดาวน์โหลด Template</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Mapping + Preview -->
+      <div id="importStep2" style="display:none">
+        <div id="importFileInfo" style="font-size:12px;color:var(--gray-500);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+          <span id="importFileName" style="font-weight:600;color:var(--gray-700)"></span>
+          <span id="importRowCount"></span>
+        </div>
+
+
+        <!-- Column mapping -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:8px">🔗 จับคู่คอลัมน์</div>
+          <div class="import-col-grid" id="importColGrid">
+            <!-- populated by renderColMap() -->
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:8px">👁 ตัวอย่างข้อมูล (5 แถวแรก)</div>
+          <div id="importPreview" style="overflow-x:auto;border-radius:8px;border:1px solid var(--gray-150)"></div>
+        </div>
+
+        <!-- Progress bar (hidden until import starts) -->
+        <div class="import-progress" id="importProgress">
+          <div class="import-progress-bar" id="importProgressBar"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer" id="importFooter" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap" id="importStats"></div>
+      <button class="btn btn-outline" onclick="resetImportState()" style="font-size:12px">← เลือกไฟล์ใหม่</button>
+      <button class="btn btn-primary" id="importSubmitBtn" onclick="submitImport()" style="font-size:13px">📥 Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change PIN Modal -->
+<div class="overlay" id="changePinOverlay">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span>🔑 เปลี่ยน PIN ของฉัน</span>
+      <button class="modal-close" onclick="closeModal('changePinOverlay')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:24px 28px">
+      <div class="otp-label">PIN ปัจจุบัน</div>
+      <div class="otp-row" id="cpOldRow" style="justify-content:flex-start;margin-bottom:18px"></div>
+      <div class="otp-label">PIN ใหม่ (6 หลัก)</div>
+      <div class="otp-row" id="cpNewRow" style="justify-content:flex-start;margin-bottom:6px"></div>
+      <div class="otp-label" style="margin-top:14px">ยืนยัน PIN ใหม่</div>
+      <div class="otp-row" id="cpConfRow" style="justify-content:flex-start"></div>
+      <div class="pin-err" id="cpErr" style="text-align:left;margin-top:10px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('changePinOverlay')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitChangePin()">บันทึก PIN ใหม่</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Overlay -->
+<div id="confirmOverlay">
+  <div class="confirm-card">
+    <div class="confirm-icon" id="confIcon">⚠️</div>
+    <div class="confirm-title" id="confTitle">ยืนยันการดำเนินการ</div>
+    <div class="confirm-msg" id="confMsg">คุณต้องการดำเนินการนี้ใช่หรือไม่?</div>
+    <div class="confirm-actions">
+      <button class="btn btn-outline" onclick="closeConfirm()">ยกเลิก</button>
+      <button class="btn btn-danger" id="confOkBtn" onclick="runConfirm()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════ SCRIPT ═══════════════════════════ -->
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzTDEkfDhIQfb29KIjsRxyg17csabk5VY3DOYHfd8d1R7MeJ_5t-HO1-ZCK_8UribKfZg/exec';
+
+let PIN         = '';
+let ADMIN_EMPID = '';
+let ADMIN_NAME  = '';
+let locs       = [];
+let courts     = [];
+let courtLocFilter = '';
+let courtPage      = 1;
+const COURT_PAGE_SIZE = 10;
+let holidays   = [];
+let memPage    = 1;
+const MEM_PAGE_SIZE = 50;
+let vips       = [];
+let banneds    = [];
+let members    = [];
+let sysConfigs = [];
+let confirmCallback = null;
+let editRow    = null;
+let currentSection = 'dashboard';
+
+const DAY_NAMES = ['','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์','อาทิตย์'];
+
+/* ── Thai date formatters ─────────────────────────────────── */
+const MT_S = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const MT_L = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function _parseDate(val) {
+  if (!val) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    const [y,m,d] = val.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/** "15 มิ.ย. 2569" */
+function fmtDateTH(val) {
+  const d = _parseDate(val);
+  if (!d) return val || '—';
+  return `${d.getDate()} ${MT_S[d.getMonth()]} ${d.getFullYear()+543}`;
+}
+
+/** "มิถุนายน 2569" — accepts YYYY-MM or YYYY-MM-DD or ISO */
+function fmtMonthTH(val) {
+  if (!val) return '—';
+  let d;
+  if (/^\d{4}-\d{2}$/.test(val)) {
+    const [y,m] = val.split('-').map(Number);
+    d = new Date(y, m-1, 1);
+  } else d = _parseDate(val);
+  if (!d) return val;
+  return `${MT_L[d.getMonth()]} ${d.getFullYear()+543}`;
+}
+
+/* ── API ─────────────────────────────────────────────────── */
+async function apiGet(params) {
+  const r = await fetch(API + '?' + new URLSearchParams(params));
+  return r.json();
+}
+async function apiPost(body) {
+  const r = await fetch(API, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=UTF-8'},
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+/* ── Toast ───────────────────────────────────────────────── */
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3200);
+}
+
+/* ── Confirm ─────────────────────────────────────────────── */
+function showConfirm(title, msg, okLabel, cb, icon, danger) {
+  icon  = icon  === undefined ? '⚠️'  : icon;
+  danger= danger=== undefined ? true  : danger;
+  document.getElementById('confIcon').textContent  = icon;
+  document.getElementById('confTitle').textContent = title;
+  document.getElementById('confMsg').textContent   = msg;
+  const btn = document.getElementById('confOkBtn');
+  btn.textContent = okLabel;
+  btn.className   = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+  confirmCallback = cb;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  confirmCallback = null;
+}
+function runConfirm() {
+  const cb = confirmCallback;   // save BEFORE closeConfirm nulls it
+  closeConfirm();
+  if (!cb) return;
+  try {
+    const p = cb();
+    if (p && typeof p.catch === 'function') {
+      p.catch(e => { console.error('confirm action failed:', e); toast('เกิดข้อผิดพลาด','error'); });
+    }
+  } catch(e) {
+    toast('เกิดข้อผิดพลาด','error');
+  }
+}
+
+/* ── Modal helpers ───────────────────────────────────────── */
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+
+/* ── Login ───────────────────────────────────────────────── */
+const _SK = 'badmCourt_ap';
+
+// localStorage อาจไม่ work กับ file:// protocol ใน Safari/Firefox
+// จึง write ทั้ง localStorage + sessionStorage และ read จาก fallback
+function _saveCred(pin, empId, name) {
+  const v = JSON.stringify({ pin, empId, name });
+  try { localStorage.setItem(_SK, v); }   catch(e) {}
+  try { sessionStorage.setItem(_SK, v); } catch(e) {}
+}
+function _loadCred() {
+  let v = null;
+  try { v = localStorage.getItem(_SK); }   catch(e) {}
+  if (!v) { try { v = sessionStorage.getItem(_SK); } catch(e) {} }
+  return v;
+}
+function _clearCred() {
+  try { localStorage.removeItem(_SK); }   catch(e) {}
+  try { sessionStorage.removeItem(_SK); } catch(e) {}
+}
+
+function _enterAdmin(pin, empId, name) {
+  PIN         = pin;
+  ADMIN_EMPID = empId || '';
+  ADMIN_NAME  = name  || '';
+  document.getElementById('sbAdminName').textContent  = ADMIN_NAME  || 'Administrator';
+  document.getElementById('sbAdminEmpId').textContent = ADMIN_EMPID ? `รหัส ${ADMIN_EMPID}` : 'Admin';
+  document.getElementById('pinGate').style.display    = 'none';
+  document.getElementById('adminWrap').style.display  = 'flex';
+  initAdmin();
+}
+
+/* ── OTP box builder ────────────────────────────────── */
+function _buildOtpRow(containerId, onChange) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'password'; inp.maxLength = 1; inp.className = 'otp-box';
+    inp.inputMode = 'numeric'; inp.pattern = '[0-9]';
+    inp.addEventListener('input', e => {
+      const v = e.target.value.replace(/\D/g,'');
+      e.target.value = v ? v[0] : '';
+      e.target.classList.toggle('filled', !!v);
+      if (v && i < 5) c.children[i+1].focus();
+      if (onChange) onChange();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0) {
+        const prev = c.children[i-1];
+        prev.value = ''; prev.classList.remove('filled'); prev.focus();
+      }
+      if (e.key === 'ArrowLeft'  && i > 0) c.children[i-1].focus();
+      if (e.key === 'ArrowRight' && i < 5) c.children[i+1].focus();
+    });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const digits = (e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,6);
+      [...digits].forEach((d, j) => {
+        if (c.children[j]) { c.children[j].value=d; c.children[j].classList.add('filled'); }
+      });
+      if (c.children[Math.min(digits.length,5)]) c.children[Math.min(digits.length,5)].focus();
+      if (onChange) onChange();
+    });
+    c.appendChild(inp);
+  }
+}
+
+function _getOtp(containerId) {
+  return [...document.getElementById(containerId).children].map(b=>b.value).join('');
+}
+function _clearOtp(containerId) {
+  const c = document.getElementById(containerId);
+  [...c.children].forEach(b=>{b.value='';b.classList.remove('filled');});
+}
+
+/* ── Login step control ─────────────────────────────── */
+let _loginEmpId = '', _loginName = '', _isFirstLogin = false;
+
+function goLoginStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('pinStep'+i);
+    if (el) el.classList.toggle('active', i===n);
+  });
+  document.getElementById('pinErr').textContent  = '';
+  document.getElementById('pinErr2') && (document.getElementById('pinErr2').textContent = '');
+  document.getElementById('pinErr3') && (document.getElementById('pinErr3').textContent = '');
+  if (n===1) document.getElementById('empIdInput').focus();
+  if (n===2) document.getElementById('otpRowLogin').children[0]?.focus();
+  if (n===3) document.getElementById('otpRowNew').children[0]?.focus();
+}
+
+function _checkLoginOtpFull() {
+  const full = _getOtp('otpRowLogin').length === 6;
+  document.getElementById('pinLoginBtn').disabled = !full;
+}
+function _checkSetPinFull() {
+  const n = _getOtp('otpRowNew'), c = _getOtp('otpRowConfirm');
+  document.getElementById('pinSetBtn').disabled = !(n.length===6 && c.length===6);
+}
+
+async function doCheckEmpId() {
+  const empId = document.getElementById('empIdInput').value.trim();
+  const errEl = document.getElementById('pinErr');
+  errEl.textContent = '';
+  if (!empId) { errEl.textContent = '❌ กรุณาระบุรหัสพนักงาน'; return; }
+  errEl.textContent = '⏳ กำลังตรวจสอบ…';
+  try {
+    const r = await apiPost({ action:'adminCheckEmpId', empId });
+    if (!r.ok) { errEl.textContent = '❌ ' + (r.error||'ไม่พบบัญชี admin'); return; }
+    _loginEmpId   = empId;
+    _loginName    = r.name || empId;
+    _isFirstLogin = !!r.firstLogin;
+
+    if (_isFirstLogin) {
+      // First login → step 3: set new PIN
+      document.getElementById('pinWhoName3').textContent = _loginName;
+      _buildOtpRow('otpRowNew',     _checkSetPinFull);
+      _buildOtpRow('otpRowConfirm', _checkSetPinFull);
+      goLoginStep(3);
+    } else {
+      // Has PIN → step 2: enter PIN
+      document.getElementById('pinWhoName').textContent = _loginName;
+      document.getElementById('pinWhoId').textContent   = `รหัส ${empId}`;
+      _buildOtpRow('otpRowLogin', _checkLoginOtpFull);
+      goLoginStep(2);
+    }
+  } catch(e) { errEl.textContent = 'เชื่อมต่อไม่ได้ กรุณาลองใหม่'; }
+}
+
+async function doLogin() {
+  const pin   = _getOtp('otpRowLogin');
+  const errEl = document.getElementById('pinErr2');
+  if (pin.length !== 6) { errEl.textContent = '❌ กรุณาใส่ PIN ให้ครบ 6 หลัก'; return; }
+  errEl.textContent = '⏳ กำลังตรวจสอบ…';
+  document.getElementById('pinLoginBtn').disabled = true;
+  try {
+    const r = await apiPost({ action:'adminLogin', empId:_loginEmpId, pin });
+    if (!r.ok) {
+      errEl.textContent = '❌ ' + (r.error||'PIN ไม่ถูกต้อง');
+      _clearOtp('otpRowLogin'); document.getElementById('otpRowLogin').children[0]?.focus();
+      document.getElementById('pinLoginBtn').disabled = false;
+      return;
+    }
+    _saveAndEnter(pin, _loginEmpId, r.name||_loginName);
+  } catch(e) {
+    errEl.textContent = 'เชื่อมต่อไม่ได้ กรุณาลองใหม่'; document.getElementById('pinLoginBtn').disabled = false;
+  }
+}
+
+async function doSetPin() {
+  const newPin  = _getOtp('otpRowNew');
+  const confPin = _getOtp('otpRowConfirm');
+  const errEl   = document.getElementById('pinErr3');
+  if (newPin.length !== 6)  { errEl.textContent = '❌ PIN ต้องครบ 6 หลัก'; return; }
+  if (newPin !== confPin)   { errEl.textContent = '❌ PIN ทั้งสองช่องไม่ตรงกัน'; _clearOtp('otpRowConfirm'); return; }
+  errEl.textContent = '⏳ กำลังบันทึก…';
+  document.getElementById('pinSetBtn').disabled = true;
+  try {
+    // first login → currentPin = empId
+    const r = await apiPost({ action:'adminSetPin', empId:_loginEmpId, currentPin:_loginEmpId, newPin });
+    if (!r.ok) { errEl.textContent = '❌ ' + (r.error||'ผิดพลาด'); document.getElementById('pinSetBtn').disabled=false; return; }
+    _saveAndEnter(newPin, _loginEmpId, _loginName);
+  } catch(e) { errEl.textContent = 'เชื่อมต่อไม่ได้'; document.getElementById('pinSetBtn').disabled=false; }
+}
+
+function _saveAndEnter(pin, empId, name) {
+  _saveCred(pin, empId, name);
+  _enterAdmin(pin, empId, name);
+}
+
+function doLogout() {
+  showConfirm('ออกจากระบบ','ต้องการออกจากระบบ?','ออก',()=>{
+    _stopRtPolling();
+    _clearCred();
+    location.reload();
+  },'🚪',false);
+}
+
+function tryAutoLogin() {
+  const saved = _loadCred();
+  if (!saved) return;
+  let cred;
+  try {
+    if (saved.startsWith('{')) {
+      cred = JSON.parse(saved);                          // รูปแบบใหม่: plain JSON
+    } else {
+      const raw = atob(saved);                           // รูปแบบเก่า: base64
+      cred = raw.startsWith('{') ? JSON.parse(raw) : { pin: raw };
+    }
+  } catch(e) { _clearCred(); return; }
+  if (!cred.pin || !cred.empId) { _clearCred(); return; }
+
+  // เข้าระบบทันที — ไม่ verify กับ server (ถ้า PIN ผิด API calls จะ fail เองอยู่แล้ว)
+  _enterAdmin(cred.pin, cred.empId, cred.name || '');
+}
+
+/* ── Change PIN (in-app) ────────────────────────────── */
+function openChangePinModal() {
+  _buildOtpRow('cpOldRow',  null);
+  _buildOtpRow('cpNewRow',  null);
+  _buildOtpRow('cpConfRow', null);
+  document.getElementById('cpErr').textContent = '';
+  openModal('changePinOverlay');
+  setTimeout(() => document.getElementById('cpOldRow').children[0]?.focus(), 100);
+}
+
+async function submitChangePin() {
+  const oldPin  = _getOtp('cpOldRow');
+  const newPin  = _getOtp('cpNewRow');
+  const confPin = _getOtp('cpConfRow');
+  const errEl   = document.getElementById('cpErr');
+  if (oldPin.length  !== 6) { errEl.textContent = '❌ กรุณาใส่ PIN ปัจจุบันให้ครบ'; return; }
+  if (newPin.length  !== 6) { errEl.textContent = '❌ กรุณาใส่ PIN ใหม่ให้ครบ'; return; }
+  if (newPin !== confPin)   { errEl.textContent = '❌ PIN ใหม่ทั้งสองช่องไม่ตรงกัน'; _clearOtp('cpConfRow'); return; }
+  errEl.textContent = '⏳ กำลังบันทึก…';
+  try {
+    const r = await apiPost({ action:'adminSetPin', empId:ADMIN_EMPID, currentPin:oldPin, newPin });
+    if (!r.ok) { errEl.textContent = '❌ ' + (r.error||'ผิดพลาด'); return; }
+    // Update stored credential
+    PIN = newPin;
+    _saveCred(newPin, ADMIN_EMPID, ADMIN_NAME);
+    toast('เปลี่ยน PIN สำเร็จ ✓', 'success');
+    closeModal('changePinOverlay');
+  } catch(e) { errEl.textContent = 'เชื่อมต่อไม่ได้'; }
+}
+
+/* ── Navigation ──────────────────────────────────────────── */
+const TITLES = {
+  'dashboard'  : ['Dashboard','ภาพรวมระบบจองสนามแบดมินตัน'],
+  'bookings'   : ['รายการจอง','จัดการการจองทุกสถานที่'],
+  'loc-cfg'    : ['ตั้งค่าสถานที่','location_config'],
+  'court-cfg'  : ['ตั้งค่าสนาม','court_config'],
+  'sys-cfg'    : ['ตั้งค่าทั่วไป','system_config'],
+  'holiday-cfg': ['วันหยุด','holiday_config'],
+  'vip-cfg'    : ['VIP','vip_config'],
+  'banned'     : ['แบนพนักงาน','banned_users'],
+  'members'    : ['สมาชิก','member'],
+};
+
+function nav(sec) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('sec-' + sec);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navEl = [...document.querySelectorAll('.nav-item')].find(n => n.getAttribute('onclick') === `nav('${sec}')`);
+  if (navEl) navEl.classList.add('active');
+  const t = TITLES[sec] || [sec,''];
+  document.getElementById('topbarTitle').textContent = t[0];
+  document.getElementById('topbarSub').textContent   = t[1];
+  currentSection = sec;
+  loadSection(sec);
+}
+
+function refreshCurrent() { loadSection(currentSection); }
+
+/* ── Court Heatmap ───────────────────────────────────────── */
+function onHmPreset() {
+  const v = document.getElementById('hmPreset').value;
+  const cr = document.getElementById('hmCustomRange');
+  cr.style.display = v === 'custom' ? 'flex' : 'none';
+  if (v !== 'custom') loadHeatmap();
+}
+
+function _hmDateRange() {
+  const preset = document.getElementById('hmPreset').value;
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  if (preset === 'custom') {
+    return { dateFrom: document.getElementById('hmFrom').value, dateTo: document.getElementById('hmTo').value };
+  }
+  if (preset === 'all') return { dateFrom: '', dateTo: '' };
+  if (preset === 'month') {
+    const f = new Date(now.getFullYear(), now.getMonth(), 1);
+    const t = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    return { dateFrom: fmt(f), dateTo: fmt(t) };
+  }
+  if (preset === '3month') {
+    const f = new Date(now.getFullYear(), now.getMonth()-2, 1);
+    return { dateFrom: fmt(f), dateTo: fmt(now) };
+  }
+  if (preset === 'year') {
+    return { dateFrom: `${now.getFullYear()}-01-01`, dateTo: `${now.getFullYear()}-12-31` };
+  }
+  return { dateFrom: '', dateTo: '' };
+}
+
+function _hmColor(count, maxCount) {
+  if (!count) return { bg:'#f9fafb', fg:'#d1d5db' };
+  const ratio = maxCount > 0 ? count / maxCount : 0;
+  // 5-step green scale
+  if (ratio < 0.2) return { bg:'#dcfce7', fg:'#166534' };
+  if (ratio < 0.4) return { bg:'#86efac', fg:'#14532d' };
+  if (ratio < 0.6) return { bg:'#22c55e', fg:'#fff' };
+  if (ratio < 0.8) return { bg:'#16a34a', fg:'#fff' };
+  return { bg:'#14532d', fg:'#fff' };
+}
+
+async function loadHeatmap() {
+  const wrap = document.getElementById('hmWrap');
+  wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400)">⏳ กำลังโหลด…</div>';
+  document.getElementById('hmLegend').style.display = 'none';
+
+  const locId = document.getElementById('hmLocId')?.value || '';
+  const { dateFrom, dateTo } = _hmDateRange();
+
+  try {
+    const r = await apiGet({ action:'adminGetHeatmap', pin:PIN, locId, dateFrom, dateTo });
+    if (!r.ok) { wrap.innerHTML = `<div style="padding:40px;text-align:center;color:var(--red-600)">${esc(r.error)}</div>`; return; }
+
+    const { agg, courts, times } = r;
+    if (!courts.length || !times.length) {
+      wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400)">ไม่มีข้อมูลการจองในช่วงเวลานี้</div>';
+      return;
+    }
+
+    // หา max count
+    const counts = Object.values(agg);
+    const maxCount = counts.length ? Math.max(...counts) : 1;
+    const total    = counts.reduce((s,v) => s+v, 0);
+
+    // สร้าง table
+    let html = '<table class="hm-table"><thead><tr><th style="position:sticky;left:0;z-index:3;background:var(--gray-50)">สนาม \\ เวลา</th>';
+    times.forEach(t => { html += `<th>${esc(t)}</th>`; });
+    html += '</tr></thead><tbody>';
+
+    courts.forEach(court => {
+      html += `<tr><td class="hm-label">${esc(court)}</td>`;
+      times.forEach(time => {
+        const key   = court + '|||' + time;
+        const count = agg[key] || 0;
+        const { bg, fg } = _hmColor(count, maxCount);
+        const title = `${court} | ${time}: ${count} ครั้ง`;
+        html += `<td class="hm-cell" style="background:${bg}" title="${title}">
+          <div class="hm-cell-inner" style="color:${fg}">${count || ''}</div>
+        </td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    wrap.innerHTML = html;
+    const leg = document.getElementById('hmLegend');
+    leg.style.display = 'flex';
+    document.getElementById('hmTotal').textContent = `รวม ${total.toLocaleString()} การจอง`;
+  } catch(e) {
+    wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400)">เชื่อมต่อไม่ได้</div>';
+  }
+}
+
+function loadSection(sec) {
+  switch(sec) {
+    case 'dashboard'  : loadDashboard(); break;
+    case 'bookings'   : /* table moved to dashboard */ break;
+    case 'loc-cfg'    : loadLocCfg(); break;
+    case 'court-cfg'  : loadCourtCfg(); break;
+    case 'sys-cfg'    : loadSysCfg(); break;
+    case 'holiday-cfg': loadHolidayCfg(); break;
+    case 'vip-cfg'    : loadVipCfg(); break;
+    case 'banned'     : loadBanned(); break;
+    case 'members'    : loadMembers(); break;
+    case 'heatmap'    : loadHeatmap(); break;
+  }
+}
+
+/* ── Init ────────────────────────────────────────────────── */
+async function initAdmin() {
+  try {
+    const r = await apiGet({ action:'getAdminLocations', pin:PIN });
+    if (r.ok) { locs = r.locations; populateLocDropdowns(); }
+  } catch(e) {}
+  initFlatpickr();
+  loadDashboard();
+  _startRtPolling();
+}
+
+/* ── Sidebar toggle ──────────────────────────────────────── */
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('sb-open');
+  document.getElementById('sbOverlay').classList.toggle('sb-open');
+}
+
+/* ── Flatpickr Thai BE ───────────────────────────────────── */
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                     'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function initFlatpickr() {
+  const baseLocale = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ['อา','จ','อ','พ','พฤ','ศ','ส'],
+      longhand:  ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์']
+    },
+    months: { shorthand: THAI_MONTHS, longhand: THAI_MONTHS }
+  };
+
+  // Date picker
+  document.querySelectorAll('.fp-date').forEach(el => {
+    if (el._flatpickr) return;
+    flatpickr(el, {
+      dateFormat: 'Y-m-d', altInput: true, altFormat: 'j F Y',
+      disableMobile: true, allowInput: false, locale: baseLocale,
+      onReady(d,s,fp){ patchBEYear(fp); },
+      onOpen(d,s,fp){  patchBEYear(fp); },
+      onChange(d,s,fp){
+        if (d[0]) fp.altInput.value = `${d[0].getDate()} ${THAI_MONTHS[d[0].getMonth()]} ${d[0].getFullYear()+543}`;
+        // VIP date changed → reset court/time, reload filtered list
+        if (fp.input && fp.input.id === 'fVipDate') {
+          document.getElementById('fVipCourt').value = '';
+          document.getElementById('fVipTime').value  = '';
+          refreshVipCourtList();
+          refreshVipTimeList('');
+        }
+      },
+      onMonthChange(d,s,fp){ patchBEYear(fp); },
+      onYearChange(d,s,fp){   patchBEYear(fp); }
+    });
+  });
+
+  // (fp-month removed — TARGET_MONTH now uses a <select> built by buildTargetMonthOptions)
+}
+
+function patchBEYear(fp) {
+  if (!fp.calendarContainer) return;
+  const yInput = fp.calendarContainer.querySelector('.numInput.cur-year');
+  if (!yInput) return;
+
+  // Always sync display from fp.currentYear (CE) → BE
+  yInput.value = fp.currentYear + 543;
+
+  if (!yInput._bePatch) {
+    yInput._bePatch = true;
+
+    // Intercept year ▲▼ arrow clicks BEFORE flatpickr reads the (BE) value and
+    // treats it as a CE year — causing the internal year to jump far into the future.
+    const wrapper = yInput.closest('.numInputWrapper') || yInput.parentElement;
+    if (wrapper) {
+      wrapper.addEventListener('mousedown', function(e) {
+        const isUp   = e.target.classList.contains('arrowUp');
+        const isDown = e.target.classList.contains('arrowDown');
+        if (!isUp && !isDown) return;
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        fp.changeYear(fp.currentYear + (isUp ? 1 : -1));
+      }, { capture: true });
+    }
+
+    // Block flatpickr's own 'input' listener (it reads BE value as CE year)
+    yInput.addEventListener('input', function(e) {
+      e.stopImmediatePropagation();
+    }, { capture: true });
+
+    // Our own 'change': user typed a BE year manually → convert to CE
+    yInput.addEventListener('change', function(e) {
+      e.stopImmediatePropagation();
+      const v = parseInt(this.value);
+      if (v > 2400) fp.changeYear(v - 543);
+    }, { capture: true });
+  }
+}
+
+function setDateVal(id, val) {
+  const el = document.getElementById(id); if (!el) return;
+  const fp = el._flatpickr;
+  if (fp) {
+    fp.setDate(val || '', false); // false = don't trigger onChange (avoids side-effects)
+    // Sync hidden input manually — altInput:true sometimes skips this
+    if (val) {
+      el.value = val;
+      if (fp.selectedDates && fp.selectedDates.length > 0 && fp.altInput) {
+        const d = fp.selectedDates[0];
+        fp.altInput.value = `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()+543}`;
+      } else if (fp.altInput) {
+        // setDate succeeded visually but selectedDates still empty — force altInput manually
+        const parts = val.split('-');
+        if (parts.length === 3) {
+          const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+          fp.altInput.value = `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()+543}`;
+        }
+      }
+    } else {
+      el.value = '';
+      if (fp.altInput) fp.altInput.value = '';
+    }
+  } else {
+    el.value = val || '';
+  }
+}
+function getDateVal(id) {
+  const el = document.getElementById(id); if (!el) return '';
+  const fp = el._flatpickr;
+  if (fp) {
+    // Primary: read from selectedDates
+    if (fp.selectedDates && fp.selectedDates.length > 0) {
+      const d = fp.selectedDates[0];
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    // Fallback: hidden input value (set by flatpickr or setDateVal)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(el.value)) return el.value;
+    return '';
+  }
+  return el.value || '';
+}
+
+/* ── QR Code ─────────────────────────────────────────────── */
+let _qrLocId = '', _qrInstance = null;
+
+function openQRModal(locId, locNameStr) {
+  _qrLocId = locId;
+  document.getElementById('qrLocNameDisplay').textContent = locNameStr;
+  const base = window.location.href.replace(/[^/]*$/, 'index.html');
+  const url  = `${base}?loc=${encodeURIComponent(locId)}`;
+  document.getElementById('qrUrlDisplay').textContent = url;
+  const container = document.getElementById('qrContainer');
+  container.innerHTML = '';
+  _qrInstance = null;
+  if (typeof QRCode !== 'undefined') {
+    _qrInstance = new QRCode(container, {
+      text: url, width: 220, height: 220,
+      colorDark: '#111111', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } else {
+    container.innerHTML = '<p style="color:var(--red)">โหลด QRCode library ไม่ได้</p>';
+  }
+  openModal('qrOverlay');
+}
+
+function printQR() {
+  const canvas = document.querySelector('#qrContainer canvas');
+  const url = document.getElementById('qrUrlDisplay').textContent;
+  const name = document.getElementById('qrLocNameDisplay').textContent;
+  const img = canvas ? canvas.toDataURL() : '';
+  const w = window.open('');
+  w.document.write(`<html><head><title>QR Check-in</title></head><body style="text-align:center;font-family:sans-serif;padding:40px">
+    <h2 style="font-size:20px">QR Check-in</h2>
+    <h3 style="font-size:16px;color:#555">${name}</h3>
+    ${img ? `<img src="${img}" style="width:240px;height:240px;display:block;margin:16px auto"/>` : ''}
+    <p style="font-size:11px;color:#888;margin-top:12px;word-break:break-all">${url}</p>
+  </body></html>`);
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 400);
+}
+
+function downloadQR() {
+  const canvas = document.querySelector('#qrContainer canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `qr-checkin-${_qrLocId}.png`;
+  a.click();
+}
+
+function populateLocDropdowns() {
+  const ids = ['bkFLoc','holFLoc','vipFLoc','fHolLoc','fCourtLoc','fVipLoc','hmLocId'];
+  ids.forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    const first = el.options[0] ? el.options[0].cloneNode(true) : null;
+    el.innerHTML = '';
+    if (first) el.appendChild(first);
+    locs.forEach(l => {
+      const o = document.createElement('option');
+      o.value = l.locId; o.textContent = l.shortName || l.name;
+      el.appendChild(o);
+    });
+  });
+  populateCourtBadges();
+}
+
+function locName(id) {
+  const l = locs.find(x => x.locId === id);
+  return l ? (l.shortName || l.name) : (id || '—');
+}
+
+/* ── Dashboard ───────────────────────────────────────────── */
+async function loadDashboard() {
+  try {
+    const r = await apiGet({ action:'adminStats', pin:PIN });
+    if (r.ok) {
+      document.getElementById('dTotal').textContent   = r.totalBookings;
+      document.getElementById('dBanned').textContent  = r.totalBanned;
+      document.getElementById('dLocCount').textContent= locs.filter(l=>l.active!=='0').length;
+      document.getElementById('dMonth').textContent   = fmtMonthTH(r.targetMonth);
+      document.getElementById('dTargetM').textContent = fmtMonthTH(r.targetMonth);
+      document.getElementById('targetMonthDisplay').textContent = fmtMonthTH(r.targetMonth);
+      const locCards = document.getElementById('dashLocCards');
+      locCards.innerHTML = (r.byLocation||[]).map(l =>
+        `<div class="loc-card">
+          <div class="loc-card-name"><img src="https://cdn-icons-gif.flaticon.com/11201/11201834.gif" style="width:16px;height:16px;vertical-align:middle;margin-right:4px" alt="pin">${esc(l.name)}</div>
+          <div class="loc-card-count">${l.count}</div>
+          <div class="loc-card-lbl">การจองเดือนนี้</div>
+        </div>`
+      ).join('') || '<div style="color:var(--gray-400);font-size:13px">ยังไม่มีข้อมูล</div>';
+    }
+  } catch(e) { toast('โหลด Dashboard ไม่ได้','error'); }
+
+  // Load full bookings table (defined below)
+  loadBookings();
+}
+
+/* ── Bookings (now lives in Dashboard) ───────────────────── */
+const _BK_PER_PAGE = 20;
+let _bkAllData     = [];
+let _bkPage        = 1;
+let _bkFetchTimer  = null;
+let _bkStatusFilter = '';          // '', 'pending', 'checked_in', 'noshow'
+let _bkSelected    = new Set();    // booking IDs currently checked
+
+function _bkFilter() {
+  clearTimeout(_bkFetchTimer);
+  _bkFetchTimer = setTimeout(loadBookings, 300);
+}
+
+async function loadBookings() {
+  const loc  = document.getElementById('bkFLoc').value;
+  const date = document.getElementById('bkFDate').value;
+  const emp  = document.getElementById('bkFEmp').value.trim();
+  const p    = { action:'adminGetAll', pin:PIN };
+  if (loc)  p.locId = loc;
+  if (date) p.date  = date;
+  if (emp)  p.empId = emp;
+  const tb = document.getElementById('bkTbl');
+  tb.innerHTML = '<tr><td colspan="13" class="tbl-loading">กำลังโหลด…</td></tr>';
+  document.getElementById('bkPager').style.display = 'none';
+  document.getElementById('bkTotalLbl').textContent = '';
+  try {
+    const r = await apiGet(p);
+    if (!r.ok) { tb.innerHTML = `<tr><td colspan="13" class="tbl-empty">${esc(r.error)}</td></tr>`; return; }
+    _bkAllData = r.bookings || [];
+    _bkSelected.clear();
+    _bkPage = 1;
+    _renderBkPage();
+  } catch(e) { tb.innerHTML = '<tr><td colspan="13" class="tbl-empty">เกิดข้อผิดพลาด</td></tr>'; }
+}
+
+function _bkGetFiltered() {
+  return _bkStatusFilter
+    ? _bkAllData.filter(b => (b.checkinStatus||'pending') === _bkStatusFilter)
+    : _bkAllData;
+}
+
+function _bkSetStatus(s) {
+  _bkStatusFilter = s;
+  _bkSelected.clear();
+  _bkPage = 1;
+  document.querySelectorAll('.status-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.s === s));
+  _renderBkPage();
+}
+
+function _bkToggle(id, checked) {
+  if (checked) _bkSelected.add(id); else _bkSelected.delete(id);
+  _bkUpdateBulkBar(); _bkSyncChkAll();
+}
+
+function _bkToggleAll(checked) {
+  const slice = _bkGetFiltered().slice((_bkPage-1)*_BK_PER_PAGE, _bkPage*_BK_PER_PAGE);
+  slice.forEach(b => { if (checked) _bkSelected.add(b.id); else _bkSelected.delete(b.id); });
+  document.querySelectorAll('.bk-chk').forEach(c => c.checked = checked);
+  _bkUpdateBulkBar();
+}
+
+function _bkClearSel() {
+  _bkSelected.clear();
+  document.querySelectorAll('.bk-chk').forEach(c => c.checked = false);
+  const ca = document.getElementById('bkChkAll'); if (ca) ca.checked = false;
+  _bkUpdateBulkBar();
+}
+
+function _bkSyncChkAll() {
+  const slice = _bkGetFiltered().slice((_bkPage-1)*_BK_PER_PAGE, _bkPage*_BK_PER_PAGE);
+  const allChk = slice.length > 0 && slice.every(b => _bkSelected.has(b.id));
+  const el = document.getElementById('bkChkAll'); if (el) el.checked = allChk;
+}
+
+function _bkUpdateBulkBar() {
+  const bar = document.getElementById('bkBulkBar'); if (!bar) return;
+  const n = _bkSelected.size;
+  const pendingN = [..._bkSelected].filter(id => {
+    const b = _bkAllData.find(x => x.id === id);
+    return b && (b.checkinStatus||'pending') === 'pending';
+  }).length;
+  if (n > 0) {
+    bar.classList.add('show');
+    document.getElementById('bkBulkLbl').textContent =
+      `เลือก ${n} รายการ${pendingN !== n ? ` · รอเช็คอิน ${pendingN} รายการ` : ''}`;
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+async function bulkCheckin() {
+  const pendingIds = [..._bkSelected].filter(id => {
+    const b = _bkAllData.find(x => x.id === id);
+    return b && (b.checkinStatus||'pending') === 'pending';
+  });
+  if (!pendingIds.length) { toast('ไม่มีรายการที่รอเช็คอิน','error'); return; }
+  showConfirm('Bulk Check-in', `เช็คอิน ${pendingIds.length} รายการ?`, 'ยืนยัน', async () => {
+    let ok = 0, fail = 0;
+    for (const id of pendingIds) {
+      try {
+        const r = await apiPost({ action:'adminCheckin', pin:PIN, bookingId:id });
+        if (r.ok) ok++; else fail++;
+      } catch { fail++; }
+    }
+    toast(`เช็คอินสำเร็จ ${ok} รายการ${fail ? ` · ผิดพลาด ${fail}` : ''}`, ok?'success':'error');
+    _bkSelected.clear();
+    loadBookings();
+  });
+}
+
+function _renderBkPage() {
+  const filtered = _bkGetFiltered();
+  const total    = filtered.length;
+  const allTotal = _bkAllData.length;
+  const pages = Math.max(1, Math.ceil(total / _BK_PER_PAGE));
+  if (_bkPage > pages) _bkPage = pages;
+  const start = (_bkPage - 1) * _BK_PER_PAGE;
+  const slice = filtered.slice(start, start + _BK_PER_PAGE);
+  const tb    = document.getElementById('bkTbl');
+
+  tb.innerHTML = slice.length ? slice.map(b => {
+    const ci = b.checkinStatus || 'pending';
+    const ciBadge = ci === 'checked_in' ? '<span class="badge badge-green">เช็คอินแล้ว</span>'
+                  : ci === 'noshow'     ? '<span class="badge badge-red">No-show</span>'
+                  :                       '<span class="badge badge-gray">รอเช็คอิน</span>';
+    const ciBtn = ci === 'pending'
+      ? `<button class="btn btn-outline btn-sm" title="เช็คอินแทนให้"
+             style="color:#059669;border-color:#059669;font-size:11px;padding:2px 7px"
+             onclick="confirmAdminCheckin('${ea(b.id)}','${ea(b.name)}')">✓</button>`
+      : '';
+    const chk = _bkSelected.has(b.id) ? 'checked' : '';
+    return `<tr>
+      <td style="text-align:center"><input type="checkbox" class="bk-chk" data-id="${ea(b.id)}" ${chk}
+          onchange="_bkToggle('${ea(b.id)}',this.checked)"
+          style="cursor:pointer;width:15px;height:15px;accent-color:var(--brand)"></td>
+      <td><code style="font-size:11px">${esc(b.id)}</code></td>
+      <td>${esc(b.empId)}</td>
+      <td>${esc(b.name)}</td>
+      <td><small>${esc(b.phone||'—')}</small></td>
+      <td><small>${esc(b.email||'—')}</small></td>
+      <td><small>${esc(b.dept||'')}</small></td>
+      <td><span class="badge badge-brand">${esc(locName(b.locId))}</span></td>
+      <td>${fmtDateTH(b.date)}</td>
+      <td>${esc(b.court)}</td>
+      <td>${esc(b.time)}</td>
+      <td>${ciBadge}</td>
+      <td style="white-space:nowrap">
+        ${ciBtn}
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)"
+            onclick="confirmCancelBk('${ea(b.id)}','${ea(b.name)}')"><img src="https://cdn-icons-gif.flaticon.com/11186/11186844.gif" style="width:16px;height:16px;vertical-align:middle" alt="delete"></button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="13" class="tbl-empty">${_bkStatusFilter?'ไม่มีรายการสถานะนี้':'ไม่พบรายการ'}</td></tr>`;
+
+  // Sync select-all & bulk bar
+  _bkSyncChkAll();
+  _bkUpdateBulkBar();
+
+  // Total label (show filtered vs total if filter active)
+  document.getElementById('bkTotalLbl').textContent =
+    allTotal ? (_bkStatusFilter ? `${total} / ${allTotal} รายการ` : `ทั้งหมด ${allTotal} รายการ`) : '';
+  _renderBkChart();
+
+  // Pagination
+  const pager = document.getElementById('bkPager');
+  if (pages <= 1) { pager.style.display = 'none'; return; }
+  pager.style.display = 'flex';
+  document.getElementById('bkPageInfo').textContent =
+    `หน้า ${_bkPage} / ${pages} · แสดง ${start + 1}–${Math.min(start + _BK_PER_PAGE, total)} จาก ${total} รายการ`;
+
+  // Page buttons (max 7 visible with ellipsis)
+  const btns = [];
+  const btn = (p, label, active) =>
+    `<button class="pager-btn${active?' active':''}" onclick="_bkGoPage(${p})">${label}</button>`;
+  const ellipsis = () => `<span style="padding:0 2px;color:var(--gray-400);font-size:13px">…</span>`;
+
+  if (pages <= 7) {
+    for (let i = 1; i <= pages; i++) btns.push(btn(i, i, i === _bkPage));
+  } else {
+    btns.push(btn(1, 1, _bkPage === 1));
+    if (_bkPage > 3) btns.push(ellipsis());
+    for (let i = Math.max(2, _bkPage - 1); i <= Math.min(pages - 1, _bkPage + 1); i++)
+      btns.push(btn(i, i, i === _bkPage));
+    if (_bkPage < pages - 2) btns.push(ellipsis());
+    btns.push(btn(pages, pages, _bkPage === pages));
+  }
+
+  document.getElementById('bkPageBtns').innerHTML =
+    `<button class="pager-btn" onclick="_bkGoPage(${_bkPage-1})" ${_bkPage===1?'disabled':''}>‹</button>` +
+    btns.join('') +
+    `<button class="pager-btn" onclick="_bkGoPage(${_bkPage+1})" ${_bkPage===pages?'disabled':''}>›</button>`;
+}
+
+function _bkGoPage(p) {
+  const pages = Math.ceil(_bkAllData.length / _BK_PER_PAGE);
+  if (p < 1 || p > pages) return;
+  _bkPage = p;
+  _renderBkPage();
+  document.getElementById('bkTbl').closest('.tbl-wrap')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function confirmCancelBk(id, name) {
+  showConfirm('ยกเลิกการจอง',`ยกเลิกของ "${name}"?`,'ยกเลิกการจอง', async()=>{
+    try {
+      const r = await apiPost({ action:'adminCancel', pin:PIN, bookingId:id });
+      r.ok ? (toast('ยกเลิกสำเร็จ','success'), loadBookings()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  });
+}
+
+function confirmAdminCheckin(id, name) {
+  showConfirm('เช็คอินแทน',`เช็คอินให้ "${name}" โดย admin?`,'ยืนยันเช็คอิน', async()=>{
+    try {
+      const r = await apiPost({ action:'adminCheckin', pin:PIN, bookingId:id });
+      r.ok ? (toast('เช็คอินสำเร็จ ✓','success'), loadBookings()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  });
+}
+
+function exportBkCsv() {
+  if (!_bkAllData.length) { toast('ไม่มีข้อมูลที่จะส่งออก','error'); return; }
+  const BOM = '﻿';
+  const hdrs = ['Booking ID','รหัสพนักงาน','ชื่อ-นามสกุล','เบอร์','Email','สังกัด','สถานที่','วันที่','คอร์ท','เวลา','Check-in'];
+  const rows = _bkAllData.map(b => [
+    b.id, b.empId, b.name, b.phone||'', b.email||'', b.dept||'',
+    locName(b.locId), b.date, b.court, b.time,
+    b.checkinStatus === 'checked_in' ? 'เช็คอินแล้ว' : b.checkinStatus === 'noshow' ? 'No-show' : 'รอเช็คอิน'
+  ]);
+  const csv = BOM + [hdrs, ...rows].map(r =>
+    r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8;' })),
+    download: `bookings_${new Date().toISOString().slice(0,10)}.csv`
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+  toast(`ส่งออก ${_bkAllData.length} รายการ ✓`, 'success');
+}
+
+let _bkChartInst = null;
+function _renderBkChart() {
+  const card   = document.getElementById('bkChartCard');
+  const canvas = document.getElementById('bkChartCanvas');
+  if (!card || !canvas || typeof Chart === 'undefined') return;
+
+  // Group by วันที่บันทึก (transaction date) — extracted from booking ID (BK + timestamp ms)
+  const counts = {};
+  _bkAllData.forEach(b => {
+    const ts = parseInt((b.id || '').replace('BK', ''));
+    if (isNaN(ts) || ts < 1_000_000_000_000) return; // guard: not a valid epoch ms
+    const d = new Date(ts);
+    // Format as local YYYY-MM-DD (browser timezone — Thailand UTC+7)
+    const created = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    counts[created] = (counts[created] || 0) + 1;
+  });
+  const dates = Object.keys(counts).sort();
+
+  if (dates.length < 1) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  document.getElementById('bkChartLbl').textContent = `${dates.length} วัน · ${_bkAllData.length} รายการ (วันที่บันทึก)`;
+
+  const TH_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const TH_MONTHS_FULL  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                            'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+  // x-axis tick: "14 มิ.ย." — short form for axis
+  // tooltip title: "วันที่ 14 มิถุนายน 2568"
+  const labels = dates.map(d => {
+    const [,m,dd] = d.split('-');
+    return `${parseInt(dd)} ${TH_MONTHS_SHORT[parseInt(m)-1]}`;
+  });
+  const data = dates.map(d => counts[d]);
+
+  // point styles (circle, triangle, rect, star, cross…) — cycle for variety
+  const POINT_STYLES = ['circle','triangle','rectRot','star','crossRot'];
+  const pointStyles  = data.map((_, i) => POINT_STYLES[i % POINT_STYLES.length]);
+  const maxVal       = Math.max(...data, 1);
+
+  if (_bkChartInst) _bkChartInst.destroy();
+  _bkChartInst = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'การจอง',
+        data,
+        borderColor:           'rgba(21,128,61,0.9)',
+        borderWidth:            2.5,
+        backgroundColor:        'rgba(21,128,61,0.08)',
+        fill:                   true,
+        tension:                0.35,
+        pointStyle:             pointStyles,
+        pointRadius:            6,
+        pointHoverRadius:       9,
+        pointBackgroundColor:   data.map(v => v === maxVal ? '#f59e0b' : 'rgba(21,128,61,0.85)'),
+        pointBorderColor:       data.map(v => v === maxVal ? '#d97706' : 'rgba(21,128,61,1)'),
+        pointBorderWidth:       2,
+        pointHoverBackgroundColor: '#f59e0b',
+        pointHoverBorderColor:  '#d97706',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 700, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: items => {
+              const d = dates[items[0].dataIndex];
+              const [y,m,dd] = d.split('-');
+              return `วันที่ ${parseInt(dd)} ${TH_MONTHS_FULL[parseInt(m)-1]} ${parseInt(y)+543}`;
+            },
+            label: c => `  จอง ${c.parsed.y} รายการ`
+          },
+          backgroundColor: 'rgba(15,23,42,0.85)',
+          padding: 10, cornerRadius: 8,
+          titleFont: { size: 12, family: 'Sarabun' },
+          bodyFont:  { size: 12, family: 'Sarabun' },
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, font: { size: 11, family: 'Sarabun' } },
+          grid: { color: 'rgba(0,0,0,.06)' }
+        },
+        x: {
+          ticks: {
+            font: { size: 10, family: 'Sarabun' },
+            maxRotation: 40,
+            callback: function(val, i) { return labels[i]; }
+          },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+/* ── Location Config ─────────────────────────────────────── */
+async function loadLocCfg() {
+  const tb = document.getElementById('locTbl');
+  tb.innerHTML = '<tr><td colspan="7" class="tbl-loading">กำลังโหลด…</td></tr>';
+  try {
+    const r = await apiGet({ action:'getAdminLocations', pin:PIN });
+    if (!r.ok) { tb.innerHTML = `<tr><td colspan="7" class="tbl-empty">${esc(r.error)}</td></tr>`; return; }
+    locs = r.locations; populateLocDropdowns(); renderLocTbl();
+  } catch(e) { tb.innerHTML = '<tr><td colspan="7" class="tbl-empty">เกิดข้อผิดพลาด</td></tr>'; }
+}
+
+function renderLocTbl() {
+  const tb = document.getElementById('locTbl');
+  tb.innerHTML = locs.length ? locs.map(l =>
+    `<tr>
+      <td><code>${esc(l.locId)}</code></td>
+      <td><strong>${esc(l.name)}</strong></td>
+      <td>${esc(l.shortName)}</td>
+      <td><small style="color:var(--gray-500)">${esc(l.address)}</small></td>
+      <td><small style="color:var(--gray-400)">${esc(l.lat)}, ${esc(l.lng)}</small></td>
+      <td>${l.active!=='0' ? '<span class="badge badge-green">เปิดใช้งาน</span>' : '<span class="badge badge-gray">ปิดใช้งาน</span>'}</td>
+      <td class="action-btns">
+        <button class="btn btn-primary btn-sm" onclick="openQRModal('${ea(l.locId)}','${ea(l.name)}')">QR</button>
+        <button class="btn btn-outline btn-sm" onclick="editLocModal('${ea(l.locId)}')"><img src="https://cdn-icons-gif.flaticon.com/8800/8800862.gif" style="width:14px;height:14px;vertical-align:middle;margin-right:3px" alt="edit">แก้ไข</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmDeleteLoc('${ea(l.locId)}','${ea(l.name)}')"><img src="https://cdn-icons-gif.flaticon.com/11186/11186844.gif" style="width:14px;height:14px;vertical-align:middle" alt="delete"></button>
+      </td>
+    </tr>`
+  ).join('') : '<tr><td colspan="7" class="tbl-empty">ยังไม่มีข้อมูล</td></tr>';
+}
+
+function openLocModal() {
+  editRow = null;
+  document.getElementById('locModalTitle').textContent = 'เพิ่มสถานที่';
+  document.getElementById('fLocId').disabled = false;
+  ['fLocId','fLocShort','fLocName','fLocAddr','fLocLat','fLocLng','fLocCheckinRadius'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('fLocActive').checked = true;
+  openModal('locOverlay');
+}
+
+function editLocModal(locId) {
+  const l = locs.find(x => x.locId === locId); if(!l) return;
+  editRow = locId;
+  document.getElementById('locModalTitle').textContent = 'แก้ไขสถานที่';
+  document.getElementById('fLocId').value    = l.locId;
+  document.getElementById('fLocId').disabled = true;
+  document.getElementById('fLocName').value  = l.name;
+  document.getElementById('fLocShort').value = l.shortName;
+  document.getElementById('fLocAddr').value  = l.address;
+  document.getElementById('fLocLat').value   = l.lat;
+  document.getElementById('fLocLng').value   = l.lng;
+  document.getElementById('fLocCheckinRadius').value = l.checkinRadius || '';
+  document.getElementById('fLocActive').checked = l.active !== '0';
+  openModal('locOverlay');
+}
+
+async function submitLocModal() {
+  const d = {
+    action:        'saveLocation', pin: PIN,
+    locId:         document.getElementById('fLocId').value.trim(),
+    name:          document.getElementById('fLocName').value.trim(),
+    shortName:     document.getElementById('fLocShort').value.trim(),
+    address:       document.getElementById('fLocAddr').value.trim(),
+    lat:           document.getElementById('fLocLat').value.trim(),
+    lng:           document.getElementById('fLocLng').value.trim(),
+    active:        document.getElementById('fLocActive').checked ? '1' : '0',
+    checkinRadius: document.getElementById('fLocCheckinRadius').value.trim(),
+  };
+  if (!d.locId || !d.name) { toast('กรุณากรอก locId และชื่อ','error'); return; }
+  try {
+    const r = await apiPost(d);
+    r.ok ? (toast('บันทึกสำเร็จ','success'), closeModal('locOverlay'), loadLocCfg())
+         : toast('ผิดพลาด: '+r.error,'error');
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+function confirmDeleteLoc(locId, name) {
+  showConfirm('ลบสถานที่',`ลบ "${name}"?`,'ลบ', async()=>{
+    try {
+      const r = await apiPost({ action:'deleteLocation', pin:PIN, locId });
+      r.ok ? (toast('ลบสำเร็จ','success'), loadLocCfg()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  });
+}
+
+/* ── Court Config ────────────────────────────────────────── */
+async function loadCourtCfg() {
+  const tb = document.getElementById('courtTbl');
+  tb.innerHTML = '<tr><td colspan="6" class="tbl-loading">กำลังโหลด…</td></tr>';
+  try {
+    const r = await apiGet({ action:'getCourtConfigs', pin:PIN });
+    if (!r.ok) { tb.innerHTML = `<tr><td colspan="6" class="tbl-empty">${esc(r.error)}</td></tr>`; return; }
+    courts = r.courts; renderCourtTbl();
+  } catch(e) { tb.innerHTML = '<tr><td colspan="6" class="tbl-empty">เกิดข้อผิดพลาด</td></tr>'; }
+}
+
+function setCourtLocFilter(el) {
+  courtLocFilter = el.dataset.loc;
+  courtPage = 1;
+  document.querySelectorAll('#courtLocBadges .loc-badge').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderCourtTbl();
+}
+
+function populateCourtBadges() {
+  const container = document.getElementById('courtLocBadges');
+  if (!container) return;
+  container.innerHTML =
+    `<button class="loc-badge ${courtLocFilter===''?'active':''}" data-loc="" onclick="setCourtLocFilter(this)">ทุกสถานที่</button>` +
+    locs.map(l =>
+      `<button class="loc-badge ${courtLocFilter===l.locId?'active':''}" data-loc="${l.locId}" onclick="setCourtLocFilter(this)">${esc(l.shortName||l.name)}</button>`
+    ).join('');
+}
+
+function renderCourtTbl() {
+  const tb    = document.getElementById('courtTbl');
+  const list  = courtLocFilter ? courts.filter(c => c.locId === courtLocFilter) : courts;
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / COURT_PAGE_SIZE));
+  if (courtPage > totalPages) courtPage = 1;
+  const paged = list.slice((courtPage-1)*COURT_PAGE_SIZE, courtPage*COURT_PAGE_SIZE);
+
+  tb.innerHTML = paged.length ? paged.map(c =>
+    `<tr>
+      <td style="color:var(--gray-400);font-size:12px">${c._row}</td>
+      <td><span class="badge badge-brand">${esc(locName(c.locId))}</span></td>
+      <td>${esc(DAY_NAMES[parseInt(c.day)]||c.day)}</td>
+      <td><strong>${esc(c.court)}</strong></td>
+      <td>${esc(c.time)}</td>
+      <td class="action-btns">
+        <button class="btn btn-outline btn-sm" title="แก้ไข" onclick="editCourtModal(${c._row})"><img src="https://cdn-icons-gif.flaticon.com/8800/8800862.gif" style="width:14px;height:14px;vertical-align:middle" alt="edit"></button>
+        <button class="btn btn-outline btn-sm" title="สร้างสำเนา" onclick="duplicateCourtModal(${c._row})" style="font-size:13px">⎘</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmDeleteCourt(${c._row})"><img src="https://cdn-icons-gif.flaticon.com/11186/11186844.gif" style="width:14px;height:14px;vertical-align:middle" alt="delete"></button>
+      </td>
+    </tr>`
+  ).join('') : '<tr><td colspan="6" class="tbl-empty">ยังไม่มีข้อมูล</td></tr>';
+
+  renderCourtPager(totalPages, total);
+}
+
+function renderCourtPager(totalPages, total) {
+  const bar  = document.getElementById('courtPager');
+  const info = document.getElementById('courtPagerInfo');
+  const btns = document.getElementById('courtPagerBtns');
+  if (!bar) return;
+  if (totalPages <= 1) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const from = (courtPage-1)*COURT_PAGE_SIZE + 1;
+  const to   = Math.min(courtPage*COURT_PAGE_SIZE, total);
+  info.textContent = `แสดง ${from}–${to} จาก ${total} รายการ`;
+  // Build page buttons (max 5 shown)
+  let pages = '';
+  const maxShow = 5;
+  let start = Math.max(1, courtPage - Math.floor(maxShow/2));
+  let end   = Math.min(totalPages, start + maxShow - 1);
+  if (end - start < maxShow - 1) start = Math.max(1, end - maxShow + 1);
+  pages += `<button class="pg-btn" ${courtPage<=1?'disabled':''} onclick="courtPage--;renderCourtTbl()">‹</button>`;
+  for (let p = start; p <= end; p++) {
+    pages += `<button class="pg-btn ${p===courtPage?'active':''}" onclick="courtPage=${p};renderCourtTbl()">${p}</button>`;
+  }
+  pages += `<button class="pg-btn" ${courtPage>=totalPages?'disabled':''} onclick="courtPage++;renderCourtTbl()">›</button>`;
+  btns.innerHTML = pages;
+}
+
+/* ── Court schedule (LINE-style) helpers ──────────────── */
+const CS_DAYS = [
+  { val:'1', name:'จันทร์'    },
+  { val:'2', name:'อังคาร'   },
+  { val:'3', name:'พุธ'      },
+  { val:'4', name:'พฤหัสบดี' },
+  { val:'5', name:'ศุกร์'    },
+  { val:'6', name:'เสาร์'    },
+  { val:'7', name:'อาทิตย์'  },
+];
+
+let _csOriginalCourt = null;  // track original court name for batch-replace
+
+// Build 24h time options (06:00–23:30 in 30-min steps)
+const _CS_TIME_OPTS = (() => {
+  const opts = [];
+  for (let h = 6; h <= 23; h++) {
+    for (const min of [0, 30]) {
+      opts.push(`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`);
+    }
+  }
+  return opts;
+})();
+
+function _csTimeSelect(selected, fallback) {
+  const val = selected || fallback || '07:00';
+  // Normalise "7:00" → "07:00"
+  const norm = val.replace(/^(\d):/, '0$1:');
+  return `<select class="cs-time">${
+    _CS_TIME_OPTS.map(t => `<option value="${t}"${t===norm?' selected':''}>${t}</option>`).join('')
+  }</select>`;
+}
+
+function _csSlotHtml(timeStr) {
+  let start = '18:00', end = '20:00';
+  if (timeStr) {
+    const m = timeStr.match(/(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+    if (m) { start = m[1]; end = m[2]; }
+  }
+  return `<div class="cs-slot">
+    ${_csTimeSelect(start, '18:00')}
+    <span class="cs-sep">—</span>
+    ${_csTimeSelect(end, '20:00')}
+    <button class="cs-btn-rm" onclick="csRmSlot(this)" title="ลบ">×</button>
+  </div>`;
+}
+
+function csRenderGrid(slotsByDay) {
+  document.getElementById('csGrid').innerHTML = CS_DAYS.map(d => {
+    const times  = slotsByDay[d.val] || [];
+    const active = times.length > 0;
+    const slotsHtml = (active ? times : ['']).map(_csSlotHtml).join('');
+    return `<div class="cs-row">
+      <input type="checkbox" class="cs-cb" id="cs-cb-${d.val}" ${active?'checked':''} onchange="csToggle('${d.val}')">
+      <span class="cs-day-label">${d.name}</span>
+      <div class="cs-slots-col">
+        <div id="cs-slots-${d.val}" style="${active?'':'display:none'}">
+          ${slotsHtml}
+          <button class="cs-btn-add" onclick="csAddSlot('${d.val}')">+ เพิ่มช่วงเวลา</button>
+        </div>
+        <span class="cs-closed" id="cs-closed-${d.val}" style="${active?'display:none':''}">ปิด</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function csToggle(dayVal) {
+  const cb     = document.getElementById('cs-cb-'     + dayVal);
+  const slots  = document.getElementById('cs-slots-'  + dayVal);
+  const closed = document.getElementById('cs-closed-' + dayVal);
+  if (cb.checked) {
+    slots.style.display = '';
+    closed.style.display = 'none';
+    if (!slots.querySelector('.cs-slot')) {
+      slots.querySelector('.cs-btn-add').insertAdjacentHTML('beforebegin', _csSlotHtml(''));
+    }
+  } else {
+    slots.style.display = 'none';
+    closed.style.display = '';
+  }
+}
+
+function csAddSlot(dayVal) {
+  const btn = document.querySelector(`#cs-slots-${dayVal} .cs-btn-add`);
+  btn.insertAdjacentHTML('beforebegin', _csSlotHtml(''));
+}
+
+function csRmSlot(btn) {
+  const slotEl   = btn.closest('.cs-slot');
+  const slotsDiv = slotEl.parentElement;
+  if (slotsDiv.querySelectorAll('.cs-slot').length <= 1) {
+    // Last slot — uncheck the day
+    const dayVal = slotsDiv.id.replace('cs-slots-', '');
+    document.getElementById('cs-cb-' + dayVal).checked = false;
+    csToggle(dayVal);
+  } else {
+    slotEl.remove();
+  }
+}
+
+function csCollectSlots() {
+  const result = [];
+  CS_DAYS.forEach(d => {
+    const cb = document.getElementById('cs-cb-' + d.val);
+    if (!cb?.checked) return;
+    document.getElementById('cs-slots-' + d.val)
+      .querySelectorAll('.cs-slot').forEach(slotEl => {
+        const [t1, t2] = slotEl.querySelectorAll('.cs-time');
+        if (t1.value && t2.value) result.push({ day: d.val, time: `${t1.value}-${t2.value}` });
+      });
+  });
+  return result;
+}
+
+/* ── Court modal open/submit ─────────────────────────── */
+function openCourtModal() {
+  _csOriginalCourt = null;
+  editRow = null;
+  document.getElementById('courtModalTitle').textContent = 'เพิ่มสนาม';
+  document.getElementById('fCourtLoc').value  = '';
+  document.getElementById('fCourtName').value = '';
+  csRenderGrid({});
+  openModal('courtOverlay');
+}
+
+function editCourtModal(row) {
+  const c = courts.find(x => x._row === row); if (!c) return;
+  _csOriginalCourt = c.court;
+  editRow = row;
+  document.getElementById('courtModalTitle').textContent = `แก้ไขสนาม`;
+  document.getElementById('fCourtLoc').value  = c.locId;
+  document.getElementById('fCourtName').value = c.court;
+  // Collect all slots for same locId+court
+  const slotsByDay = {};
+  courts.filter(x => x.locId === c.locId && x.court === c.court).forEach(x => {
+    if (!slotsByDay[x.day]) slotsByDay[x.day] = [];
+    slotsByDay[x.day].push(x.time);
+  });
+  csRenderGrid(slotsByDay);
+  openModal('courtOverlay');
+}
+
+function duplicateCourtModal(row) {
+  const c = courts.find(x => x._row === row); if (!c) return;
+  _csOriginalCourt = null;  // not editing existing → create new
+  editRow = null;
+  document.getElementById('courtModalTitle').textContent = 'สร้างจากสำเนา';
+  document.getElementById('fCourtLoc').value  = c.locId;
+  document.getElementById('fCourtName').value = c.court + ' (copy)';
+  const slotsByDay = {};
+  courts.filter(x => x.locId === c.locId && x.court === c.court).forEach(x => {
+    if (!slotsByDay[x.day]) slotsByDay[x.day] = [];
+    slotsByDay[x.day].push(x.time);
+  });
+  csRenderGrid(slotsByDay);
+  openModal('courtOverlay');
+}
+
+async function submitCourtModal() {
+  const locId = document.getElementById('fCourtLoc').value;
+  const court = document.getElementById('fCourtName').value.trim();
+  if (!locId || !court) { toast('กรุณากรอกสถานที่และชื่อคอร์ท','error'); return; }
+  const slots = csCollectSlots();
+  if (!slots.length) { toast('กรุณาเลือกวันและเวลาอย่างน้อย 1 ช่วง','error'); return; }
+  const d = { action:'saveCourtBatch', pin:PIN, locId, court, slots };
+  if (_csOriginalCourt) d.originalCourt = _csOriginalCourt;
+  try {
+    const r = await apiPost(d);
+    r.ok ? (toast('บันทึกสำเร็จ','success'), closeModal('courtOverlay'), loadCourtCfg())
+         : toast('ผิดพลาด: '+r.error,'error');
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+function confirmDeleteCourt(row) {
+  showConfirm('ลบช่วงเวลา',`ลบแถว ${row}?`,'ลบ', async()=>{
+    try {
+      const r = await apiPost({ action:'deleteCourt', pin:PIN, _row:row });
+      r.ok ? (toast('ลบสำเร็จ','success'), loadCourtCfg()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  });
+}
+
+/* ── System Config ───────────────────────────────────────── */
+function buildTargetMonthOptions() {
+  const sel = document.getElementById('sys_TARGET_MONTH');
+  if (!sel) return;
+  const now = new Date();
+  let y = now.getFullYear(), m = now.getMonth() + 1; // CE
+  // Keep current value to re-select after rebuild
+  const cur = sel.value;
+  let opts = '<option value="">— เลือกเดือน —</option>';
+  // Show 3 months back + 18 months forward
+  for (let i = -3; i <= 18; i++) {
+    let mm = m + i, yy = y;
+    while (mm < 1)  { mm += 12; yy--; }
+    while (mm > 12) { mm -= 12; yy++; }
+    const val = `${yy}-${String(mm).padStart(2,'0')}`;
+    opts += `<option value="${val}">${MT_L[mm-1]} ${yy+543}</option>`;
+  }
+  sel.innerHTML = opts;
+  if (cur) sel.value = cur;
+}
+
+async function loadSysCfg() {
+  try {
+    const r = await apiGet({ action:'getFullSysConfig', pin:PIN });
+    if (!r.ok) { toast('โหลด config ล้มเหลว: '+r.error,'error'); return; }
+    sysConfigs = r.configs;
+    populateSysForm();
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+function updateBookingStatusUI() {
+  const tog = document.getElementById('sys_BOOKING_ENABLED');
+  const lbl = document.getElementById('sysBookingToggleLabel');
+  const el  = document.getElementById('sysBookingStatus');
+  if (!tog || !el) return;
+  const enabled = tog.checked;
+  if (lbl) lbl.textContent = enabled ? 'เปิดระบบ' : 'ปิดระบบ';
+
+  const tmSel = document.getElementById('sys_TARGET_MONTH')?.value;
+  let tmLabel = '—';
+  if (tmSel) {
+    const [ty, tm2] = tmSel.split('-').map(Number);
+    if (!isNaN(ty) && !isNaN(tm2)) tmLabel = `${MT_L[tm2-1]} ${ty+543}`;
+  }
+
+  el.innerHTML = enabled
+    ? `<span class="booking-status-badge bsb-open">🟢 เปิดรับจอง · เดือน ${tmLabel}</span>`
+    : `<span class="booking-status-badge bsb-closed">⛔ ปิดรับจอง</span>`;
+}
+
+async function onToggleBooking() {
+  updateBookingStatusUI();
+  const enabled = document.getElementById('sys_BOOKING_ENABLED')?.checked;
+  try {
+    const r = await apiPost({ action:'updateSysConfig', pin:PIN,
+      configs:[{ key:'BOOKING_ENABLED', value: enabled ? 'true' : 'false' }]
+    });
+    toast(r.ok ? (enabled ? '🟢 เปิดรับจองแล้ว' : '⛔ ปิดรับจองแล้ว') : 'ผิดพลาด: '+r.error,
+          r.ok ? 'success' : 'error');
+  } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+}
+
+function getSysVal(key) {
+  const c = sysConfigs.find(x => x.key === key);
+  return c ? c.value : '';
+}
+
+function populateSysForm() {
+  // Build TARGET_MONTH select options
+  buildTargetMonthOptions();
+
+  // Init flatpickr FIRST so fp.setDate triggers onChange (BE year in altInput)
+  initFlatpickr();
+
+  // Target month — plain select
+  const tm  = getSysVal('TARGET_MONTH');
+  const sel = document.getElementById('sys_TARGET_MONTH');
+  if (sel && tm) sel.value = tm;
+  const hTm = document.getElementById('hint_TARGET_MONTH');
+  if (hTm) {
+    if (tm) {
+      const [tyStr, tmStr] = tm.split('-');
+      const ty = parseInt(tyStr), tmN = parseInt(tmStr);
+      if (!isNaN(ty) && !isNaN(tmN) && tmN >= 1 && tmN <= 12) {
+        hTm.textContent = `ค่าในระบบ: ${MT_L[tmN-1]} ${ty+543}`;
+        hTm.classList.remove('hidden');
+      } else { hTm.classList.add('hidden'); }
+    }
+    else hTm.classList.add('hidden');
+  }
+
+  // Radius
+  const rad = document.getElementById('sys_CHECKIN_RADIUS');
+  if (rad) rad.value = getSysVal('CHECKIN_RADIUS') || '150';
+
+  // Booking enabled toggle
+  const bookTog = document.getElementById('sys_BOOKING_ENABLED');
+  if (bookTog) bookTog.checked = (getSysVal('BOOKING_ENABLED') || 'true') !== 'false';
+
+  // Auto-ban toggle
+  const tog = document.getElementById('sys_AUTO_BAN_NOSHOW');
+  if (tog) tog.checked = (getSysVal('AUTO_BAN_NOSHOW') || 'true') === 'true';
+
+  // Refresh booking status display (after all values loaded)
+  updateBookingStatusUI();
+}
+
+async function saveSysConfig() {
+  const configs = [
+    { key:'BOOKING_ENABLED', value: document.getElementById('sys_BOOKING_ENABLED')?.checked ? 'true' : 'false' },
+    { key:'TARGET_MONTH',    value: document.getElementById('sys_TARGET_MONTH')?.value    || '' },
+    { key:'CHECKIN_RADIUS',  value: document.getElementById('sys_CHECKIN_RADIUS')?.value  || '150' },
+    { key:'AUTO_BAN_NOSHOW', value: document.getElementById('sys_AUTO_BAN_NOSHOW')?.checked ? 'true' : 'false' },
+  ].filter(c => c.value !== '');
+  try {
+    const r = await apiPost({ action:'updateSysConfig', pin:PIN, configs });
+    r.ok ? toast('บันทึก System Config สำเร็จ','success')
+         : toast('ผิดพลาด: '+r.error,'error');
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+async function changePin() {
+  const np  = document.getElementById('newPin').value.trim();
+  const np2 = document.getElementById('newPinConfirm').value.trim();
+  if (!np || !np2) { toast('กรุณากรอก PIN ใหม่','error'); return; }
+  if (np !== np2)  { toast('PIN ทั้งสองช่องไม่ตรงกัน','error'); return; }
+  if (!/^\d{4}$/.test(np)) { toast('PIN ต้องเป็นตัวเลข 4 หลักเท่านั้น','error'); return; }
+  showConfirm('เปลี่ยน PIN','ยืนยันการเปลี่ยน PIN?','เปลี่ยน', async () => {
+    try {
+      const r = await apiPost({ action:'updateSysConfig', pin:PIN, configs:[{ key:'ADMIN_PIN', value:np }] });
+      if (r.ok) {
+        toast('เปลี่ยน PIN สำเร็จ กรุณา Login ใหม่','success');
+        _clearCred();
+        setTimeout(() => location.reload(), 1500);
+      } else toast('ผิดพลาด: '+r.error,'error');
+    } catch(e){ toast('เกิดข้อผิดพลาด','error'); }
+  }, null, false);
+}
+
+/* ── Holiday Config ──────────────────────────────────────── */
+async function loadHolidayCfg() {
+  const tb = document.getElementById('holTbl');
+  tb.innerHTML = '<tr><td colspan="5" class="tbl-loading">กำลังโหลด…</td></tr>';
+  try {
+    const r = await apiGet({ action:'getHolidayConfigs', pin:PIN });
+    if (!r.ok) { tb.innerHTML = `<tr><td colspan="5" class="tbl-empty">${esc(r.error)}</td></tr>`; return; }
+    holidays = r.holidays; renderHolidayTbl();
+  } catch(e) { tb.innerHTML = '<tr><td colspan="5" class="tbl-empty">เกิดข้อผิดพลาด</td></tr>'; }
+}
+
+function renderHolidayTbl() {
+  const tb  = document.getElementById('holTbl');
+  const fil = document.getElementById('holFLoc').value;
+  const list= [...(fil ? holidays.filter(h=>h.locId===fil||h.locId==='') : holidays)]
+    .sort((a,b) => a.date<b.date?-1:1);
+  tb.innerHTML = list.length ? list.map(h =>
+    `<tr>
+      <td style="color:var(--gray-400);font-size:12px">${h._row}</td>
+      <td>${fmtDateTH(h.date)}</td>
+      <td><strong>${esc(h.name)||'—'}</strong></td>
+      <td>${h.locId?`<span class="badge badge-brand">${esc(locName(h.locId))}</span>`:'<span class="badge badge-gray">ทุกสถานที่</span>'}</td>
+      <td class="action-btns">
+        <button class="btn btn-outline btn-sm" onclick="editHolidayModal(${h._row})"><img src="https://cdn-icons-gif.flaticon.com/8800/8800862.gif" style="width:14px;height:14px;vertical-align:middle" alt="edit"></button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmDeleteHoliday(${h._row})"><img src="https://cdn-icons-gif.flaticon.com/11186/11186844.gif" style="width:14px;height:14px;vertical-align:middle" alt="delete"></button>
+      </td>
+    </tr>`
+  ).join('') : '<tr><td colspan="5" class="tbl-empty">ยังไม่มีข้อมูล</td></tr>';
+}
+
+function openHolidayModal() {
+  editRow = null;
+  document.getElementById('holModalTitle').textContent = 'เพิ่มวันหยุด';
+  setDateVal('fHolDate','');
+  document.getElementById('fHolName').value='';
+  document.getElementById('fHolLoc').value = '';
+  openModal('holidayOverlay');
+}
+
+function editHolidayModal(row) {
+  const h = holidays.find(x=>x._row===row); if(!h) return;
+  editRow = row;
+  document.getElementById('holModalTitle').textContent = 'แก้ไขวันหยุด';
+  setDateVal('fHolDate', h.date);
+  document.getElementById('fHolName').value = h.name;
+  document.getElementById('fHolLoc').value  = h.locId;
+  openModal('holidayOverlay');
+}
+
+async function submitHolidayModal() {
+  const d = {
+    action:'saveHoliday', pin:PIN,
+    date: getDateVal('fHolDate'),
+    name: document.getElementById('fHolName').value.trim(),
+    locId: document.getElementById('fHolLoc').value,
+  };
+  if (editRow) d._row = editRow;
+  if (!d.date) { toast('กรุณาระบุวันที่','error'); return; }
+  try {
+    const r = await apiPost(d);
+    r.ok ? (toast('บันทึกสำเร็จ','success'), closeModal('holidayOverlay'), loadHolidayCfg())
+         : toast('ผิดพลาด: '+r.error,'error');
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+function confirmDeleteHoliday(row) {
+  showConfirm('ลบวันหยุด',`ลบแถว ${row}?`,'ลบ', async()=>{
+    try {
+      const r = await apiPost({ action:'deleteHoliday', pin:PIN, _row:row });
+      r.ok ? (toast('ลบสำเร็จ','success'), loadHolidayCfg()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  });
+}
+
+/* ── VIP Config ──────────────────────────────────────────── */
+async function loadVipCfg() {
+  const tb = document.getElementById('vipTbl');
+  tb.innerHTML = '<tr><td colspan="7" class="tbl-loading">กำลังโหลด…</td></tr>';
+  try {
+    // Load courts (for combobox) and vips in parallel
+    const [rv, rc] = await Promise.all([
+      apiGet({ action:'getVipConfigs',   pin:PIN }),
+      courts.length ? Promise.resolve(null) : apiGet({ action:'getCourtConfigs', pin:PIN }),
+    ]);
+    if (rc && rc.ok) courts = rc.courts;
+    if (!rv.ok) { tb.innerHTML = `<tr><td colspan="7" class="tbl-empty">${esc(rv.error)}</td></tr>`; return; }
+    vips = rv.vips; renderVipTbl();
+  } catch(e) { tb.innerHTML = '<tr><td colspan="7" class="tbl-empty">เกิดข้อผิดพลาด</td></tr>'; }
+}
+
+function resetVipFilter() {
+  document.getElementById('vipFLoc').value = '';
+  const fp = document.getElementById('vipFDate')?._flatpickr;
+  if (fp) fp.clear(); else document.getElementById('vipFDate').value = '';
+  renderVipTbl();
+}
+
+function resetBkFilter() {
+  document.getElementById('bkFLoc').value = '';
+  document.getElementById('bkFEmp').value = '';
+  const fp = document.getElementById('bkFDate')?._flatpickr;
+  if (fp) fp.clear(); else document.getElementById('bkFDate').value = '';
+  // Reset status tab to "ทั้งหมด"
+  _bkStatusFilter = '';
+  document.querySelectorAll('.status-tab').forEach(t => t.classList.toggle('active', t.dataset.s === ''));
+  _bkSelected.clear();
+  _bkPage = 1;
+  loadBookings();
+}
+
+function resetCourtFilter() {
+  const all = document.querySelector('#courtLocBadges .loc-badge[data-loc=""]');
+  if (all) setCourtLocFilter(all);
+}
+
+function resetHolFilter() {
+  document.getElementById('holFLoc').value = '';
+  renderHolidayTbl();
+}
+
+function resetMemFilter() {
+  document.getElementById('memSearch').value = '';
+  document.getElementById('memRoleFilter').value = '';
+  memPage = 1;
+  renderMemberTbl();
+}
+
+function renderVipTbl() {
+  const tb   = document.getElementById('vipTbl');
+  const fLoc = document.getElementById('vipFLoc').value;
+  const fDt  = document.getElementById('vipFDate').value;
+  let list   = vips;
+  if (fLoc) list = list.filter(v=>v.locId===fLoc);
+  if (fDt)  list = list.filter(v=>v.date===fDt);
+  list = [...list].sort((a,b)=>a.date<b.date?-1:1);
+  tb.innerHTML = list.length ? list.map(v =>
+    `<tr>
+      <td style="color:var(--gray-400);font-size:12px">${v._row}</td>
+      <td><span class="badge badge-brand">${esc(locName(v.locId))}</span></td>
+      <td>${fmtDateTH(v.date)}</td>
+      <td><strong>${esc(v.court)}</strong></td>
+      <td>${esc(v.time)}</td>
+      <td>
+        <span>${esc(v.booker)||'—'}</span>
+        ${v.note ? `<br><span style="font-size:11px;color:var(--brand);font-style:italic">😈 ${esc(v.note)}</span>` : ''}
+      </td>
+      <td class="action-btns">
+        <button class="btn btn-outline btn-sm" onclick="editVipModal(${v._row})"><img src="https://cdn-icons-gif.flaticon.com/8800/8800862.gif" style="width:14px;height:14px;vertical-align:middle" alt="edit"></button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmDeleteVip(${v._row})"><img src="https://cdn-icons-gif.flaticon.com/11186/11186844.gif" style="width:14px;height:14px;vertical-align:middle" alt="delete"></button>
+      </td>
+    </tr>`
+  ).join('') : '<tr><td colspan="7" class="tbl-empty">ยังไม่มีข้อมูล</td></tr>';
+}
+
+// VIP combobox helpers
+function getVipDow() {
+  // Returns day-of-week 1=Mon…7=Sun from fVipDate, or null if no date selected
+  const fp = document.getElementById('fVipDate')?._flatpickr;
+  let d = fp && fp.selectedDates && fp.selectedDates[0];
+  if (!d) {
+    const v = document.getElementById('fVipDate')?.value;
+    if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) d = new Date(v + 'T12:00:00');
+  }
+  if (!d) return null;
+  const dow = d.getDay();
+  return dow === 0 ? 7 : dow;
+}
+function vipFilteredCourts(courtVal) {
+  const locId = document.getElementById('fVipLoc').value;
+  const dow   = getVipDow();
+  return courts.filter(c =>
+    (!locId    || c.locId === locId) &&
+    (!dow      || String(c.day) === String(dow)) &&
+    (!courtVal || c.court === courtVal)
+  );
+}
+
+function onVipLocChange() {
+  document.getElementById('fVipCourt').value = '';
+  document.getElementById('fVipTime').value  = '';
+  refreshVipCourtList();
+  refreshVipTimeList('');
+}
+function onVipCourtChange() {
+  const courtVal = document.getElementById('fVipCourt').value.trim();
+  // Auto-fill time when there's exactly one matching slot; otherwise just refresh the list
+  const matches = vipFilteredCourts(courtVal);
+  if (matches.length === 1) {
+    document.getElementById('fVipTime').value = matches[0].time;
+  } else {
+    // Do NOT clear fVipTime — user may have typed it manually
+    refreshVipTimeList(courtVal);
+  }
+}
+function refreshVipCourtList() {
+  const dl   = document.getElementById('dlVipCourt');
+  const opts = [...new Set(vipFilteredCourts('').map(c => c.court))].sort();
+  dl.innerHTML = opts.map(c => `<option value="${esc(c)}">`).join('');
+}
+function refreshVipTimeList(courtVal) {
+  const dl   = document.getElementById('dlVipTime');
+  const opts = [...new Set(vipFilteredCourts(courtVal).map(c => c.time))].sort();
+  dl.innerHTML = opts.map(t => `<option value="${esc(t)}">`).join('');
+}
+
+function openVipModal() {
+  editRow = null;
+  document.getElementById('vipModalTitle').textContent = 'เพิ่ม VIP';
+  document.getElementById('fVipLoc').value = '';
+  setDateVal('fVipDate','');
+  ['fVipCourt','fVipTime','fVipBooker','fVipNote'].forEach(id=>document.getElementById(id).value='');
+  refreshVipCourtList();
+  refreshVipTimeList('');
+  openModal('vipOverlay');
+}
+
+function editVipModal(row) {
+  const v = vips.find(x=>x._row===row); if(!v) return;
+  editRow = row;
+  document.getElementById('vipModalTitle').textContent = 'แก้ไข VIP';
+  document.getElementById('fVipLoc').value    = v.locId;
+  setDateVal('fVipDate', v.date);
+  document.getElementById('fVipCourt').value  = v.court;
+  document.getElementById('fVipTime').value   = v.time;
+  document.getElementById('fVipBooker').value = v.booker;
+  document.getElementById('fVipNote').value   = v.note || '';
+  refreshVipCourtList();
+  refreshVipTimeList(v.court);
+  openModal('vipOverlay');
+}
+
+async function submitVipModal() {
+  const d = {
+    action:'saveVip', pin:PIN,
+    locId:  document.getElementById('fVipLoc').value,
+    date:   getDateVal('fVipDate'),
+    court:  document.getElementById('fVipCourt').value.trim(),
+    time:   document.getElementById('fVipTime').value.trim(),
+    booker: document.getElementById('fVipBooker').value.trim(),
+    note:   document.getElementById('fVipNote').value.trim(),
+  };
+  if (editRow) d._row = editRow;
+  if (!d.locId) { toast('กรุณาเลือกสถานที่','error'); return; }
+  if (!d.date)  { toast('กรุณาเลือกวันที่','error'); return; }
+  if (!d.court) { toast('กรุณาระบุคอร์ท','error'); return; }
+  if (!d.time)  { toast('กรุณาระบุเวลา','error'); return; }
+  try {
+    const r = await apiPost(d);
+    r.ok ? (toast('บันทึกสำเร็จ','success'), closeModal('vipOverlay'), loadVipCfg())
+         : toast('ผิดพลาด: '+r.error,'error');
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+function confirmDeleteVip(row) {
+  showConfirm('ลบ VIP',`ลบแถว ${row}?`,'ลบ', async()=>{
+    try {
+      const r = await apiPost({ action:'deleteVip', pin:PIN, _row:row });
+      r.ok ? (toast('ลบสำเร็จ','success'), loadVipCfg()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  });
+}
+
+/* ── Banned ──────────────────────────────────────────────── */
+async function loadBanned() {
+  const tb = document.getElementById('banTbl');
+  tb.innerHTML = '<tr><td colspan="5" class="tbl-loading">กำลังโหลด…</td></tr>';
+  try {
+    const r = await apiGet({ action:'getBannedList', pin:PIN });
+    if (!r.ok) { tb.innerHTML = `<tr><td colspan="5" class="tbl-empty">${esc(r.error)}</td></tr>`; return; }
+    banneds = r.banned; renderBanTbl();
+  } catch(e) { tb.innerHTML = '<tr><td colspan="5" class="tbl-empty">เกิดข้อผิดพลาด</td></tr>'; }
+}
+
+function renderBanTbl() {
+  const tb    = document.getElementById('banTbl');
+  const today = new Date().toISOString().slice(0,10);
+  tb.innerHTML = banneds.length ? banneds.map(b => {
+    const act = !b.until || b.until >= today;
+    return `<tr>
+      <td>
+        <strong>${esc(b.empId)}</strong>
+        ${b.name ? `<div style="font-size:.78rem;color:var(--gray-500);margin-top:2px">${esc(b.name)} ${esc(b.surname)}</div>` : ''}
+        ${b.dept ? `<div style="font-size:.72rem;color:var(--gray-400)">${esc(b.dept)}</div>` : ''}
+      </td>
+      <td>${fmtDateTH(b.since)}</td>
+      <td>${esc(b.reason)||'—'}</td>
+      <td>${b.until
+        ? `<span class="badge ${act?'badge-red':'badge-gray'}">${fmtDateTH(b.until)}</span>`
+        : '<span class="badge badge-red">ถาวร</span>'}</td>
+      <td><button class="btn btn-green btn-sm" onclick="confirmPardon('${ea(b.empId)}')">✅ ปลดแบน</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="5" class="tbl-empty">ไม่มีรายการแบน</td></tr>';
+}
+
+function openBanModal() {
+  ['fBanEmp','fBanReason'].forEach(id=>document.getElementById(id).value='');
+  setDateVal('fBanUntil','');
+  clearBanEmpCard();
+  openModal('banOverlay');
+}
+function clearBanEmpCard() {
+  document.getElementById('banEmpCard').style.display  = 'none';
+  document.getElementById('banEmpError').style.display = 'none';
+}
+async function lookupBanEmp() {
+  const empId = document.getElementById('fBanEmp').value.trim();
+  if (!empId) { toast('กรุณากรอกรหัสพนักงาน','error'); return; }
+  clearBanEmpCard();
+  try {
+    const r = await apiGet({ action:'verifyEmployee', empId });
+    if (r.ok) {
+      document.getElementById('banEmpName').textContent = `${r.name} ${r.surname}`.trim() || empId;
+      document.getElementById('banEmpDept').textContent = r.dept || '—';
+      document.getElementById('banEmpCard').style.display = '';
+    } else {
+      document.getElementById('banEmpError').textContent  = r.error || 'ไม่พบรหัสพนักงาน';
+      document.getElementById('banEmpError').style.display = '';
+    }
+  } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+}
+
+async function submitBanModal() {
+  const d = {
+    action:'adminBan', pin:PIN,
+    empId:  document.getElementById('fBanEmp').value.trim(),
+    reason: document.getElementById('fBanReason').value.trim(),
+    until:  getDateVal('fBanUntil'),
+  };
+  if (!d.empId) { toast('กรุณาระบุรหัสพนักงาน','error'); return; }
+  try {
+    const r = await apiPost(d);
+    r.ok ? (toast('แบนสำเร็จ','success'), closeModal('banOverlay'), loadBanned())
+         : toast('ผิดพลาด: '+r.error,'error');
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+function confirmPardon(empId) {
+  showConfirm('ปลดแบน',`ปลดแบน ${empId}?`,'ปลดแบน', async()=>{
+    try {
+      const r = await apiPost({ action:'adminPardon', pin:PIN, empId });
+      r.ok ? (toast('ปลดแบนสำเร็จ','success'), loadBanned()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  }, '✅', false);
+}
+
+/* ── Members ─────────────────────────────────────────────── */
+async function loadMembers() {
+  const tb = document.getElementById('memTbl');
+  tb.innerHTML = '<tr><td colspan="6" class="tbl-loading">กำลังโหลด…</td></tr>';
+  try {
+    const r = await apiGet({ action:'getMemberList', pin:PIN });
+    if (!r.ok) { tb.innerHTML = `<tr><td colspan="6" class="tbl-empty">${esc(r.error)}</td></tr>`; return; }
+    members = r.members; renderMemberTbl();
+  } catch(e) { tb.innerHTML = '<tr><td colspan="6" class="tbl-empty">เกิดข้อผิดพลาด</td></tr>'; }
+}
+
+function renderMemberTbl() {
+  const tb    = document.getElementById('memTbl');
+  const srch  = (document.getElementById('memSearch').value||'').toLowerCase();
+  const rfil  = document.getElementById('memRoleFilter').value;
+  let list = members;
+  if (srch) list = list.filter(m =>
+    [m.empId,m.name,m.surname,m.dept].some(v=>(v||'').toLowerCase().includes(srch)));
+  if (rfil) list = list.filter(m => m.role === rfil);
+  // 550613 ล็อกบนสุดเสมอ, admin ถัดมา, แล้วเรียงตาม empId
+  list = [...list].sort((a, b) => {
+    const pinned = '550613';
+    if (String(a.empId) === pinned) return -1;
+    if (String(b.empId) === pinned) return  1;
+    if (a.role === 'admin' && b.role !== 'admin') return -1;
+    if (a.role !== 'admin' && b.role === 'admin') return  1;
+    return String(a.empId).localeCompare(String(b.empId));
+  });
+  // Reset to page 1 when filter changes
+  const totalPages = Math.max(1, Math.ceil(list.length / MEM_PAGE_SIZE));
+  if (memPage > totalPages) memPage = totalPages;
+  const start = (memPage - 1) * MEM_PAGE_SIZE;
+  const pageList = list.slice(start, start + MEM_PAGE_SIZE);
+  tb.innerHTML = pageList.length ? pageList.map(m =>
+    `<tr>
+      <td><strong>${esc(m.empId)}</strong></td>
+      <td>${esc(m.name)}</td>
+      <td>${esc(m.surname)}</td>
+      <td><small>${esc(m.dept)}</small></td>
+      <td><button class="role-toggle" data-role="${m.role||'user'}" data-row="${m._row}" data-empid="${ea(m.empId)}" onclick="toggleMemberRole(this)" title="คลิกเพื่อเปลี่ยนบทบาท"><span class="rt-pill rt-admin">admin</span><span class="rt-pill rt-user">user</span></button></td>
+      <td class="action-btns">
+        <button class="btn btn-outline btn-sm" onclick="editMemberModal(${m._row})"><img src="https://cdn-icons-gif.flaticon.com/8800/8800862.gif" style="width:14px;height:14px;vertical-align:middle" alt="edit"></button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmDeleteMember(${m._row},'${ea(m.empId)}')"><img src="https://cdn-icons-gif.flaticon.com/11186/11186844.gif" style="width:14px;height:14px;vertical-align:middle" alt="delete"></button>
+      </td>
+    </tr>`
+  ).join('') : '<tr><td colspan="6" class="tbl-empty">ไม่พบสมาชิก</td></tr>';
+  renderMemPager(list.length);
+}
+
+function renderMemPager(total) {
+  const pager = document.getElementById('memPager');
+  const info  = document.getElementById('memPagerInfo');
+  const btns  = document.getElementById('memPagerBtns');
+  const totalPages = Math.max(1, Math.ceil(total / MEM_PAGE_SIZE));
+  if (total <= MEM_PAGE_SIZE) { pager.style.display = 'none'; return; }
+  pager.style.display = 'flex';
+  const start = (memPage - 1) * MEM_PAGE_SIZE;
+  info.textContent = `แสดง ${start + 1}–${Math.min(start + MEM_PAGE_SIZE, total)} จาก ${total} รายการ`;
+  let html = `<button class="pg-btn" onclick="goMemPage(1)" ${memPage===1?'disabled':''}>«</button>`;
+  html    += `<button class="pg-btn" onclick="goMemPage(${memPage-1})" ${memPage===1?'disabled':''}>‹</button>`;
+  // Show window of 5 page numbers
+  const lo = Math.max(1, memPage - 2), hi = Math.min(totalPages, lo + 4);
+  for (let p = lo; p <= hi; p++)
+    html += `<button class="pg-btn${p===memPage?' active':''}" onclick="goMemPage(${p})">${p}</button>`;
+  html += `<button class="pg-btn" onclick="goMemPage(${memPage+1})" ${memPage===totalPages?'disabled':''}>›</button>`;
+  html += `<button class="pg-btn" onclick="goMemPage(${totalPages})" ${memPage===totalPages?'disabled':''}>»</button>`;
+  btns.innerHTML = html;
+}
+
+function goMemPage(p) { memPage = p; renderMemberTbl(); }
+
+function openMemberModal() {
+  editRow = null;
+  document.getElementById('memModalTitle').textContent = 'เพิ่มสมาชิก';
+  document.getElementById('fMemEmp').disabled = false;
+  ['fMemEmp','fMemName','fMemSurname','fMemDept'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fMemRole').value = 'user';
+  openModal('memberOverlay');
+}
+
+function editMemberModal(row) {
+  const m = members.find(x=>x._row===row); if(!m) return;
+  editRow = row;
+  document.getElementById('memModalTitle').textContent = 'แก้ไขสมาชิก';
+  document.getElementById('fMemEmp').value     = m.empId;
+  document.getElementById('fMemEmp').disabled  = true;
+  document.getElementById('fMemName').value    = m.name;
+  document.getElementById('fMemSurname').value = m.surname;
+  document.getElementById('fMemDept').value    = m.dept;
+  document.getElementById('fMemRole').value    = m.role||'user';
+  openModal('memberOverlay');
+}
+
+async function submitMemberModal() {
+  const d = {
+    action: 'saveMember', pin:PIN,
+    empId:   document.getElementById('fMemEmp').value.trim(),
+    name:    document.getElementById('fMemName').value.trim(),
+    surname: document.getElementById('fMemSurname').value.trim(),
+    dept:    document.getElementById('fMemDept').value.trim(),
+    role:    document.getElementById('fMemRole').value,
+  };
+  if (editRow) d._row = editRow;
+  if (!d.empId) { toast('กรุณาระบุรหัสพนักงาน','error'); return; }
+  try {
+    const r = await apiPost(d);
+    r.ok ? (toast('บันทึกสำเร็จ','success'), closeModal('memberOverlay'), loadMembers())
+         : toast('ผิดพลาด: '+r.error,'error');
+  } catch(e) { toast('เกิดข้อผิดพลาด','error'); }
+}
+
+function confirmDeleteMember(row, empId) {
+  showConfirm('ลบสมาชิก',`ลบสมาชิก ${empId}?`,'ลบ', async()=>{
+    try {
+      const r = await apiPost({ action:'deleteMember', pin:PIN, _row:row });
+      r.ok ? (toast('ลบสำเร็จ','success'), loadMembers()) : toast('ผิดพลาด: '+r.error,'error');
+    } catch(e) { toast('เชื่อมต่อไม่ได้','error'); }
+  });
+}
+
+async function toggleMemberRole(btn) {
+  const cur    = btn.dataset.role;
+  const newRole = cur === 'admin' ? 'user' : 'admin';
+  const row    = parseInt(btn.dataset.row);
+  const empId  = btn.dataset.empid;
+  const m      = members.find(x => x._row === row);
+  if (!m) return;
+
+  btn.classList.add('loading');
+  try {
+    const r = await apiPost({
+      action:'saveMember', pin:PIN, _row:row,
+      empId, name:m.name, surname:m.surname, dept:m.dept, role:newRole
+    });
+    if (r.ok) {
+      m.role = newRole;
+      btn.dataset.role = newRole;
+      // re-sort ใหม่ด้วย (admin ขึ้นบน)
+      renderMemberTbl();
+    } else {
+      toast('ผิดพลาด: ' + r.error, 'error');
+      btn.classList.remove('loading');
+    }
+  } catch(e) {
+    toast('เชื่อมต่อไม่ได้', 'error');
+    btn.classList.remove('loading');
+  }
+}
+
+function confirmClearUsers() {
+  const userCount = members.filter(m => m.role !== 'admin').length;
+  showConfirm(
+    'ล้างสมาชิกทั้งหมด',
+    `จะลบสมาชิก role=user ทั้งหมด ${userCount} คน\nAdmin ทุกคนจะถูกเก็บไว้`,
+    'ล้างทั้งหมด',
+    async () => {
+      try {
+        const r = await apiPost({ action:'adminClearUsers', pin:PIN });
+        r.ok ? (toast(`ล้างแล้ว ${r.deleted} คน`, 'success'), loadMembers())
+             : toast('ผิดพลาด: ' + r.error, 'error');
+      } catch(e) { toast('เชื่อมต่อไม่ได้', 'error'); }
+    },
+    '🗑', false
+  );
+}
+
+/* ── Member Import ───────────────────────────────────── */
+let _importRaw     = [];   // all data rows from file
+let _importHeaders = [];   // column header strings
+let _importColMap  = {};   // { empId: idx, name: idx, surname: idx, dept: idx, role: idx }
+
+const IMPORT_FIELDS = [
+  { key:'empId',   label:'รหัสพนักงาน', required:true,  aliases:['รหัสพนักงาน','empid','employee_id','รหัส','emp_id','employeeid'] },
+  { key:'name',    label:'ชื่อ',         required:false, aliases:['ชื่อ','name','first_name','firstname','ชื่อจริง'] },
+  { key:'surname', label:'นามสกุล',      required:false, aliases:['นามสกุล','surname','last_name','lastname'] },
+  { key:'dept',    label:'สังกัด/แผนก',  required:false, aliases:['สังกัด','แผนก','สังกัด/แผนก','dept','department','division'] },
+  { key:'role',    label:'บทบาท (role)', required:false, aliases:['role','บทบาท','สิทธิ์','permission'] },
+];
+
+function openImportModal() {
+  resetImportState();
+  openModal('importOverlay');
+}
+
+function resetImportState() {
+  _importRaw = []; _importHeaders = []; _importColMap = {};
+  document.getElementById('importStep1').style.display = '';
+  document.getElementById('importStep2').style.display = 'none';
+  document.getElementById('importFooter').style.display = 'none';
+  document.getElementById('importProgress').style.display = 'none';
+  document.getElementById('importProgressBar').style.width = '0';
+  document.getElementById('importSubmitBtn').disabled = false;
+  document.getElementById('importFileInput').value = '';
+}
+
+function handleImportFile(file) {
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { toast('กำลังโหลด library... ลองอีกครั้ง', 'error'); return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb   = XLSX.read(e.target.result, { type:'binary', cellDates:true });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+
+      if (!data || data.length < 2) { toast('ไฟล์ว่างหรือไม่มีข้อมูล','error'); return; }
+
+      _importHeaders = (data[0] || []).map(h => String(h || '').trim());
+      _importRaw     = data.slice(1).filter(r => r.some(c => String(c||'').trim() !== ''));
+
+      if (_importRaw.length === 0) { toast('ไม่พบแถวข้อมูล','error'); return; }
+
+      _importColMap = _autoDetectCols(_importHeaders);
+
+      document.getElementById('importFileName').textContent = `📄 ${file.name}`;
+      document.getElementById('importRowCount').textContent = `(${_importRaw.length.toLocaleString()} แถว)`;
+      document.getElementById('importStep1').style.display = 'none';
+      document.getElementById('importStep2').style.display = '';
+      document.getElementById('importFooter').style.display = 'flex';
+
+      _renderColMap();
+      _renderImportPreview();
+      _updateImportStats();
+    } catch(err) {
+      toast('อ่านไฟล์ไม่ได้: ' + err.message, 'error');
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function _autoDetectCols(headers) {
+  const map = {};
+  headers.forEach((h, i) => {
+    const norm = h.toLowerCase().replace(/[\s_\-\/]/g,'');
+    for (const f of IMPORT_FIELDS) {
+      if (map[f.key] !== undefined) continue;
+      if (f.aliases.some(a => norm === a.toLowerCase().replace(/[\s_\-\/]/g,'') ||
+                               norm.includes(a.toLowerCase().replace(/[\s_\-\/]/g,'')))) {
+        map[f.key] = i;
+      }
+    }
+  });
+  return map;
+}
+
+function _renderColMap() {
+  const grid = document.getElementById('importColGrid');
+  const opts = _importHeaders.map((h, i) => `<option value="${i}">${esc(h) || '(ไม่มีหัว col '+i+')'}</option>`).join('');
+  grid.innerHTML = IMPORT_FIELDS.map(f => `
+    <div class="import-col-row">
+      <span class="import-col-label">${f.label}${f.required ? ' <span style="color:var(--red)">*</span>' : ''}</span>
+      <select class="import-col-select" id="icol_${f.key}" onchange="_importColMap['${f.key}']=this.value===''?undefined:parseInt(this.value);_renderImportPreview();_updateImportStats()">
+        <option value="">— ไม่ใช้ —</option>
+        ${opts}
+      </select>
+    </div>`).join('');
+
+  // Apply auto-detected values
+  IMPORT_FIELDS.forEach(f => {
+    const sel = document.getElementById(`icol_${f.key}`);
+    if (sel && _importColMap[f.key] !== undefined) sel.value = String(_importColMap[f.key]);
+  });
+}
+
+function _getMappedRow(raw) {
+  const get = key => {
+    const idx = _importColMap[key];
+    return idx !== undefined ? String(raw[idx] ?? '').trim() : '';
+  };
+  return {
+    empId:   get('empId'),
+    name:    get('name'),
+    surname: get('surname'),
+    dept:    get('dept'),
+    role:    (['admin','user'].includes((get('role')||'').toLowerCase()) ? (get('role')||'').toLowerCase() : 'user'),
+  };
+}
+
+function _renderImportPreview() {
+  const preview = document.getElementById('importPreview');
+  const COLS = IMPORT_FIELDS.map(f => ({ key: f.key, label: f.label }));
+  const rows  = _importRaw.slice(0, 5);
+
+  let html = `<table class="import-preview-tbl"><thead><tr>
+    ${COLS.map(c => `<th>${esc(c.label)}</th>`).join('')}
+  </tr></thead><tbody>`;
+
+  rows.forEach(raw => {
+    const m = _getMappedRow(raw);
+    const missing = !m.empId;
+    html += `<tr style="${missing ? 'opacity:.45' : ''}">
+      <td><strong>${esc(m.empId) || '<i style="color:var(--gray-400)">—</i>'}</strong></td>
+      <td>${esc(m.name)}</td>
+      <td>${esc(m.surname)}</td>
+      <td><small>${esc(m.dept)}</small></td>
+      <td>${m.role === 'admin' ? '<span class="badge badge-red">admin</span>' : '<span class="badge badge-gray">user</span>'}</td>
+    </tr>`;
+  });
+
+  if (_importRaw.length > 5) html += `<tr><td colspan="${COLS.length}" style="text-align:center;color:var(--gray-400);font-style:italic;padding:6px">… และอีก ${(_importRaw.length - 5).toLocaleString()} แถว</td></tr>`;
+
+  html += '</tbody></table>';
+  preview.innerHTML = html;
+}
+
+function _updateImportStats() {
+  const stats = document.getElementById('importStats');
+  let valid = 0, skip = 0;
+  _importRaw.forEach(raw => {
+    const m = _getMappedRow(raw);
+    m.empId ? valid++ : skip++;
+  });
+  stats.innerHTML = [
+    `<span class="import-stat-chip import-stat-new">✓ ${valid.toLocaleString()} รายการ</span>`,
+    skip > 0 ? `<span class="import-stat-chip import-stat-skip">⚠ ${skip} ข้ามเพราะไม่มีรหัส</span>` : '',
+    `<span style="font-size:11px;color:var(--gray-400);align-self:center">ซ้ำ = อัพเดตอัตโนมัติ</span>`,
+  ].filter(Boolean).join('');
+}
+
+async function submitImport() {
+  if (_importColMap.empId === undefined) { toast('กรุณาเลือกคอลัมน์รหัสพนักงานก่อน','error'); return; }
+
+  const rows = _importRaw.map(_getMappedRow).filter(r => r.empId);
+  if (!rows.length) { toast('ไม่มีข้อมูลที่พร้อม import','error'); return; }
+
+  const btn  = document.getElementById('importSubmitBtn');
+  const prog = document.getElementById('importProgress');
+  const bar  = document.getElementById('importProgressBar');
+
+  btn.disabled = true;
+  prog.style.display = '';
+  bar.style.width = '30%';
+
+  try {
+    const r = await apiPost({ action:'adminImportMembers', pin:PIN, members:rows });
+    bar.style.width = '100%';
+    if (r.ok) {
+      const parts = [`เพิ่มใหม่ ${r.added}`];
+      if (r.updated) parts.push(`อัพเดต ${r.updated}`);
+      if (r.skipped) parts.push(`ข้าม ${r.skipped}`);
+      toast(parts.join(' · ') + ' รายการ', 'success');
+      closeModal('importOverlay');
+      loadMembers();
+    } else {
+      toast('Import ผิดพลาด: ' + (r.error || 'ไม่ทราบสาเหตุ'), 'error');
+    }
+  } catch(e) {
+    toast('เชื่อมต่อไม่ได้: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function downloadImportTemplate() {
+  if (typeof XLSX === 'undefined') { toast('กำลังโหลด library...', 'error'); return; }
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['รหัสพนักงาน','ชื่อ','นามสกุล','สังกัด/แผนก','role'],
+    ['EMP001','สมชาย','ใจดี','ฝ่ายไอที','user'],
+    ['EMP002','สมหญิง','รักดี','ฝ่ายบุคคล','user'],
+  ]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Members');
+  XLSX.writeFile(wb, 'member_template.xlsx');
+}
+
+/* ── Utils ───────────────────────────────────────────────── */
+function esc(s) {
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ea(s) { return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+/* ── Keyboard ────────────────────────────────────────────── */
+document.getElementById('empIdInput').addEventListener('keydown', e => { if(e.key==='Enter') doCheckEmpId(); });
+
+/* ── Auto-login on page load ─────────────────────────────── */
+window.addEventListener('load', tryAutoLogin);
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  ['locOverlay','courtOverlay','holidayOverlay','vipOverlay','banOverlay','memberOverlay','importOverlay','changePinOverlay','qrOverlay']
+    .forEach(id => document.getElementById(id).classList.remove('open'));
+  closeConfirm();
+});
+</script>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- Topbar alert strip -->
+<div class="topbar-alert" id="topbarAlert">
+  <span id="topbarAlertMsg"></span>
+  <button class="topbar-alert-close" onclick="_dismissAlert()">✕</button>
+</div>
+
+<script>
+/* ── Notification system ─────────────────────────────────────── */
+let _notifs = [];
+let _notifOpen = false;
+
+function toggleNotifDropdown() {
+  _notifOpen = !_notifOpen;
+  document.getElementById('notifDropdown').classList.toggle('open', _notifOpen);
+  if (_notifOpen) {
+    // Clear badge when opening
+    document.getElementById('notifBadge').classList.remove('show');
+    document.getElementById('notifBadge').textContent = '';
+    document.addEventListener('click', _notifOutsideClick, { once: true });
+  }
+}
+
+function _notifOutsideClick(e) {
+  if (!document.getElementById('notifBtn').contains(e.target) &&
+      !document.getElementById('notifDropdown').contains(e.target)) {
+    _notifOpen = false;
+    document.getElementById('notifDropdown').classList.remove('open');
+  }
+}
+
+function _addNotif(title, sub, onClick) {
+  _notifs.unshift({ title, sub, onClick, time: Date.now() });
+  if (_notifs.length > 20) _notifs.pop();
+  _renderNotifList();
+  if (!_notifOpen) {
+    const badge = document.getElementById('notifBadge');
+    const cur = parseInt(badge.textContent) || 0;
+    badge.textContent = cur + 1 > 9 ? '9+' : String(cur + 1);
+    badge.classList.add('show');
+  }
+}
+
+function _renderNotifList() {
+  const el = document.getElementById('notifList');
+  if (!_notifs.length) { el.innerHTML = '<div class="notif-empty">ยังไม่มีการแจ้งเตือน</div>'; return; }
+  el.innerHTML = _notifs.map((n, i) => `
+    <div class="notif-item" onclick="_notifClick(${i})">
+      <div class="notif-item-title">${esc(n.title)}</div>
+      <div class="notif-item-sub">${esc(n.sub)}</div>
+    </div>`).join('');
+}
+
+function _notifClick(i) {
+  const n = _notifs[i];
+  _notifOpen = false;
+  document.getElementById('notifDropdown').classList.remove('open');
+  if (n && n.onClick) n.onClick();
+}
+
+function clearNotifs() {
+  _notifs = [];
+  _renderNotifList();
+  const badge = document.getElementById('notifBadge');
+  badge.classList.remove('show');
+  badge.textContent = '';
+}
+
+/* ── Topbar alert strip ───────────────────────────────────────── */
+let _alertTimer = null;
+function adminAlert(msg) {
+  const el = document.getElementById('topbarAlert');
+  document.getElementById('topbarAlertMsg').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_alertTimer);
+  _alertTimer = setTimeout(_dismissAlert, 3000);
+}
+function _dismissAlert() {
+  document.getElementById('topbarAlert').classList.remove('show');
+}
+
+/* ── Real-time polling ────────────────────────────────────────── */
+let _rtHash = null;
+let _rtTimer = null;
+let _rtCount = null;
+
+async function _rtPoll() {
+  if (!PIN) return;
+  try {
+    const r = await apiGet({ action: 'adminStats', pin: PIN });
+    if (!r.ok) return;
+    const newCount = (r.totalBookings || 0);
+    if (_rtCount !== null && newCount > _rtCount) {
+      const diff = newCount - _rtCount;
+      const msg = `📋 มีการจองใหม่ ${diff} รายการ`;
+      adminAlert(msg);
+      _addNotif('การจองใหม่', `เพิ่มขึ้น ${diff} รายการ`, () => nav('dashboard'));
+      // Auto-refresh current section if it shows bookings
+      if (currentSection === 'dashboard' || currentSection === 'bookings') {
+        loadSection(currentSection);
+      }
+    }
+    _rtCount = newCount;
+  } catch(e) {}
+}
+
+function _startRtPolling() {
+  _rtTimer = setInterval(_rtPoll, 5000);
+}
+function _stopRtPolling() {
+  clearInterval(_rtTimer); _rtTimer = null;
+}
+</script>
+</body>
+</html>

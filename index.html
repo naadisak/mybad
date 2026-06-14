@@ -1,35 +1,3338 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจองสนามระบายแค้น</title>
-    <style>
-        /* ล้างขอบจอให้เว็บฝังเต็มพื้นที่ 100% */
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #f8fafc; }
-        iframe { width: 100%; height: 100%; border: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TQM ตบให้ยับ">
+<meta name="theme-color" content="#15803d">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TQM ตบให้ยับ — จองสนามแบดมินตัน</title>
+<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── GREEN PALETTE ─────────────────────────────────── */
+:root{
+  /* accent = deep green (30% darker) */
+  --red-1:#15803d;--red-2:#166534;--red-3:#14532d;
+  --accent:#166534;--accent-2:#15803d;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+  /* off-white surfaces */
+  --bg:#f7f6f2;--surface:#ffffff;--surface2:#f0ede8;--surface3:#e8e4dc;
+  --text:#111827;--muted:#4b7a5a;--border:#c8e6cc;
+  --card-bg:#ffffff;--input-bg:#f0ede8;--input-txt:#111827;
+  --topbar-bg:rgba(247,246,242,.95);
+  --radius:13px;--topbar-h:54px;
+  --pass-bg:rgba(21,128,61,.1);--pass-border:rgba(21,128,61,.35);--pass-text:#166534;
+  --warn-bg:rgba(249,115,22,.1);--warn-border:rgba(249,115,22,.35);--warn-text:#ea580c;
+  --danger-bg:rgba(239,68,68,.1);--danger-border:rgba(239,68,68,.35);--danger-text:#dc2626;
+}
+[data-theme="dark"]{
+  --bg:#0d1f12;--surface:#122018;--surface2:#1a2e1f;--surface3:#223528;
+  --text:#f0fdf4;--muted:#86efac;--border:#1e3a26;
+  --card-bg:#122018;--input-bg:#1a2e1f;--input-txt:#f0fdf4;
+  --topbar-bg:rgba(13,31,18,.93);
+  --pass-text:#4ade80;--warn-text:#fb923c;--danger-text:#f87171;
+}
+[data-theme="light"]{
+  --bg:#f7f6f2;--surface:#ffffff;--surface2:#f0ede8;--surface3:#e8e4dc;
+  --text:#111827;--muted:#4b7a5a;--border:#c8e6cc;
+  --card-bg:#ffffff;--input-bg:#f0ede8;--input-txt:#111827;
+  --topbar-bg:rgba(247,246,242,.95);
+  --pass-text:#166534;--warn-text:#ea580c;--danger-text:#dc2626;
+}
+
+html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:hidden;background:#e8e4dc}
+
+.mobile-shell{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(430px,100vw);height:min(932px,100vh);overflow:hidden;
+  border-radius:clamp(0px,calc((100vw - 430px)*9999),36px);
+  box-shadow:0 24px 80px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);
+}
+
+/* ══ SCREEN SYSTEM ══ */
+.screen{position:absolute;inset:0;z-index:10;transition:opacity .28s ease,visibility .28s}
+.screen.hidden{opacity:0;pointer-events:none;visibility:hidden}
+
+/* ══════════════════════════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════════════════════════ */
+#screenLogin{background:#14532d}
+
+.bg-color{position:absolute;inset:0;background:#14532d;z-index:0}
+.bg-glow{
+  position:absolute;inset:0;z-index:1;
+  background:
+    radial-gradient(ellipse 120% 80% at 65% 15%,rgba(34,197,94,.22) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 60% at 15% 75%,rgba(21,128,61,.16) 0%,transparent 50%);
+}
+.bg-topo{
+  position:absolute;inset:0;z-index:1;opacity:.2;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='250' cy='250' r='80' stroke='%23fff' stroke-width='1.2' fill='none'/%3E%3Ccircle cx='250' cy='250' r='130' stroke='%23fff' stroke-width='1' fill='none'/%3E%3Ccircle cx='250' cy='250' r='185' stroke='%23fff' stroke-width='.8' fill='none'/%3E%3Ccircle cx='250' cy='250' r='240' stroke='%23fff' stroke-width='.6' fill='none'/%3E%3Ccircle cx='420' cy='80' r='70' stroke='%23fff' stroke-width='1' fill='none'/%3E%3Ccircle cx='420' cy='80' r='110' stroke='%23fff' stroke-width='.8' fill='none'/%3E%3Ccircle cx='70' cy='420' r='60' stroke='%23fff' stroke-width='1' fill='none'/%3E%3Ccircle cx='70' cy='420' r='100' stroke='%23fff' stroke-width='.8' fill='none'/%3E%3Cpath d='M0,180 Q120,100 240,160 Q360,220 500,140' stroke='%23fff' stroke-width='1' fill='none'/%3E%3Cpath d='M0,260 Q150,180 280,240 Q400,300 500,220' stroke='%23fff' stroke-width='.9' fill='none'/%3E%3Cpath d='M0,340 Q100,270 220,320 Q360,380 500,300' stroke='%23fff' stroke-width='.7' fill='none'/%3E%3C/svg%3E");
+  background-size:500px 500px;
+}
+.login-layout{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column}
+.lt{height:40%;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:calc(var(--safe-top)+10px)}
+.lt-icon{font-size:min(72px,15vw);width:min(110px,26vw);height:min(110px,26vw);border:2px solid rgba(255,255,255,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);box-shadow:0 0 0 14px rgba(255,255,255,.05),0 0 0 28px rgba(255,255,255,.025)}
+.lt-name{font-size:clamp(.8rem,3.5vw,1rem);font-weight:700;color:rgba(255,255,255,.92);letter-spacing:3px;margin-top:.55rem}
+.lt-sub{font-size:clamp(.58rem,2.5vw,.68rem);color:rgba(255,255,255,.52);letter-spacing:1.5px;margin-top:.2rem}
+.wave{flex-shrink:0;line-height:0;margin-top:-1px}
+.wave svg{width:100%;height:clamp(40px,10vw,70px);display:block}
+.wave-dark svg path{fill:#0d1f12}
+.login-card{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;padding:clamp(1.2rem,4vw,1.75rem) clamp(1.25rem,5vw,2rem) calc(1.5rem + var(--safe-bot));animation:slideUp .4s cubic-bezier(.34,1,.64,1) .05s both}
+[data-theme="dark"] .login-card{background:#fff}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.sign-title{font-size:clamp(1.5rem,6vw,2rem);font-weight:700;color:#111;letter-spacing:-.5px;margin-bottom:.25rem}
+.sign-bar{width:38px;height:3px;border-radius:2px;background:var(--accent);margin-bottom:clamp(1rem,4vw,1.6rem)}
+.flbl{font-size:.7rem;font-weight:600;color:#999;letter-spacing:.5px;margin-bottom:.4rem;text-transform:uppercase;display:block}
+.input-row{display:flex;align-items:center;gap:8px;border-bottom:1.5px solid #e5e5e5;padding:.45rem 0;margin-bottom:clamp(.9rem,3.5vw,1.4rem);transition:border-color .2s}
+.input-row:focus-within{border-color:var(--accent)}
+.input-row svg{width:15px;height:15px;stroke:#c0c0c0;stroke-width:2;fill:none;stroke-linecap:round;flex-shrink:0}
+.input-row input{flex:1;border:none;outline:none;background:transparent;font-size:clamp(.88rem,3.5vw,1rem);font-family:'Bai Jamjuree',sans-serif;color:#111}
+.input-row input::placeholder{color:#c8c8c8}
+.err{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:.6rem .9rem;font-size:.78rem;color:#ef4444;margin-bottom:1rem;display:none;text-align:center;animation:shake .35s ease}
+.err.show{display:block}
+/* Ban screen */
+.ban-screen{display:none;text-align:center;padding:1.2rem 0 .5rem}
+.ban-screen.show{display:block}
+.ban-emoji{font-size:3.2rem;margin-bottom:.6rem}
+.ban-title{font-size:1.1rem;font-weight:700;color:#dc2626;margin-bottom:.45rem}
+.ban-msg{font-size:.8rem;color:#6b7280;line-height:1.55;margin-bottom:.75rem}
+.ban-reason-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:10px;padding:.55rem .8rem;font-size:.78rem;color:#dc2626;margin-bottom:.65rem;text-align:left}
+.ban-until{display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:20px;padding:.22rem .8rem;font-size:.72rem;color:#b91c1c;font-weight:600;margin-bottom:1rem}
+.ban-back-btn{width:100%;padding:.72rem;border:1.5px solid #e5e5e5;background:#fff;color:#555;border-radius:12px;font-size:.85rem;font-family:'Bai Jamjuree',sans-serif;cursor:pointer;font-weight:600}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.btn-login{width:100%;padding:clamp(.85rem,3.5vw,1.05rem);border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent-2),var(--accent));color:#fff;font-size:clamp(.9rem,3.5vw,1rem);font-weight:700;font-family:'Bai Jamjuree',sans-serif;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 20px rgba(22,101,52,.35);transition:all .18s;position:relative;overflow:hidden}
+.btn-login:active{transform:scale(.98)}
+.btn-login:disabled{opacity:.45;pointer-events:none}
+.btn-login::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent)}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════════════════════════════
+   APP SCREEN
+══════════════════════════════════════════════════════════════ */
+#screenApp{background:var(--bg);display:flex;flex-direction:column}
+
+.topbar{flex-shrink:0;height:var(--topbar-h);z-index:600;position:relative;background:var(--topbar-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 .9rem;gap:8px;transition:background .25s,border-color .25s}
+/* Topbar center status */
+.tb-status{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;pointer-events:none;white-space:nowrap}
+.tb-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.tb-status-dot.open{background:#22c55e;animation:tbPulse 1.6s ease-in-out infinite}
+.tb-status-dot.closed{background:#9ca3af}
+.tb-status-dot.full{background:#f59e0b;animation:tbPulseAmber 2s ease-in-out infinite}
+.tb-status-dot.loading{background:var(--border)}
+.tb-status-label{font-size:.7rem;font-weight:700;letter-spacing:.01em}
+.tb-status-label.open{color:#15803d}
+.tb-status-label.closed{color:#6b7280}
+.tb-status-label.full{color:#b45309}
+[data-theme="dark"] .tb-status-label.open{color:#4ade80}
+[data-theme="dark"] .tb-status-label.full{color:#fbbf24}
+@keyframes tbPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}60%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+@keyframes tbPulseAmber{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.5)}60%{box-shadow:0 0 0 5px rgba(245,158,11,0)}}
+.tb-logo{width:32px;height:32px;border-radius:9px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.tb-name{font-size:.88rem;font-weight:700;letter-spacing:-.2px;color:var(--text);flex:1;overflow:hidden}
+.tb-name-main{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-loc-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(21,128,61,.12);border:1px solid rgba(21,128,61,.3);
+  border-radius:20px;padding:.15rem .55rem;
+  font-size:.58rem;font-weight:700;color:var(--red-1);
+  cursor:pointer;transition:background .2s;margin-top:.15rem;
+  white-space:nowrap;
+}
+.tb-loc-chip:hover{background:rgba(21,128,61,.2)}
+.tb-btns{display:flex;gap:5px}
+.theme-btn,.btn-ic{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:all .2s;flex-shrink:0}
+.btn-logout-sm{width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:color .2s,background .2s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.btn-logout-sm:hover,.btn-logout-sm:active{color:var(--text);background:var(--surface2)}
+.av-wrap{display:flex;align-items:center;gap:6px;cursor:pointer;margin-left:2px}
+.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--red-2),var(--red-3));display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0}
+.u-name{font-size:.68rem;font-weight:600;color:var(--text);text-align:right;line-height:1.2}
+.u-role{font-size:.58rem;color:var(--muted);text-align:right}
+/* Notification bell */
+.notif-btn{position:relative}
+.notif-badge{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none;border:1.5px solid var(--topbar-bg)}
+/* Notification panel */
+.notif-panel{position:fixed;top:var(--topbar-h);left:0;right:0;z-index:550;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.18);max-height:60vh;overflow-y:auto;transform:translateY(-110%);transition:transform .3s cubic-bezier(.34,1.3,.64,1);overscroll-behavior:contain}
+.notif-panel.open{transform:translateY(0)}
+.notif-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem .5rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+.notif-panel-hdr h4{font-size:.85rem;font-weight:700;color:var(--text);margin:0}
+.notif-clear{font-size:.72rem;color:var(--muted);cursor:pointer;padding:.2rem .5rem;border-radius:6px;border:1px solid var(--border);background:none;font-family:inherit}
+.notif-empty{text-align:center;padding:2rem 1rem;font-size:.8rem;color:var(--muted)}
+.notif-item{display:flex;align-items:flex-start;gap:.65rem;padding:.7rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.notif-item:active{background:var(--surface2)}
+.notif-item.unread{background:rgba(239,68,68,.06)}
+.notif-item .ni-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;margin-top:1px}
+.notif-item.type-cancel .ni-icon{background:rgba(239,68,68,.15)}
+.notif-item.type-info .ni-icon{background:rgba(22,101,52,.1)}
+.notif-item .ni-body{flex:1;min-width:0}
+.notif-item .ni-msg{font-size:.78rem;font-weight:600;color:var(--text);line-height:1.4}
+.notif-item .ni-time{font-size:.68rem;color:var(--muted);margin-top:2px}
+.notif-overlay{position:fixed;top:var(--topbar-h);left:0;right:0;bottom:0;z-index:549;display:none}
+.notif-overlay.open{display:block}
+
+.tab-content{flex:1;overflow:hidden;position:relative}
+.tab-pane{position:absolute;inset:0;overflow-y:auto;padding:1rem 1rem calc(88px + var(--safe-bot));opacity:0;pointer-events:none;transform:translateY(6px);transition:opacity .25s,transform .25s}
+.tab-pane.active{opacity:1;pointer-events:all;transform:translateY(0)}
+
+/* Floating pill nav */
+.bottom-nav{position:absolute;bottom:calc(.85rem + var(--safe-bot));left:50%;transform:translateX(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:60px;display:flex;align-items:center;padding:0 .35rem;box-shadow:0 8px 32px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.18);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);height:62px;min-width:240px;transition:background .25s,border-color .25s}
+[data-theme="light"] .bottom-nav{box-shadow:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.08)}
+.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:.45rem .9rem;color:var(--muted);-webkit-tap-highlight-color:transparent;border-radius:50px;transition:color .2s,background .2s;min-width:70px;border:none;background:none;font-family:inherit;cursor:pointer}
+.nav-item:active{background:var(--surface2)}
+.nav-item.active{color:var(--red-1)}
+.nav-item svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav-label{font-size:.57rem;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+.nav-fab-wrap{display:flex;align-items:center;justify-content:center;padding:0 .35rem}
+.nav-fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--red-1),var(--red-2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(22,101,52,.45);transition:transform .15s;-webkit-tap-highlight-color:transparent;position:relative;z-index:2;margin-top:-14px;font-size:24px}
+.nav-fab:active{transform:scale(.92)}
+.nav-fab::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(21,128,61,.4);animation:fabPulse 2s ease-out infinite}
+.nav-fab::after{content:'';position:absolute;inset:-14px;border-radius:50%;border:1.5px solid rgba(21,128,61,.2);animation:fabPulse 2s ease-out infinite .4s}
+@keyframes fabPulse{0%{transform:scale(.85);opacity:.8}60%{transform:scale(1.15);opacity:0}100%{transform:scale(1.15);opacity:0}}
+
+/* ══ CARDS ══════════════════════════════════════════════════ */
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.75rem;overflow:hidden;transition:background .25s,border-color .25s}
+.card-header{display:flex;align-items:center;gap:8px;padding:.7rem .9rem;border-bottom:1px solid var(--border)}
+.card-icon{width:26px;height:26px;border-radius:7px;background:rgba(22,101,52,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+.card-title{font-size:.78rem;font-weight:700;color:var(--text)}
+.card-body{padding:.9rem}
+
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.65rem .9rem;transition:background .25s,border-color .25s}
+.month-nav-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.month-nav-label{font-size:.85rem;font-weight:700;color:var(--text)}
+
+.booking-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem .9rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.85rem;position:relative;overflow:hidden;transition:background .25s,border-color .25s}
+.booking-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--red-1),var(--red-2))}
+.bk-date-box{flex-shrink:0;width:46px;height:46px;background:linear-gradient(135deg,var(--red-2),var(--red-3));border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.bk-day{font-size:1.15rem;font-weight:700;line-height:1}
+.bk-mon{font-size:.6rem;font-weight:500;opacity:.85}
+.bk-info{flex:1;min-width:0}
+.bk-court{font-size:.82rem;font-weight:700;color:var(--text)}
+.bk-time{font-size:.72rem;color:var(--muted);margin-top:2px}
+.bk-loc{font-size:.64rem;margin-top:3px;display:inline-flex;align-items:center;gap:3px;background:rgba(21,128,61,.1);border:1px solid rgba(21,128,61,.2);color:var(--red-1);padding:.12rem .5rem;border-radius:10px;font-weight:700}
+.bk-month-hd{font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.04em;padding:.9rem .1rem .35rem}
+.bk-hd-today{color:#16a34a;font-size:.75rem}
+.bk-id{font-size:.58rem;color:var(--muted);margin-top:3px;opacity:.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-cancel-sm{flex-shrink:0;padding:.38rem .75rem;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:#f87171;border-radius:20px;font-size:.7rem;font-family:inherit;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-cancel-sm:hover{background:rgba(239,68,68,.15)}
+.booking-card.past{opacity:1;background:var(--surface2);border-color:var(--border)}
+.booking-card.past::before{background:var(--border)}
+.booking-card.past .bk-date-box{background:linear-gradient(135deg,#9ca3af,#6b7280);filter:grayscale(1)}
+.booking-card.past .bk-court,.booking-card.past .bk-time,.booking-card.past .bk-id,.booking-card.past .bk-loc{color:var(--muted)}
+.ci-badge{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:.2rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700}
+.ci-badge.done{background:rgba(22,101,52,.12);color:#15803d;border:1px solid rgba(22,101,52,.25)}
+.ci-badge.noshow{background:rgba(107,114,128,.1);color:#6b7280;border:1px solid rgba(107,114,128,.2)}
+[data-theme="dark"] .ci-badge.done{background:rgba(22,101,52,.2);color:#4ade80}
+[data-theme="dark"] .ci-badge.noshow{background:rgba(107,114,128,.15);color:#9ca3af}
+/* Quota bar */
+.quota-bar-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:.65rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+.quota-label{font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:1px}
+.quota-loc-row{display:flex;align-items:center;gap:8px}
+.quota-loc-name{font-size:.67rem;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quota-pips{display:flex;gap:3px}
+.quota-pip{width:14px;height:6px;border-radius:3px;background:var(--border);transition:background .2s}
+.quota-pip.used{background:var(--red-1)}
+.quota-pip.used.warn{background:#f59e0b}
+.quota-count{font-size:.7rem;font-weight:700;color:var(--muted);min-width:28px;text-align:right}
+/* Check-in button on booking card */
+.btn-checkin-card{flex-shrink:0;padding:.38rem .7rem;border:none;background:linear-gradient(135deg,#15803d,#166534);color:#fff;border-radius:20px;font-size:.68rem;font-family:inherit;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(22,101,52,.35)}
+/* Too-far modal */
+.toofar-ov{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:900;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;transition:background .3s ease}
+.toofar-ov.open{background:rgba(0,0,0,.6);pointer-events:all}
+.toofar-card{background:var(--surface);border-radius:22px 22px 0 0;padding:0 1.2rem calc(1.8rem + var(--safe-bot));width:100%;transform:translateY(105%);transition:transform .38s cubic-bezier(.32,0,.16,1);overflow:hidden}
+.toofar-ov.open .toofar-card{transform:translateY(0)}
+.toofar-emoji{font-size:2.8rem;text-align:center;margin-bottom:.5rem;line-height:1}
+.toofar-title{font-size:1rem;font-weight:700;color:var(--text);text-align:center;margin-bottom:.6rem}
+.toofar-body{font-size:.82rem;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:1.1rem}
+.toofar-dist{display:inline-block;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#dc2626;border-radius:20px;padding:.2rem .75rem;font-size:.78rem;font-weight:700;margin:.4rem auto .2rem;display:block;width:fit-content}
+.toofar-btn{width:100%;padding:.78rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:14px;font-size:.88rem;font-family:inherit;font-weight:700;cursor:pointer;margin-top:.5rem}
+.btn-checkin-card:active{transform:scale(.95)}
+.btn-checkin-card:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-share-card{flex-shrink:0;padding:.3rem .6rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:16px;font-size:.65rem;font-family:inherit;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn-share-card:active{transform:scale(.93)}
+
+/* Calendar */
+/* ── Booking status banner ── */
+.bk-status-banner{border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:.65rem;font-size:.8rem;line-height:1.45}
+.bk-status-banner.bsb-open{background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1.5px solid #86efac;color:#14532d}
+.bk-status-banner.bsb-closed{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1.5px solid #fca5a5;color:#7f1d1d}
+.bk-status-banner.bsb-full{background:linear-gradient(135deg,#fef9c3,#fef08a);border:1.5px solid #fde047;color:#713f12}
+.bsb-ico{font-size:1.4rem;flex-shrink:0;line-height:1}
+.bsb-body{flex:1}
+.bsb-title{font-weight:700;font-size:.85rem;margin-bottom:2px}
+.bsb-sub{opacity:.8;font-size:.75rem}
+.bsb-loc-row{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center}
+.bsb-loc-chip{font-size:.76rem;padding:.35rem .9rem;border-radius:20px;font-weight:600;border:1.5px solid transparent;font-family:inherit;cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent;display:inline-flex;align-items:center;gap:.32rem}
+.bsb-loc-chip.full{background:rgba(239,68,68,.1);color:#b91c1c;border-color:rgba(239,68,68,.2)}
+.bsb-loc-chip.ok{background:rgba(22,101,52,.1);color:#14532d;border-color:rgba(22,101,52,.2)}
+.bsb-loc-chip.selected{background:var(--red-1);color:#fff;border-color:transparent;box-shadow:0 3px 12px rgba(22,101,52,.3);animation:heartbeat 1.4s ease-in-out infinite}
+.bsb-loc-chip.selected.full{background:#b91c1c;box-shadow:0 3px 12px rgba(220,38,38,.3)}
+.loc-chip-dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.loc-chip-dot.ok{background:#16a34a}
+.loc-chip-dot.full{background:#dc2626}
+.bsb-loc-chip.selected .loc-chip-dot{opacity:.7}
+.cur-loc-status{margin:.5rem .9rem .25rem;padding:.5rem .8rem;background:rgba(22,101,52,.08);border:1px solid rgba(22,101,52,.22);border-radius:10px;font-size:.76rem;color:#14532d;font-weight:600;display:none;line-height:1.45}
+[data-theme="dark"] .cur-loc-status{background:rgba(22,101,52,.15);border-color:rgba(22,101,52,.3);color:#86efac}
+.cur-loc-note{font-size:.72rem;font-weight:600;color:var(--muted);padding:.35rem .1rem .5rem;display:flex;align-items:center}
+.cur-loc-note.warn{color:#b45309}
+[data-theme="dark"] .cur-loc-note.warn{color:#fbbf24}
+
+
+/* ── Status change toast ── */
+.sct{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);z-index:500;padding:.65rem 1.2rem;border-radius:12px;font-size:.82rem;font-weight:600;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.sct-show{opacity:1;transform:translateX(-50%) translateY(0)}
+.sct-closed{background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5}
+.sct-open{background:#dcfce7;color:#14532d;border:1px solid #86efac}
+
+.cal-top{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:.75rem;transition:background .25s,border-color .25s}
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;padding:.8rem .9rem;background:rgba(22,101,52,.08);border-bottom:1px solid var(--border)}
+.cal-nav-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.cal-month-lbl{font-size:.9rem;font-weight:700;color:var(--text)}
+.cal-year-lbl{font-size:.65rem;color:var(--muted)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:.75rem .5rem .9rem}
+.cal-dh{text-align:center;font-size:.62rem;font-weight:700;color:var(--muted);padding-bottom:.55rem}
+.cal-dh:first-child{color:var(--red-1)}
+.cal-dh:last-child{color:rgba(21,128,61,.55)}
+.cal-cell{display:flex;flex-direction:column;align-items:center;padding:2px 1px 5px;border-radius:8px;cursor:default;transition:background .15s;min-height:44px}
+.cal-num{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.78rem;font-weight:600;color:var(--text);transition:all .15s}
+.cal-dot{width:5px;height:5px;border-radius:50%;margin-top:2px}
+.cal-cell.past .cal-num{color:var(--muted);opacity:.35}
+/* Available: blinking green dot */
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.45)}}
+.cal-cell.available{cursor:pointer}
+.cal-cell.available:hover{background:rgba(21,128,61,.08)}
+.cal-cell.available:active{background:rgba(21,128,61,.14)}
+.cal-cell.available .cal-dot{background:#22c55e;animation:dotPulse 1.6s ease-in-out infinite}
+/* Full: gray + red dot, view-only */
+.cal-cell.full{cursor:pointer}
+.cal-cell.full:hover{background:rgba(239,68,68,.06)}
+.cal-cell.full:active{background:rgba(239,68,68,.12)}
+.cal-cell.full .cal-num{color:var(--muted)!important;opacity:.6}
+.cal-cell.full .cal-dot{background:#ef4444}
+/* Closed / not configured — same as past */
+/* Already booked by this user: red dot, still clickable to view */
+.cal-cell.mybooked.available{cursor:pointer}
+.cal-cell.mybooked.available:hover{background:rgba(239,68,68,.06)}
+.cal-cell.mybooked.available .cal-num{color:var(--muted)!important;opacity:.6}
+/* No-bookable-month placeholder */
+.cal-no-month{grid-column:1/-1;text-align:center;padding:1.6rem .5rem 1rem;color:var(--muted)}
+.cal-no-month i{font-size:2rem;margin-bottom:.5rem;display:block;opacity:.35}
+.cal-no-month-txt{font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:.2rem;opacity:.7}
+.cal-no-month-sub{font-size:.69rem}
+/* Cal loading */
+.cal-loading{grid-column:1/-1;display:flex;justify-content:center;padding:2rem 0;opacity:.45}
+.cal-cell.holiday .cal-num{color:#fbbf24}
+.cal-cell.holiday .cal-dot{background:#fbbf24}
+.cal-cell.today .cal-num{background:linear-gradient(135deg,var(--red-1),var(--red-2));color:#fff;font-weight:800}
+.cal-cell.selected .cal-num{background:var(--red-2);color:#fff;font-weight:800}
+.cal-cell.sun .cal-num{color:var(--red-1)}
+.cal-cell.sat .cal-num{color:rgba(21,128,61,.6)}
+.cal-cell.today .cal-num,.cal-cell.selected .cal-num{color:#fff!important}
+/* unknown/closed = not bookable, no cursor */
+.cal-cell.unknown .cal-num,.cal-cell.closed .cal-num{color:var(--muted);opacity:.28}
+.cal-legend{display:flex;gap:14px;flex-wrap:wrap;padding:.55rem .9rem .75rem;border-top:1px solid var(--border)}
+.leg{display:flex;align-items:center;gap:5px;font-size:.65rem;color:var(--muted);font-weight:600}
+.leg-dot{width:6px;height:6px;border-radius:50%}
+.cal-hint{text-align:center;color:var(--muted);font-size:.75rem;padding:.75rem 0 .25rem}
+/* Holiday list */
+.hol-list-hd{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;color:#92400e;letter-spacing:.03em;padding:.55rem 0 .4rem;border-top:1px solid var(--border);margin-bottom:.15rem}
+.hol-item{display:flex;align-items:center;gap:.65rem;padding:.45rem .1rem;border-bottom:1px solid var(--border)}
+.hol-item:last-child{border-bottom:none}
+.hol-date-box{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(217,119,6,.3)}
+.hol-day{font-size:.92rem;font-weight:800;color:#fff;line-height:1}
+.hol-mon{font-size:.52rem;font-weight:600;color:rgba(255,255,255,.88);margin-top:1px}
+.hol-name{font-size:.78rem;font-weight:700;color:var(--text)}
+
+/* Sheet */
+.sheet-ov{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:200;pointer-events:none;transition:background .32s ease}
+.sheet-ov.open{background:rgba(0,0,0,.6);pointer-events:all}
+.bsheet{position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:22px 22px 0 0;padding-bottom:calc(1rem + var(--safe-bot));max-height:88%;display:flex;flex-direction:column;transform:translateY(105%);transition:transform .38s cubic-bezier(.32,0,.16,1),background .25s;overflow:hidden;will-change:transform}
+.sheet-ov.open .bsheet{transform:translateY(0)}
+.sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;flex-shrink:0}
+.sheet-hdr{background:rgba(22,101,52,.08);border-bottom:1px solid var(--border);padding:.8rem .9rem .85rem;flex-shrink:0}
+.sheet-title{font-size:1rem;font-weight:700;color:var(--text)}
+.sheet-sub{font-size:.72rem;color:var(--muted);margin-top:3px}
+.sheet-body{flex:1;overflow-y:auto;padding:.75rem .75rem .5rem}
+.sheet-foot{padding:.65rem .75rem;border-top:1px solid var(--border);flex-shrink:0;background:var(--surface);display:none;transition:background .25s}
+.slot-grp{margin-bottom:1rem}
+.slot-grp-lbl{font-size:.62rem;font-weight:700;color:rgba(21,128,61,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.45rem;padding:0 2px}
+.slot-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1.5px solid var(--border);border-radius:11px;padding:.65rem .85rem;margin-bottom:.5rem;transition:all .2s}
+.slot-row.free{cursor:pointer}
+.slot-row.free:hover{border-color:rgba(21,128,61,.4);background:rgba(21,128,61,.05)}
+.slot-row.selected{border-color:var(--red-1);background:rgba(21,128,61,.07)}
+.slot-row.booked,.slot-row.past{opacity:.4}
+.slot-row.vip{border-color:#f59e0b;background:linear-gradient(135deg,rgba(251,191,36,.1) 0%,rgba(245,158,11,.05) 100%);opacity:1;position:relative;overflow:hidden}
+.slot-row.vip::before{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(251,191,36,.18),transparent);animation:vipShimmer 3.5s ease-in-out infinite;pointer-events:none}
+@keyframes vipShimmer{0%{left:-100%}60%,100%{left:160%}}
+.slot-court{font-size:.82rem;font-weight:700;color:var(--text)}
+.slot-time-txt{font-size:.7rem;color:var(--muted);margin-top:2px}
+.badge{padding:.28rem .7rem;border-radius:20px;font-size:.65rem;font-weight:700;flex-shrink:0}
+.badge-free{background:rgba(21,128,61,.1);color:#4ade80;border:1px solid rgba(21,128,61,.3)}
+.badge-booked{background:var(--surface3);color:var(--muted)}
+.badge-past{background:var(--surface3);color:var(--muted)}
+.badge-vip{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:1px solid #f59e0b;font-weight:800;letter-spacing:.3px;box-shadow:0 1px 4px rgba(245,158,11,.25)}
+.crown-anim{display:inline-block;animation:crownBob 2.2s ease-in-out infinite;transform-origin:center bottom}
+@keyframes crownBob{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-3px) rotate(-8deg)}75%{transform:translateY(-3px) rotate(8deg)}}
+.slot-vip-note{font-size:.65rem;color:#b45309;margin-top:5px;font-style:italic;line-height:1.3;max-width:190px;opacity:.9}
+.badge-sel{background:rgba(21,128,61,.15);color:var(--red-1);border:1px solid rgba(21,128,61,.35)}
+.btn-waitlist{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;transition:all .18s;-webkit-tap-highlight-color:transparent}
+.btn-waitlist.active{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.5);color:#d97706}
+.btn-waitlist:active{transform:scale(.88)}
+
+/* Modals */
+.modal-ov{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:300;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;transition:background .32s ease}
+.modal-ov.open{background:rgba(0,0,0,.6);pointer-events:all}
+.modal-card{background:var(--surface);border-radius:22px 22px 0 0;padding:0 1.2rem calc(1.8rem + var(--safe-bot));width:100%;transform:translateY(105%);transition:transform .38s cubic-bezier(.32,0,.16,1),background .25s;overflow:hidden;will-change:transform}
+.modal-ov.open .modal-card{transform:translateY(0)}
+.mhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 18px}
+.modal-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem}
+.bk-summary{background:rgba(22,101,52,.1);border:1px solid rgba(22,101,52,.2);border-radius:12px;padding:.9rem;margin-bottom:1rem}
+.bk-sum-row{display:flex;align-items:center;gap:.65rem;margin-bottom:.55rem;font-size:.8rem;color:var(--text)}
+.bk-sum-row:last-child{margin-bottom:0}
+.bk-sum-row strong{font-weight:700}
+.mf{margin-bottom:.9rem}
+.mf label{display:block;font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.45rem}
+.mf-row{display:flex;align-items:center;gap:8px;border-bottom:1.5px solid var(--border);padding:.4rem 0;transition:border-color .2s}
+.mf-row:focus-within{border-color:var(--red-1)}
+.mf-row svg{width:15px;height:15px;stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round;flex-shrink:0}
+.mf-input{flex:1;border:none;outline:none;background:transparent;font-size:.88rem;font-family:'Bai Jamjuree',sans-serif;color:var(--input-txt)}
+.mf-input::placeholder{color:var(--muted)}
+.btn-cta{width:100%;padding:.85rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--red-1),var(--red-2));color:#fff;font-size:.9rem;font-family:inherit;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(22,101,52,.35);transition:opacity .2s,transform .1s;margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-cta:active{transform:scale(.97)}
+.btn-cta:disabled{opacity:.4}
+.btn-sec{width:100%;padding:.75rem;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:.85rem;font-family:inherit;font-weight:700;cursor:pointer;margin-top:.5rem}
+
+/* Pin dialog */
+.pin-ov{position:absolute;inset:0;background:rgba(0,0,0,.75);z-index:400;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .25s}
+.pin-ov.open{opacity:1;pointer-events:all}
+.pin-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.5rem 1.35rem 1.35rem;width:100%;max-width:300px;text-align:center;animation:popIn .3s ease;transition:background .25s}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.pin-ico-wrap{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--red-1),var(--red-2));display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto .8rem}
+.pin-ttl{font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.pin-sub{font-size:.68rem;color:var(--muted);margin-bottom:1.1rem}
+.pin-field{display:flex;align-items:center;gap:8px;border-bottom:1.5px solid var(--border);padding:.4rem 0;margin-bottom:.9rem;transition:border-color .2s}
+.pin-field:focus-within{border-color:var(--red-1)}
+.pin-field svg{width:15px;height:15px;stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round;flex-shrink:0}
+.pin-input{flex:1;border:none;outline:none;background:transparent;font-size:1.2rem;font-family:'Bai Jamjuree',sans-serif;color:var(--input-txt);letter-spacing:8px;text-align:center}
+.pin-input::placeholder{color:var(--muted);letter-spacing:0;font-size:.88rem}
+
+/* Badge alert */
+#appBadge{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-120px);background:#15803d;color:#fff;border-radius:99px;padding:.55rem 1.2rem;font-size:.82rem;font-weight:700;z-index:99999;white-space:nowrap;box-shadow:0 4px 20px rgba(21,128,61,.45);transition:transform .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+#appBadge.show{transform:translateX(-50%) translateY(0)}
+
+/* Toast */
+.toast{position:fixed;top:calc(var(--topbar-h)+8px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:.6rem 1rem;font-size:.78rem;font-weight:600;z-index:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;display:flex;align-items:center;gap:8px;box-shadow:0 8px 28px rgba(0,0,0,.3);color:var(--text)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:rgba(21,128,61,.3);color:#4ade80}
+.toast.error{border-color:rgba(239,68,68,.3);color:#f87171}
+
+/* Alerts */
+.alert{padding:.6rem .85rem;border-radius:10px;font-size:.75rem;margin-bottom:.75rem;border:1px solid}
+.a-danger{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-text)}
+.a-success{background:var(--pass-bg);border-color:var(--pass-border);color:var(--pass-text)}
+.a-warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-text)}
+.a-info{background:rgba(21,128,61,.06);border-color:rgba(21,128,61,.2);color:rgba(255,100,100,.8)}
+.empty-state{text-align:center;padding:3rem 1rem}
+.empty-ic{font-size:3rem;margin-bottom:.75rem}
+.empty-txt{font-size:.88rem;font-weight:700;color:var(--muted)}
+.empty-sub{font-size:.75rem;color:var(--muted);margin-top:.35rem;opacity:.7}
+.spin-dk{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--red-1);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+.load-wrap{text-align:center;padding:2rem;color:var(--muted)}
+.hidden{display:none!important}
+
+/* ══ ADMIN SCREEN ════════════════════════════════════════ */
+.adm-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.6rem}
+.adm-stat{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.65rem .75rem;text-align:center;transition:background .25s,border-color .25s}
+.adm-stat-val{font-size:1.5rem;font-weight:800;color:var(--red-1);line-height:1}
+.adm-stat-lbl{font-size:.63rem;color:var(--muted);margin-top:3px;font-weight:600}
+.adm-loc-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}
+.adm-loc-chip{background:rgba(21,128,61,.08);border:1px solid rgba(21,128,61,.2);color:var(--red-1);border-radius:20px;padding:.22rem .65rem;font-size:.66rem;font-weight:700}
+.adm-filters{display:flex;gap:.4rem;margin-bottom:.6rem;flex-wrap:wrap;align-items:center}
+.adm-sel{padding:.42rem .55rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:.74rem;font-family:inherit;outline:none;transition:border-color .2s}
+.adm-sel:focus{border-color:var(--red-1)}
+.adm-bk-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;margin-bottom:.45rem;display:flex;align-items:center;gap:.55rem;transition:background .25s,border-color .25s}
+.adm-bk-main{flex:1;min-width:0}
+.adm-bk-loc{display:inline-block;font-size:.6rem;background:rgba(21,128,61,.1);color:var(--red-1);border-radius:10px;padding:.1rem .4rem;margin-bottom:.2rem;font-weight:700}
+.adm-bk-name{font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:.12rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-bk-detail{font-size:.68rem;color:var(--muted)}
+.adm-ban-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;margin-bottom:.45rem;display:flex;align-items:center;gap:.55rem;transition:background .25s,border-color .25s}
+.adm-ban-main{flex:1;min-width:0}
+.adm-ban-emp{font-size:.82rem;font-weight:700;color:var(--text)}
+.adm-ban-info{font-size:.68rem;color:var(--muted);margin-top:.12rem}
+
+/* ══ CHECK-IN SCREEN ══════════════════════════════════════ */
+#screenCheckin{background:#14532d}
+.ci-bg-glow{
+  position:absolute;inset:0;z-index:1;
+  background:
+    radial-gradient(ellipse 120% 80% at 65% 15%,rgba(34,197,94,.18) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 60% at 15% 75%,rgba(21,128,61,.12) 0%,transparent 50%);
+}
+.ci-card{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;padding:clamp(1.2rem,4vw,1.75rem) clamp(1.25rem,5vw,2rem) calc(1.5rem + var(--safe-bot));animation:slideUp .4s cubic-bezier(.34,1,.64,1) .05s both}
+.ci-bar{width:38px;height:3px;border-radius:2px;background:#14532d;margin-bottom:clamp(1rem,4vw,1.4rem)}
+.btn-ci{width:100%;padding:clamp(.85rem,3.5vw,1.05rem);border-radius:14px;border:none;background:linear-gradient(135deg,#15803d,#14532d);color:#fff;font-size:clamp(.9rem,3.5vw,1rem);font-weight:700;font-family:'Bai Jamjuree',sans-serif;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 20px rgba(22,101,52,.4);transition:all .18s;position:relative;overflow:hidden}
+.btn-ci:active{transform:scale(.98)}
+.btn-ci:disabled{opacity:.45;pointer-events:none}
+.btn-ci::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent)}
+.ci-loc-badge{background:rgba(22,101,52,.08);border:1px solid rgba(22,101,52,.22);border-radius:10px;padding:.55rem .85rem;margin-bottom:1rem;font-size:.78rem;color:#14532d;display:flex;align-items:center;gap:6px;font-weight:600}
+.ci-status{text-align:center;color:#666;font-size:.78rem;margin-bottom:.65rem;min-height:1.2em}
+.ci-result{margin-top:1rem;padding:1.1rem;background:rgba(21,128,61,.07);border:1.5px solid rgba(21,128,61,.3);border-radius:14px;display:none}
+.ci-result-ico{font-size:2.5rem;text-align:center;margin-bottom:.6rem}
+.ci-result-body{font-size:.82rem;color:#111;line-height:2;text-align:center}
+.ci-result-row{display:flex;align-items:center;justify-content:center;gap:.5rem}
+.ci-err-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:.6rem .9rem;font-size:.78rem;color:#ef4444;margin-bottom:1rem;display:none;text-align:center;animation:shake .35s ease}
+.ci-err-box.show{display:block}
+
+/* ── Font Awesome icon colours ────────────────────────── */
+.tb-logo i,.loc-icon i{color:#fff}
+.lt-icon{color:#fff}
+.lt-icon i{font-size:inherit}
+.nav-item-img{font-size:20px;display:block;text-align:center;line-height:1;margin:0 auto 2px}
+
+/* ══════════════════════════════════════════════════════════════
+   PHOTO GALLERY — แชร์ความสุข
+══════════════════════════════════════════════════════════════ */
+.gal-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem .9rem .5rem}
+.gal-title{font-size:.9rem;font-weight:700;color:var(--text)}
+.gal-count{font-size:.72rem;color:var(--muted)}
+/* admin-cancelled notification banner */
+.cancelled-banner{position:fixed;top:calc(var(--topbar-h) + 8px);left:50%;transform:translateX(-50%) translateY(calc(-100% - var(--topbar-h) - 20px));z-index:700;background:#ef4444;color:#fff;border-radius:14px;padding:.6rem 1rem .6rem 1rem;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 6px 24px rgba(239,68,68,.45);transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:auto;max-width:calc(100vw - 2rem)}
+.cancelled-banner.show{transform:translateX(-50%) translateY(0)}
+.cancelled-banner .cb-close{margin-left:4px;width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;flex-shrink:0}
+/* pull-to-refresh */
+.ptr-indicator{position:absolute;top:calc(var(--topbar-h) + 4px);left:50%;transform:translateX(-50%) translateY(0);z-index:200;display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.32rem .85rem;font-size:.75rem;color:var(--muted);font-weight:600;opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.ptr-indicator .ptr-spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--red-1);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gal-upload-btn{display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--red-1),var(--red-2));color:#fff;border:none;border-radius:20px;padding:.42rem .9rem;font-size:.78rem;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 3px 10px rgba(22,101,52,.3);transition:all .18s;flex-shrink:0}
+.gal-upload-btn:active{transform:scale(.96)}
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 0 1rem}
+.gal-item{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--surface3);cursor:pointer}
+.gal-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}
+.gal-item:active img{transform:scale(.96)}
+.gal-item-cap{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.72));color:#fff;font-size:.6rem;padding:.3rem .35rem .35rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gal-item-owner{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;font-size:.5rem;border-radius:8px;padding:.1rem .3rem;max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gal-load-more{display:flex;justify-content:center;padding:.75rem .9rem 1rem}
+.gal-load-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:20px;padding:.55rem 1.5rem;font-size:.8rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s}
+.gal-load-btn:active{transform:scale(.97)}
+.gal-filters{display:flex;gap:6px;padding:0 .9rem .6rem;flex-wrap:wrap}
+.gal-filter-chip{border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:20px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s}
+.gal-filter-chip.active{background:var(--red-1);border-color:var(--red-1);color:#fff}
+.gal-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem;line-height:2}
+.gal-empty-ico{font-size:2.8rem;margin-bottom:.5rem}
+.gal-mine-del{position:absolute;top:4px;left:4px;background:rgba(239,68,68,.82);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;display:none}
+.gal-item:hover .gal-mine-del{display:flex}
+
+/* lightbox */
+.gal-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;overflow:hidden}
+.gal-lightbox.open{opacity:1;pointer-events:all}
+.gal-lb-inner{display:flex;flex-direction:column;align-items:center;width:100%;transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .2s}
+.gal-lb-img{max-width:92%;max-height:72vh;object-fit:contain;border-radius:8px;user-select:none;touch-action:none}
+.gal-lb-info{color:#fff;text-align:center;padding:.6rem 1.2rem;max-width:500px}
+.gal-lb-caption{font-size:.95rem;margin-bottom:.3rem;line-height:1.5}
+.gal-lb-meta{font-size:.72rem;opacity:.65}
+.gal-lb-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
+.gal-lb-share{position:absolute;top:1rem;left:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:background .18s}
+.gal-lb-share:active{background:rgba(255,255,255,.3)}
+.gal-lb-counter{position:absolute;top:1rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:.75rem;background:rgba(0,0,0,.4);border-radius:12px;padding:.2rem .7rem}
+
+/* upload modal */
+.gal-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+.gal-modal-ov.open{opacity:1;pointer-events:all}
+.gal-modal-card{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:560px;padding:1rem 1rem calc(1rem + var(--safe-bot));max-height:92vh;overflow-y:auto;transform:translateY(40px);transition:transform .28s cubic-bezier(.22,1,.36,1)}
+.gal-modal-ov.open .gal-modal-card{transform:translateY(0)}
+.gal-modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto .9rem}
+.gal-modal-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem}
+.gal-prog-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:.5rem 0;display:none}
+.gal-prog-track.show{display:block}
+.gal-prog-fill{height:100%;background:linear-gradient(90deg,#15803d,#22c55e);border-radius:3px;width:0%;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.gal-prog-label{font-size:.72rem;color:var(--muted);text-align:center;min-height:1.1rem}
+.gal-preview-wrap{position:relative;width:100%;aspect-ratio:1/1;background:var(--surface3);border-radius:12px;overflow:hidden;margin-bottom:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.gal-preview-wrap canvas,.gal-preview-wrap img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.gal-preview-placeholder{text-align:center;color:var(--muted)}
+.gal-preview-placeholder .ico{font-size:3rem;margin-bottom:.4rem}
+.gal-preview-placeholder p{font-size:.82rem}
+.gal-cap-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:.6rem .75rem;font-size:.9rem;font-family:inherit;background:var(--input-bg);color:var(--text);resize:none;outline:none;transition:border-color .2s;box-sizing:border-box;min-height:70px}
+.gal-cap-input:focus{border-color:var(--red-1)}
+.gal-bk-sel{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:.55rem .75rem;font-size:.82rem;font-family:inherit;background:var(--input-bg);color:var(--text);outline:none;margin-bottom:.75rem}
+.gal-submit-btn{width:100%;padding:.8rem;background:linear-gradient(135deg,var(--red-1),var(--red-2));color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700;font-family:inherit;cursor:pointer;margin-top:.75rem;transition:all .18s}
+.gal-submit-btn:disabled{opacity:.5;pointer-events:none}
+.gal-upload-prog{text-align:center;font-size:.8rem;color:var(--muted);margin-top:.5rem;min-height:1.2em}
+#galUploadInput{display:none}
+
+/* ── Centered location switcher (calendar pane) ──────── */
+@keyframes heartbeat{
+  0%,100%{transform:scale(1)}
+  14%{transform:scale(1.12)}
+  28%{transform:scale(1)}
+  42%{transform:scale(1.07)}
+  56%{transform:scale(1)}
+}
+.loc-center-sw{display:flex;justify-content:center;margin-bottom:.75rem}
+.loc-center-sw-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:#dc2626;
+  border:none;border-radius:24px;
+  padding:.45rem 1.18rem;
+  font-size:.765rem;font-weight:700;color:#fff;
+  cursor:pointer;
+  box-shadow:0 3px 12px rgba(220,38,38,.38);
+  -webkit-tap-highlight-color:transparent;
+  animation:heartbeat 1.4s ease-in-out infinite;
+}
+.loc-center-sw-btn:active{transform:scale(.95)}
+[data-theme="dark"] .loc-center-sw-btn{
+  background:#b91c1c;
+  box-shadow:0 3px 14px rgba(185,28,28,.5);
+}
+</style>
 </head>
 <body>
 
-    <iframe id="gasFrame" title="ระบบจองสนามระบายแค้น" allow="geolocation"></iframe>
+<div class="mobile-shell" id="shell">
 
-    <script>
-        // 1. URL ตัวเต็มของ Google Apps Script
-        let gasUrl = "https://script.google.com/macros/s/AKfycbw9G-stfK_wudAeiKyYWzL3nRI8rolqvi9DA8G79UvYInqtaIMZCbJoyvdTdTTsBC7rjQ/exec";
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="screenLogin" class="screen">
+  <div class="bg-color"></div><div class="bg-glow"></div><div class="bg-topo"></div>
+  <div class="login-layout">
+    <div class="lt">
+      <div class="lt-icon">🏸</div>
+      <div class="lt-name">TQM ตบให้ยับ คอร์ทรับจบ</div>
+      <div class="lt-sub">อุปกรณ์ร้อยล้าน ฝีมือร้อยสลึง</div>
+    </div>
+    <div class="wave">
+      <svg viewBox="0 0 390 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path id="wavePath" d="M0,0 C70,60 160,80 240,48 C315,18 355,55 390,38 L390,70 L0,70 Z" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="login-card">
+      <!-- Ban screen overlay (shown if account is banned) -->
+      <div class="ban-screen" id="banScreen">
+        <div class="ban-emoji">🚫</div>
+        <div class="ban-title">บัญชีถูกระงับการจอง</div>
+        <div class="ban-msg">รหัสพนักงานของคุณถูกระงับสิทธิ์การจองสนาม<br>กรุณาติดต่อผู้ดูแลระบบเพื่อขอปลดบล็อก</div>
+        <div class="ban-reason-box" id="banReason">ไม่ระบุเหตุผล</div>
+        <div class="ban-until" id="banUntil"><i class="fa-regular fa-clock"></i>สิ้นสุดการระงับ: —</div>
+        <button class="ban-back-btn" onclick="_hideBanScreen()">← ใช้รหัสพนักงานอื่น</button>
+      </div>
+      <!-- Normal login form -->
+      <div id="loginFormWrap">
+      <div class="sign-title">ยินดีต้อนรับ</div>
+      <div class="sign-bar"></div>
+      <div class="err" id="loginErr"></div>
+      <label class="flbl">รหัสพนักงาน</label>
+      <div class="input-row">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input id="empIdInput" type="text" placeholder="กรอกรหัสพนักงาน"
+          autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20"
+          onkeydown="if(event.key==='Enter')doVerify()">
+      </div>
+      <button class="btn-login" id="btnLogin" onclick="doVerify()">เข้าสู่ระบบ</button>
+      </div><!-- /loginFormWrap -->
+    </div>
+  </div>
+</div>
 
-        // 2. ดึงค่าจาก URL ของ GitHub (ตอนคนสแกน QR หน้าสนาม)
-        const urlParams = new URLSearchParams(window.location.search);
-        const action = urlParams.get('action');
-        const code = urlParams.get('code');
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="screenApp" class="screen hidden">
+  <div class="topbar">
+    <div class="tb-logo"><img src="applogo-02.gif" style="width:32px;height:32px;object-fit:cover;border-radius:9px" alt="logo"></div>
+    <div class="tb-name" style="flex:1;min-width:0">
+      <div class="tb-name-main" id="tbName">—</div>
+    </div>
+    <!-- Center status indicator -->
+    <div class="tb-status" id="tbStatusIndicator">
+      <div class="tb-status-dot loading" id="tbStatusDot"></div>
+      <span class="tb-status-label" id="tbStatusLabel"></span>
+    </div>
+    <div class="tb-btns">
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+      <button class="btn-ic hidden" id="btnAdminTopbar" onclick="openAdminPin()" title="Admin"><i class="fa-solid fa-gear" style="font-size:14px"></i></button>
+      <button class="btn-ic notif-btn" id="btnNotif" onclick="toggleNotifPanel()" title="การแจ้งเตือน" aria-label="การแจ้งเตือน">
+        <i class="fa-solid fa-bell" style="font-size:14px"></i>
+        <span class="notif-badge hidden" id="notifBadge">0</span>
+      </button>
+      <button class="btn-logout-sm" onclick="doLogout()" title="ออกจากระบบ"><i class="fa-solid fa-right-from-bracket" style="font-size:14px"></i></button>
+    </div>
+  </div>
 
-        // 3. ถ้าสแกน QR มา ให้เอาค่าไปต่อท้ายลิงก์ Google Script ด้วย
-        if (action && code) {
-            gasUrl += "?action=" + encodeURIComponent(action) + "&code=" + encodeURIComponent(code);
+  <!-- Notification overlay + panel -->
+  <div class="notif-overlay" id="notifOverlay" onclick="closeNotifPanel()"></div>
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-panel-hdr">
+      <h4>การแจ้งเตือน</h4>
+      <button class="notif-clear" onclick="clearNotifs()">ล้างทั้งหมด</button>
+    </div>
+    <div id="notifList"></div>
+  </div>
+
+  <div class="ptr-indicator" id="ptrIndicator"><div class="ptr-spin"></div>รีเฟรช...</div>
+
+  <div class="tab-content">
+    <div class="tab-pane active" id="paneBookings">
+      <div id="bookingsList"><div class="load-wrap"><span class="spin-dk"></span></div></div>
+    </div>
+    <div class="tab-pane" id="paneCalendar">
+      <div id="bookingStatusBanner"></div>
+      <div class="cur-loc-status" id="curLocStatus"></div>
+      <div style="height:.6rem"></div>
+      <div class="cal-top">
+        <div class="cal-hdr">
+          <button class="cal-nav-btn" onclick="changeCalMonth(-1)">‹</button>
+          <div style="text-align:center">
+            <div class="cal-month-lbl" id="calMonthLbl">-</div>
+            <div class="cal-year-lbl" id="calYearLbl">-</div>
+          </div>
+          <button class="cal-nav-btn" onclick="changeCalMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid">
+          <div class="cal-dh">อา</div><div class="cal-dh">จ</div><div class="cal-dh">อ</div>
+          <div class="cal-dh">พ</div><div class="cal-dh">พฤ</div><div class="cal-dh">ศ</div><div class="cal-dh">ส</div>
+        </div>
+        <div class="cal-legend">
+          <div class="leg"><div class="leg-dot" style="background:#22c55e"></div>ว่าง</div>
+          <div class="leg"><div class="leg-dot" style="background:#ef4444"></div>เต็ม (ดูได้)</div>
+          <div class="leg"><div class="leg-dot" style="background:#fbbf24"></div>วันหยุด</div>
+        </div>
+      </div>
+      <div class="cal-hint" id="calHint">เลือกวันที่เพื่อดูสล็อตว่าง</div>
+      <div id="calHolidayList" style="padding:0 .9rem .75rem"></div>
+      <div style="height:calc(2rem + var(--safe-bot, 0px))"></div>
+    </div>
+
+    <!-- ═══ GALLERY PANE ═══ -->
+    <div class="tab-pane" id="paneGallery">
+      <div class="gal-header">
+        <div>
+          <div class="gal-title">📸 แชร์ความสุข</div>
+          <div class="gal-count" id="galCount">—</div>
+        </div>
+        <button class="gal-upload-btn" onclick="openUploadModal()">
+          <i class="fa-solid fa-camera" style="font-size:13px"></i> อัปโหลด
+        </button>
+      </div>
+      <div class="gal-filters" id="galFilters">
+        <button class="gal-filter-chip active" data-filter="all" onclick="setGalFilter('all',this)">ทั้งหมด</button>
+        <button class="gal-filter-chip" data-filter="mine" onclick="setGalFilter('mine',this)">ของฉัน</button>
+      </div>
+      <div class="gal-grid" id="galGrid"></div>
+      <div class="gal-load-more" id="galLoadMore" style="display:none">
+        <button class="gal-load-btn" onclick="loadMorePhotos()">โหลดเพิ่ม</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="navBk" onclick="switchTab('bookings')">
+      <i class="fa-solid fa-calendar-check nav-item-img"></i>
+      <span class="nav-label">รายการจอง</span>
+    </button>
+    <div class="nav-fab-wrap">
+      <button class="nav-fab" onclick="switchTab('calendar')" style="font-size:26px">🏸</button>
+    </div>
+    <button class="nav-item" id="navGal" onclick="switchTab('gallery')">
+      <i class="fa-solid fa-images nav-item-img"></i>
+      <span class="nav-label">แชร์ความสุข</span>
+    </button>
+  </nav>
+
+  <!-- Lightbox -->
+  <div class="gal-lightbox" id="galLightbox">
+    <button class="gal-lb-share" id="galLbShareBtn" onclick="shareLightboxPhoto()" title="แชร์ภาพ">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    </button>
+    <button class="gal-lb-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="gal-lb-counter" id="galLbCounter"></div>
+    <div class="gal-lb-inner" id="galLbInner">
+      <img class="gal-lb-img" id="galLbImg" src="" alt="">
+      <div class="gal-lb-info">
+        <div class="gal-lb-caption" id="galLbCaption"></div>
+        <div class="gal-lb-meta" id="galLbMeta"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div class="gal-modal-ov" id="galModalOv" onclick="closeUploadModal(event)">
+    <div class="gal-modal-card" onclick="event.stopPropagation()">
+      <div class="gal-modal-handle"></div>
+      <div class="gal-modal-title">📸 แชร์ความสุขของคุณ</div>
+      <div class="gal-preview-wrap" id="galPreviewWrap" onclick="document.getElementById('galUploadInput').click()">
+        <div class="gal-preview-placeholder" id="galPreviewPh">
+          <div class="ico">📷</div>
+          <p>แตะเพื่อเลือกรูปภาพ</p>
+        </div>
+        <canvas id="galStampCanvas" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:12px"></canvas>
+      </div>
+      <input type="file" id="galUploadInput" accept="image/*" onchange="onPhotoSelected(event)">
+      <textarea class="gal-cap-input" id="galCapInput" placeholder="เพิ่ม caption... (รองรับ emoji 🏸🎉😄)" maxlength="100" rows="2"></textarea>
+      <div style="margin-top:.6rem;margin-bottom:.25rem;font-size:.75rem;color:var(--muted)">เชื่อมกับรายการจอง (optional)</div>
+      <select class="gal-bk-sel" id="galBkSel">
+        <option value="">— ไม่เลือก —</option>
+      </select>
+      <div class="gal-prog-track" id="galProgTrack"><div class="gal-prog-fill" id="galProgFill"></div></div>
+      <div class="gal-prog-label" id="galUploadProg"></div>
+      <button class="gal-submit-btn" id="galSubmitBtn" onclick="submitPhoto()" disabled>📤 อัปโหลดภาพ</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+<div id="appBadge"></div>
+
+<!-- ═══════════════ ADMIN SCREEN ═══════════════ -->
+<div id="screenAdmin" class="screen hidden">
+  <div class="topbar">
+    <div class="tb-logo"><i class="fa-solid fa-gear"></i></div>
+    <div class="tb-name" style="flex:1">
+      <div class="tb-name-main">Admin Panel</div>
+    </div>
+    <div class="tb-btns">
+      <button class="theme-btn" id="themeBtnAdmin" onclick="toggleTheme()">🌙</button>
+      <button class="btn-logout-sm" onclick="doLogout()" title="ออกจากระบบ"><i class="fa-solid fa-right-from-bracket" style="font-size:14px"></i></button>
+    </div>
+    <div class="av-wrap">
+      <div class="avatar" id="tbAvAdmin">?</div>
+    </div>
+  </div>
+
+  <div class="tab-content">
+    <!-- ── Bookings pane ── -->
+    <div class="tab-pane active" id="paneAdminBk">
+      <div class="adm-stat-grid">
+        <div class="adm-stat"><div class="adm-stat-val" id="aTotal">-</div><div class="adm-stat-lbl">จองทั้งหมด</div></div>
+        <div class="adm-stat"><div class="adm-stat-val" id="aMonth">-</div><div class="adm-stat-lbl">เดือนนี้</div></div>
+        <div class="adm-stat"><div class="adm-stat-val" id="aBanned">-</div><div class="adm-stat-lbl">ถูกระงับ</div></div>
+        <div class="adm-stat"><div class="adm-stat-val" id="aTarget" style="font-size:.82rem;padding-top:.15rem">-</div><div class="adm-stat-lbl">เดือนเป้าหมาย</div></div>
+      </div>
+      <div class="adm-loc-chips" id="admLocChips"></div>
+      <div class="adm-filters">
+        <select id="aFLoc" class="adm-sel" onchange="loadAdminBookings()"><option value="">📍 ทุกที่</option></select>
+        <input type="date" id="aFDate" class="adm-sel">
+        <button class="btn-cta" style="padding:.42rem .75rem;font-size:.75rem;margin:0;flex-shrink:0" onclick="loadAdminBookings()">ค้นหา</button>
+      </div>
+      <div id="admBkList"><div class="load-wrap"><span class="spin-dk"></span></div></div>
+    </div>
+
+    <!-- ── Ban pane ── -->
+    <div class="tab-pane" id="paneAdminBan">
+      <div class="card" style="margin-bottom:.65rem">
+        <div class="card-header"><div class="card-icon">🚫</div><div class="card-title">ระงับพนักงาน</div></div>
+        <div class="card-body">
+          <div class="mf" style="margin-bottom:.6rem">
+            <label>รหัสพนักงาน *</label>
+            <div class="mf-row">
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input class="mf-input" type="text" id="aBanEmpId" placeholder="รหัสพนักงาน" inputmode="numeric">
+            </div>
+          </div>
+          <div class="mf" style="margin-bottom:.6rem">
+            <label>เหตุผล</label>
+            <div class="mf-row">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <input class="mf-input" type="text" id="aBanReason" placeholder="สาเหตุการระงับ">
+            </div>
+          </div>
+          <div class="mf" style="margin-bottom:.75rem">
+            <label>วันสิ้นสุดแบน</label>
+            <div class="mf-row">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <input class="mf-input" type="date" id="aBanUntil">
+            </div>
+          </div>
+          <div id="aBanAlert"></div>
+          <button class="btn-cta" id="btnAdmBan" onclick="doAdminBan()" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">🚫 ระงับพนักงาน</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">📋</div>
+          <div class="card-title">รายชื่อที่ถูกระงับ</div>
+          <button class="btn-ic" style="margin-left:auto;font-size:.7rem" onclick="loadAdminBanList()">🔄</button>
+        </div>
+        <div class="card-body" id="admBanList"><div class="load-wrap"><span class="spin-dk"></span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="navAdmBk" onclick="switchAdminTab('bk')">
+      <i class="fa-solid fa-calendar-check nav-item-img"></i>
+      <span class="nav-label">จอง</span>
+    </button>
+    <div class="nav-fab-wrap">
+      <button class="nav-fab" onclick="exitAdmin()" style="font-size:20px"><i class="fa-solid fa-arrow-left"></i></button>
+    </div>
+    <button class="nav-item" id="navAdmBan" onclick="switchAdminTab('ban')">
+      <i class="fa-solid fa-ban nav-item-img"></i>
+      <span class="nav-label">แบน</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toastAdmin"></div>
+</div>
+
+<!-- ═══════════════ CHECK-IN SCREEN ═══════════════ -->
+<div id="screenCheckin" class="screen hidden">
+  <div class="bg-color" style="background:#14532d"></div>
+  <div class="ci-bg-glow"></div>
+  <div class="bg-topo"></div>
+  <button class="btn-logout-sm" onclick="doLogout()" title="ออกจากระบบ" style="position:absolute;top:1rem;right:1rem;z-index:10;background:rgba(255,255,255,.15);color:#fff"><i class="fa-solid fa-right-from-bracket" style="font-size:14px"></i></button>
+  <div class="login-layout">
+    <div class="lt">
+      <div class="lt-icon"><i class="fa-solid fa-location-dot"></i></div>
+      <div class="lt-name">TQM ตบให้ยับ คอร์ทรับจบ</div>
+      <div class="lt-sub" id="ciLocSub">CHECK-IN</div>
+    </div>
+    <div class="wave">
+      <svg viewBox="0 0 390 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,0 C70,60 160,80 240,48 C315,18 355,55 390,38 L390,70 L0,70 Z" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="ci-card">
+      <div class="sign-title">เช็คอินสนาม</div>
+      <div class="ci-bar"></div>
+
+      <div class="ci-loc-badge hidden" id="ciLocBadge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="ciLocName">—</span>
+      </div>
+
+      <div class="ci-err-box" id="ciErr"></div>
+
+      <label class="flbl">รหัสพนักงาน</label>
+      <div class="input-row">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input id="ciEmpId" type="text" placeholder="กรอกรหัสพนักงาน"
+          autocomplete="username" autocapitalize="none" inputmode="numeric" maxlength="20"
+          onkeydown="if(event.key==='Enter')doCheckin()">
+      </div>
+
+      <div class="ci-status" id="ciStatus"></div>
+
+      <button class="btn-ci" id="btnCi" onclick="doCheckin()">📍 เช็คอิน</button>
+
+      <div class="ci-result" id="ciResult">
+        <div class="ci-result-ico">✅</div>
+        <div class="ci-result-body" id="ciResultBody"></div>
+        <button onclick="_resetCiScreen()" style="margin-top:1rem;width:100%;padding:.65rem;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:12px;font-size:.82rem;font-family:inherit;cursor:pointer;font-weight:600">
+          <i class="fa-solid fa-rotate-right" style="margin-right:6px"></i>เช็คอินคนถัดไป
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLOT SHEET ═══════════════ -->
+<div class="sheet-ov" id="slotSheet" onclick="closeSlotSheet(event)">
+  <div class="bsheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <div class="sheet-title" id="sheetTitle">เลือก Slot</div>
+      <div class="sheet-sub" id="sheetSub">-</div>
+    </div>
+    <div class="sheet-body" id="sheetBody"><div class="load-wrap"><span class="spin-dk"></span></div></div>
+    <div class="sheet-foot" id="sheetFoot">
+      <button class="btn-cta" onclick="openConfirm()">ยืนยันการจอง →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ALERT/CONFIRM DIALOG ═══════════════ -->
+<div id="appAlertModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1.2rem">
+  <div style="background:var(--surface);border-radius:20px;padding:1.4rem 1.4rem 1.2rem;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span id="appAlertIcon" style="font-size:26px"></span>
+      <div id="appAlertTitle" style="font-size:1rem;font-weight:700;color:var(--text)"></div>
+    </div>
+    <div id="appAlertMsg" style="font-size:.9rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.5"></div>
+    <div style="display:flex;gap:10px">
+      <button id="appAlertCancel" style="flex:1;padding:.65rem;border-radius:12px;font-size:.9rem;font-weight:600;border:1.5px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer" onclick="_appAlertClose()">ยกเลิก</button>
+      <button id="appAlertOk"     style="flex:1;padding:.65rem;border-radius:12px;font-size:.9rem;font-weight:700;border:none;cursor:pointer" onclick="_appAlertDo()">ตกลง</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div class="modal-ov" id="confirmModal" onclick="closeModal('confirmModal',event)">
+  <div class="modal-card">
+    <div class="mhandle"></div>
+    <div class="modal-title">ยืนยันการจอง</div>
+    <div class="bk-summary" id="confirmSum"></div>
+    <div class="mf">
+      <label>เบอร์ติดต่อ *</label>
+      <div class="mf-row">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11 19.79 19.79 0 0 1 1.61 2.38 2 2 0 0 1 3.59.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 7.91a16 16 0 0 0 6.08 6.08l1.79-1.79a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <input class="mf-input" type="tel" id="phoneIn" placeholder="0812345678" maxlength="10">
+      </div>
+    </div>
+    <div class="mf">
+      <label>Email (ไม่บังคับ)</label>
+      <div class="mf-row">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <input class="mf-input" type="email" id="emailIn" placeholder="yourname@company.com">
+      </div>
+    </div>
+    <div id="confirmAlert"></div>
+    <button class="btn-cta" id="btnDoBook" onclick="doBook()">✓ ยืนยันจอง</button>
+    <button class="btn-sec" onclick="closeModal('confirmModal')">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- ═══════════════ TOO-FAR MODAL ════════════════ -->
+<div class="toofar-ov" id="tooFarModal" onclick="closeTooFarModal(event)">
+  <div class="toofar-card" onclick="event.stopPropagation()">
+    <div class="mhandle" style="background:var(--border);width:40px;height:4px;border-radius:2px;margin:12px auto 16px"></div>
+    <div class="toofar-emoji" id="tooFarEmoji">📍</div>
+    <div class="toofar-title" id="tooFarTitle"></div>
+    <div class="toofar-body" id="tooFarBody"></div>
+    <div class="toofar-dist" id="tooFarDist"></div>
+    <button class="toofar-btn" onclick="_closeTooFarDirect()">โอเค ไปมาก่อนละกัน 🚶</button>
+  </div>
+</div>
+
+<!-- ═══════════════ CANCEL MODAL ═══════════════ -->
+<div class="modal-ov" id="cancelModal" onclick="closeModal('cancelModal',event)">
+  <div class="modal-card">
+    <div class="mhandle"></div>
+    <div class="modal-title">ยกเลิกการจอง</div>
+    <div id="cancelSum" style="margin-bottom:.85rem;font-size:.82rem;color:var(--text);line-height:1.8"></div>
+    <div id="cancelAlert"></div>
+    <button class="btn-cta" id="btnDoCancel" onclick="doCancel()" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">🗑 ยืนยันยกเลิก</button>
+    <button class="btn-sec" onclick="closeModal('cancelModal')">ปิด</button>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN PIN ═══════════════ -->
+<div class="pin-ov" id="pinModal">
+  <div class="pin-box">
+    <div class="pin-ico-wrap">🔐</div>
+    <div class="pin-ttl">Admin Access</div>
+    <div class="pin-sub">กรอก PIN เพื่อเข้าสู่หน้า Admin</div>
+    <div class="pin-field">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <input class="pin-input" type="password" id="pinIn" placeholder="••••••"
+        maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')submitPin()">
+    </div>
+    <div id="pinAlert" style="margin-bottom:.5rem"></div>
+    <button class="btn-cta" onclick="submitPin()">เข้าสู่ระบบ Admin</button>
+    <button class="btn-sec" onclick="closePin()">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN CONFIRM OVERLAY ═══════════════ -->
+<div class="pin-ov" id="admConfOv">
+  <div class="pin-box">
+    <div class="pin-ico-wrap" id="admConfIco">⚠️</div>
+    <div class="pin-ttl" id="admConfTtl">ยืนยัน?</div>
+    <div class="pin-sub" id="admConfSub" style="white-space:pre-line"></div>
+    <div id="admConfAlert" style="margin-bottom:.5rem"></div>
+    <button class="btn-cta" id="btnAdmConfirm" onclick="runAdmConf()">ยืนยัน</button>
+    <button class="btn-sec" onclick="document.getElementById('admConfOv').classList.remove('open')">ยกเลิก</button>
+  </div>
+</div>
+
+</div><!-- /mobile-shell -->
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbzTDEkfDhIQfb29KIjsRxyg17csabk5VY3DOYHfd8d1R7MeJ_5t-HO1-ZCK_8UribKfZg/exec';
+const ADMIN_PIN = '7769';
+
+const TH_M  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+               'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const TH_MS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const FULL_MSGS = [
+  'สนามเต็มหมดแล้ว 🥲 ช้าไปแล้วนะ ครั้งหน้ามาเร็วกว่านี้หน่อยได้ไหม!',
+  'จองเต็มหมดแล้วล่ะ 😭 ไปตีข้างถนนก็ได้นะ~',
+  '🏸 เต็มอีกแล้ว! คนอื่นเขาตื่นมาจองตั้งแต่ไก่โห่แล้ว',
+  'หมดเกลี้ยง! 🤷 แอดมินบอกว่าให้ไปวิ่งแทนก็ได้นะ 555',
+  'ช้าเกินไปแล้วจ้า 🐢 ครั้งหน้าเข้ามาก่อน refresh ด้วยนะ!',
+];
+
+// ══════════════════════════════════════════════════════
+//  THEME
+// ══════════════════════════════════════════════════════
+let isDark = localStorage.getItem('bk_theme') !== 'light';
+function applyTheme() {
+  const t = isDark ? 'dark' : 'light';
+  document.getElementById('shell').setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-btn').forEach(btn => { btn.textContent = isDark ? '🌙' : '☀️'; });
+  // wave fill colour
+  const wp = document.getElementById('wavePath');
+  if (wp) wp.setAttribute('fill', isDark ? '#0d1f12' : '#fff');
+}
+function toggleTheme() { isDark = !isDark; localStorage.setItem('bk_theme', isDark?'dark':'light'); applyTheme(); }
+applyTheme();
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let user      = null;
+let curLoc    = null;   // { locId, name, shortName, address }
+let locations = [];     // list from GAS
+let calY      = new Date().getFullYear();
+let calM      = new Date().getMonth() + 1;
+let calSum    = {};
+let calLoaded = false;
+let selDate   = null;
+let selSlot   = null;
+let sysTargetMonth  = ''; // 'yyyy-MM' set by admin, used to restrict bookable month
+let myBookedDates   = new Set(); // dates (yyyy-MM-dd) where user has booking at curLoc this month
+let myBookingCount  = 0;         // total bookings this month at curLoc (for 5-slot quota)
+let calHolidays     = [];        // holidays for current calendar month
+const BOOKING_QUOTA = 5;
+const CANCEL_DEADLINE_HRS = 2;   // ยกเลิกได้ก่อนช่วงเวลาจองไม่น้อยกว่า 2 ชม.
+let cancelTgt = null;
+
+// Booking-status sync
+let bookingOpen       = true;   // global flag — other functions check this before booking
+let _lastBookingOpen  = null;   // detect open↔closed transitions
+let _prevBkIds        = null;   // Set of booking IDs from last poll (null = first load)
+let _statusPollTimer  = null;
+let _calPollTimer     = null;
+let _bkHashTimer      = null;   // fast booking-hash poll
+let _wlPollTimer      = null;   // waitlist slot-check poll
+let _bkHash           = null;   // last known booking fingerprint
+let _bkLoading        = false;  // lock — prevent concurrent loadBookings calls
+let _pastExpanded     = false;  // past bookings expand state
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+(async () => {
+  // Check-in mode: ?mode=checkin&loc=LOC01
+  const sp = new URLSearchParams(window.location.search);
+  if (sp.get('mode') === 'checkin') {
+    await initCheckinMode(sp.get('loc') || '');
+    return;
+  }
+
+  const su = localStorage.getItem('bk_user');
+  const sl = localStorage.getItem('bk_loc');
+  if (su) {
+    user = JSON.parse(su);
+    if (sl) curLoc = JSON.parse(sl);
+    await enterApp();
+  }
+})();
+
+// ══════════════════════════════════════════════════════
+//  SCREEN HELPERS
+// ══════════════════════════════════════════════════════
+function showScreen(id) {
+  ['screenLogin','screenApp','screenAdmin','screenCheckin'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  LOGIN
+function _showBanScreen(r) {
+  const until = r.until ? r.until : 'ไม่มีกำหนด';
+  document.getElementById('banReason').textContent = r.reason || 'ไม่ระบุเหตุผล';
+  document.getElementById('banUntil').innerHTML =
+    `<i class="fa-regular fa-clock"></i>สิ้นสุดการระงับ: ${until}`;
+  document.getElementById('loginFormWrap').style.display = 'none';
+  document.getElementById('banScreen').classList.add('show');
+}
+function _hideBanScreen() {
+  document.getElementById('banScreen').classList.remove('show');
+  document.getElementById('loginFormWrap').style.display = '';
+  document.getElementById('empIdInput').value = '';
+  document.getElementById('loginErr').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════════
+async function doVerify() {
+  const empId = document.getElementById('empIdInput').value.trim();
+  if (!empId) { showErr('loginErr','กรุณากรอกรหัสพนักงาน'); return; }
+  const btn = document.getElementById('btnLogin');
+  loading(btn, true, 'กำลังตรวจสอบ...');
+  try {
+    const r = await get('verifyEmployee', { empId });
+    if (!r.ok) {
+      if (r.banned) { _showBanScreen(r); return; }
+      showErr('loginErr', r.error || 'ไม่พบรหัสพนักงาน'); return;
+    }
+    user = r;
+    localStorage.setItem('bk_user', JSON.stringify(user));
+    await enterApp();
+  } catch { showErr('loginErr','เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่'); }
+  finally   { loading(btn, false, 'เข้าสู่ระบบ'); }
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.remove('show');
+  void el.offsetWidth; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ══════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════
+//  LOCATION CHIP SELECTION
+// ══════════════════════════════════════════════════════
+function pickLocFromChip(locId) {
+  const loc = locations.find(l => l.locId === locId);
+  if (!loc) return;
+  curLoc = loc;
+  localStorage.setItem('bk_loc', JSON.stringify(curLoc));
+
+  // Update chip selected state without re-rendering entire banner
+  document.querySelectorAll('.bsb-loc-chip').forEach(btn => {
+    const isSel = btn.dataset.locid === locId;
+    btn.classList.toggle('selected', isSel);
+  });
+
+  updateCurLocStatus();
+  // Reload calendar summary for newly selected location
+  calSum = {}; calLoaded = false; _findingMonth = false;
+  findFirstBookableMonth();
+}
+
+function updateCurLocStatus() {
+  const el = document.getElementById('curLocStatus');
+  if (!el) return;
+  if (!curLoc) {
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = '';
+  el.textContent = `ท่านกำลังทำรายการสำหรับ สถานที่ ${curLoc.name}`;
+}
+
+//  BOOKING STATUS BANNER
+// ══════════════════════════════════════════════════════
+async function loadBookingStatus() {
+  const el = document.getElementById('bookingStatusBanner');
+  try {
+    const r = await get('getBookingStatus');
+    if (!r.ok) return;
+
+    // Detect open↔closed transitions
+    if (_lastBookingOpen !== null && _lastBookingOpen !== r.isOpen) {
+      if (!r.isOpen) showStatusToast('🔒 แอดมินปิดระบบการจองแล้ว', 'closed');
+      else           showStatusToast('🟢 ระบบเปิดรับจองแล้ว!', 'open');
+    }
+    _lastBookingOpen = r.isOpen;
+    bookingOpen = r.isOpen && !r.allFull;
+
+    // ── Topbar center indicator ────────────────────────
+    _renderTbStatus(r);
+
+    // Store target month globally for calendar use
+    if (r.targetMonth && r.targetMonth.length >= 7) sysTargetMonth = r.targetMonth.substring(0,7);
+
+    if (!el) return;
+
+    const [ty, tm] = (r.targetMonth || '').split('-').map(Number);
+    const monthLabel = (!isNaN(ty) && !isNaN(tm)) ? `${TH_M[tm-1]} ${ty+543}` : '—';
+
+    if (!r.isOpen) {
+      el.innerHTML = `<div class="cur-loc-note"><i class="fa-solid fa-lock" style="font-size:.7rem;margin-right:4px"></i>ปิดรับจอง · รอแอดมินเปิดระบบในรอบถัดไป</div>`;
+      return;
+    }
+    if (r.allFull) {
+      el.innerHTML = `<div class="cur-loc-note warn"><i class="fa-solid fa-face-dizzy" style="font-size:.7rem;margin-right:4px"></i>เดือน${monthLabel} จองเต็มแล้ว</div>`;
+      return;
+    }
+
+    // Open — show location chips only
+    const locs = r.locations || [];
+    const chips = locs.length > 1
+      ? `<div class="bsb-loc-row">${locs.map(l => {
+          const isSel = curLoc && curLoc.locId === l.locId;
+          return `<button class="bsb-loc-chip ${l.isFull?'full':'ok'}${isSel?' selected':''}" data-locid="${l.locId}" onclick="pickLocFromChip('${l.locId}')"><i class="fa-solid fa-location-dot" style="font-size:10px;opacity:.75"></i>${l.name}<span class="loc-chip-dot ${l.isFull?'full':'ok'}"></span></button>`;
+        }).join('')}</div>` : '';
+    el.innerHTML = chips;
+
+  } catch(e) { /* silent */ }
+}
+
+function _renderTbStatus(r) {
+  const dot   = document.getElementById('tbStatusDot');
+  const label = document.getElementById('tbStatusLabel');
+  if (!dot || !label) return;
+  let state, text;
+  if (!r.isOpen)   { state = 'closed'; text = 'ปิดรับจอง'; }
+  else if (r.allFull){ state = 'full';   text = 'จองเต็ม'; }
+  else              { state = 'open';   text = 'เปิดรับจอง'; }
+  dot.className   = `tb-status-dot ${state}`;
+  label.className = `tb-status-label ${state}`;
+  label.textContent = text;
+}
+
+
+// Toast for status change events
+function showStatusToast(msg, type) {
+  let t = document.getElementById('statusChangeToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'statusChangeToast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'sct sct-' + type + ' sct-show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('sct-show'), 3000);
+}
+
+// Start/stop polling
+function startStatusPolling() {
+  stopStatusPolling();
+  _statusPollTimer = setInterval(loadBookingStatus, 5_000);   // system status every 5s
+  _calPollTimer    = setInterval(_pollCalendar, 60_000);      // calendar every 60s
+  _bkHashTimer     = setInterval(_pollBookingHash, 5_000);    // booking hash every 5s
+  _wlPollTimer     = setInterval(_pollWaitlist, 30_000);      // waitlist every 30s
+  document.addEventListener('visibilitychange', _onVisibilityChange);
+}
+function stopStatusPolling() {
+  clearInterval(_statusPollTimer); _statusPollTimer = null;
+  clearInterval(_calPollTimer);    _calPollTimer    = null;
+  clearInterval(_bkHashTimer);     _bkHashTimer     = null;
+  clearInterval(_wlPollTimer);     _wlPollTimer     = null;
+  document.removeEventListener('visibilitychange', _onVisibilityChange);
+}
+function _onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    loadBookingStatus();
+    _pollBookingHash();   // check bookings immediately on tab focus
+    if (curLoc) loadCalSum();
+  }
+}
+function _pollCalendar() {
+  if (!curLoc) return;
+  calSum = {}; calLoaded = false;
+  loadCalSum();
+}
+// Lightweight hash poll — only fetch full bookings when fingerprint changes
+async function _pollBookingHash() {
+  if (!user?.empId || _bkLoading) return;
+  try {
+    const r = await get('getMyBookingsHash', { empId: user.empId }, 7000);
+    if (!r.ok) return;
+    if (_bkHash !== null && r.hash !== _bkHash) {
+      // Something changed — reload full booking list (cancel detection runs inside)
+      _bkHash = r.hash;   // update BEFORE calling loadBookings to avoid re-trigger
+      await loadBookings();
+    }
+  } catch { /* silent — network hiccup */ }
+}
+
+// ══════════════════════════════════════════════════════
+//  ENTER APP
+// ══════════════════════════════════════════════════════
+async function enterApp() {
+  // Show app immediately — no blocking on API calls
+  document.getElementById('tbName').textContent = (user.name||'') + ' ' + (user.surname||'');
+  showScreen('screenApp');
+  applyTheme();
+  const admBtn = document.getElementById('btnAdminTopbar');
+  if (admBtn) admBtn.classList.toggle('hidden', user.role !== 'admin');
+  calY = new Date().getFullYear(); calM = new Date().getMonth()+1;
+  calSum = {}; calLoaded = false; selDate = null; selSlot = null;
+  myBookedDates = new Set(); myBookingCount = 0;
+  updateCurLocStatus();
+  renderCal(); // show calendar skeleton right away
+
+  // Load locations + status in parallel, fire-and-forget
+  const locPromise = locations.length
+    ? Promise.resolve()
+    : get('getLocations').then(r => { if (r.ok) locations = r.locations || []; }).catch(() => {});
+
+  loadBookings();
+  Promise.all([locPromise, loadBookingStatus()]).then(() => {
+    if (!curLoc && locations.length === 1) {
+      curLoc = locations[0];
+      localStorage.setItem('bk_loc', JSON.stringify(curLoc));
+    }
+    if (curLoc) findFirstBookableMonth();
+    else renderCal(); // redraw with "select location" prompt
+  }).catch(() => {
+    if (curLoc) findFirstBookableMonth();
+  });
+  startStatusPolling();
+}
+
+// ══════════════════════════════════════════════════════
+//  TAB
+// ══════════════════════════════════════════════════════
+function switchTab(tab) {
+  const isBk  = tab === 'bookings';
+  const isCal = tab === 'calendar';
+  const isGal = tab === 'gallery';
+  document.getElementById('paneBookings').classList.toggle('active', isBk);
+  document.getElementById('paneCalendar').classList.toggle('active', isCal);
+  document.getElementById('paneGallery').classList.toggle('active', isGal);
+  document.getElementById('navBk').classList.toggle('active', isBk);
+  document.getElementById('navGal').classList.toggle('active', isGal);
+  if (isGal && galPhotos.length === 0) loadGallery();
+}
+
+// ══════════════════════════════════════════════════════
+//  PHOTO GALLERY — แชร์ความสุข
+// ══════════════════════════════════════════════════════
+const IMGBB_KEY  = 'b37889052f6fd7b7143ff017d07914df';
+const GAL_LIMIT  = 30;
+let galPhotos    = [];
+let galOffset    = 0;
+let galTotal     = 0;
+let galLoading   = false;
+let _galFile     = null;   // raw File selected
+let _galBlob     = null;   // stamped Blob ready to upload
+
+async function loadGallery(reset = false) {
+  if (galLoading) return;
+  galLoading = true;
+  if (reset) { galPhotos = []; galOffset = 0; galTotal = 0; }
+  const grid = document.getElementById('galGrid');
+  if (reset) grid.innerHTML = '<div class="load-wrap"><span class="spin-dk"></span></div>';
+  try {
+    const r = await get('getPhotos', { offset: galOffset, limit: GAL_LIMIT });
+    if (!r.ok) throw new Error(r.error);
+    galPhotos = galPhotos.concat(r.photos || []);
+    galTotal  = r.total || 0;
+    galOffset = galPhotos.length;
+    renderGallery(r.photos || [], reset);
+  } catch(e) {
+    if (reset) grid.innerHTML = `<div style="padding:1rem;text-align:center;color:var(--muted);font-size:.8rem">โหลดไม่ได้: ${e.message}</div>`;
+  } finally { galLoading = false; }
+}
+
+function loadMorePhotos() { loadGallery(false); }
+
+let _galFilter = 'all';
+function setGalFilter(f, el) {
+  _galFilter = f;
+  document.querySelectorAll('.gal-filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === f));
+  _renderGalFiltered();
+}
+function _renderGalFiltered() {
+  const filtered = _galFilter === 'mine'
+    ? galPhotos.filter(p => user && p.empId === user.empId)
+    : galPhotos;
+  const grid  = document.getElementById('galGrid');
+  const lmEl  = document.getElementById('galLoadMore');
+  const cntEl = document.getElementById('galCount');
+  grid.innerHTML = '';
+  cntEl.textContent = _galFilter === 'mine' ? `ของฉัน ${filtered.length} ภาพ` : `${galTotal} ภาพ`;
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="gal-empty" style="grid-column:1/-1"><div class="gal-empty-ico">${_galFilter==='mine'?'🤳':'📸'}</div><div>${_galFilter==='mine'?'คุณยังไม่มีภาพ':'ยังไม่มีภาพ'}</div></div>`;
+    lmEl.style.display = 'none';
+    return;
+  }
+  renderGallery(filtered, false);   // reuse renderGallery but pass pre-filtered list
+  lmEl.style.display = (_galFilter === 'all' && galOffset < galTotal) ? 'flex' : 'none';
+}
+
+function renderGallery(newPhotos, reset) {
+  const grid = document.getElementById('galGrid');
+  const lmEl = document.getElementById('galLoadMore');
+  const cntEl = document.getElementById('galCount');
+  cntEl.textContent = `${galTotal} ภาพ`;
+  if (reset) { grid.innerHTML = ''; }
+
+  // Apply filter when resetting
+  if (reset && _galFilter !== 'all') { _renderGalFiltered(); return; }
+
+  if (galPhotos.length === 0) {
+    grid.innerHTML = `<div class="gal-empty" style="grid-column:1/-1">
+      <div class="gal-empty-ico">📸</div>
+      <div>ยังไม่มีภาพ<br>มาเป็นคนแรกที่แชร์ความสุขกันเถอะ!</div>
+    </div>`;
+    lmEl.style.display = 'none';
+    return;
+  }
+
+  newPhotos.forEach(p => {
+    const isOwn = user && p.empId === user.empId;
+    const cap   = p.caption ? escHtml(p.caption) : '';
+    const owner = escHtml(`${p.empId} ${p.name}${p.surname ? ' ' + p.surname : ''}`);
+    const date  = p.uploadedAt ? p.uploadedAt.substring(0, 10) : '';
+    const div   = document.createElement('div');
+    div.className = 'gal-item';
+    div.innerHTML = `
+      <img src="${p.thumbUrl || p.imageUrl}" alt="" loading="lazy" onerror="this.src='${p.imageUrl}'">
+      ${cap ? `<div class="gal-item-cap">${cap}</div>` : ''}
+      <div class="gal-item-owner">${owner}</div>
+      ${isOwn ? `<button class="gal-mine-del" onclick="deleteMyPhoto('${p.photoId}',event)" title="ลบ"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button>` : ''}
+    `;
+    div.addEventListener('click', () => openLightbox(p));
+    grid.appendChild(div);
+  });
+
+  lmEl.style.display = (galOffset < galTotal) ? 'flex' : 'none';
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Lightbox with swipe up/down ──
+let _lbIdx   = 0;
+let _lbTouch = null;   // { y, t }
+
+function openLightbox(p) {
+  _lbIdx = galPhotos.findIndex(x => x.photoId === p.photoId);
+  if (_lbIdx < 0) _lbIdx = 0;
+  _lbShowIdx(_lbIdx, 0);
+  const lb = document.getElementById('galLightbox');
+  lb.classList.add('open');
+}
+
+function _lbShowIdx(idx, dir) {
+  // dir: 0=instant, -1=slide from top (going newer), 1=slide from bottom (going older)
+  const p = galPhotos[idx];
+  if (!p) return;
+  const inner = document.getElementById('galLbInner');
+  const img   = document.getElementById('galLbImg');
+  const cap   = document.getElementById('galLbCaption');
+  const meta  = document.getElementById('galLbMeta');
+  const cnt   = document.getElementById('galLbCounter');
+
+  if (dir !== 0) {
+    inner.style.transition = 'none';
+    inner.style.opacity    = '0';
+    inner.style.transform  = `translateY(${dir > 0 ? 60 : -60}px)`;
+    void inner.offsetHeight; // force reflow
+    inner.style.transition = '';
+  }
+
+  img.src  = p.imageUrl;
+  cap.textContent = p.caption || '';
+  const date = p.uploadedAt ? p.uploadedAt.substring(0, 10) : '';
+  meta.textContent = `${p.empId} ${p.name} ${p.surname || ''} · ${date}`;
+  cnt.textContent  = `${idx + 1} / ${galPhotos.length}`;
+
+  inner.style.opacity   = '1';
+  inner.style.transform = 'translateY(0)';
+}
+
+function closeLightbox() {
+  document.getElementById('galLightbox').classList.remove('open');
+  document.getElementById('galLbImg').src = '';
+}
+
+async function shareLightboxPhoto() {
+  const p   = galPhotos[_lbIdx];
+  if (!p) return;
+  const btn = document.getElementById('galLbShareBtn');
+  btn.style.opacity = '.5';
+  btn.style.pointerEvents = 'none';
+  try {
+    // Fetch image → Blob → File
+    const resp = await fetch(p.imageUrl);
+    const blob = await resp.blob();
+    const ext  = blob.type.includes('png') ? 'png' : 'jpg';
+    const file = new File([blob], `badminton-${p.photoId}.${ext}`, { type: blob.type });
+    const caption = p.caption ? `${p.caption}\n` : '';
+    const shareData = {
+      files: [file],
+      text : `${caption}${p.name} ${p.surname || ''} · TQM ตบให้ยับ 🏸`,
+    };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      await navigator.share(shareData);
+    } else {
+      // Fallback: download image
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = file.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    }
+  } catch(e) {
+    if (e.name !== 'AbortError') alert('แชร์ไม่ได้: ' + e.message);
+  } finally {
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+  }
+}
+
+function _lbNav(dir) {  // dir: -1=prev(up/newer), +1=next(down/older)
+  const next = _lbIdx + dir;
+  if (next < 0 || next >= galPhotos.length) return;
+  _lbIdx = next;
+  _lbShowIdx(_lbIdx, dir);
+}
+
+// touch handlers — attached once on DOMContentLoaded
+function _initLbSwipe() {
+  const lb = document.getElementById('galLightbox');
+  lb.addEventListener('touchstart', e => {
+    _lbTouch = { y: e.touches[0].clientY, t: Date.now() };
+  }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    if (!_lbTouch) return;
+    const dy   = e.changedTouches[0].clientY - _lbTouch.y;
+    const dt   = Date.now() - _lbTouch.t;
+    const fast = dt < 320 && Math.abs(dy) > 40;
+    const slow = Math.abs(dy) > 90;
+    if (fast || slow) {
+      _lbNav(dy < 0 ? 1 : -1);  // swipe up = next (older), swipe down = prev (newer)
+    } else if (Math.abs(dy) < 10) {
+      // tap background to close
+      if (e.target === lb) closeLightbox();
+    }
+    _lbTouch = null;
+  }, { passive: true });
+  // keyboard
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'ArrowDown')  _lbNav(1);
+    if (e.key === 'ArrowUp')    _lbNav(-1);
+    if (e.key === 'Escape')     closeLightbox();
+  });
+}
+document.addEventListener('DOMContentLoaded', _initLbSwipe);
+
+// ── Pull-to-refresh ──────────────────────────────────
+function _initPullToRefresh() {
+  const content = document.querySelector('#screenApp .tab-content');
+  if (!content) return;
+  const indicator = document.getElementById('ptrIndicator');
+  let startY = 0, pulling = false, triggered = false;
+  const THRESHOLD = 72;
+
+  content.addEventListener('touchstart', e => {
+    const pane = content.querySelector('.tab-pane.active');
+    if (pane && pane.scrollTop === 0) {
+      startY = e.touches[0].clientY;
+      pulling = true;
+      triggered = false;
+    }
+  }, { passive: true });
+
+  content.addEventListener('touchmove', e => {
+    if (!pulling) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy <= 0) { pulling = false; return; }
+    const progress = Math.min(1, dy / THRESHOLD);
+    indicator.style.opacity  = String(Math.min(progress * 1.5, 1));
+    indicator.style.transform = `translateX(-50%) translateY(${Math.min(dy * 0.35, 28)}px)`;
+    triggered = dy >= THRESHOLD;
+  }, { passive: true });
+
+  content.addEventListener('touchend', () => {
+    if (!pulling) return;
+    pulling = false;
+    if (triggered) {
+      _refreshCurrentTab();
+      setTimeout(() => { indicator.style.opacity='0'; indicator.style.transform='translateX(-50%) translateY(0)'; }, 800);
+    } else {
+      indicator.style.opacity = '0';
+      indicator.style.transform = 'translateX(-50%) translateY(0)';
+    }
+  }, { passive: true });
+}
+
+function _refreshCurrentTab() {
+  const bkActive  = document.getElementById('paneBookings')?.classList.contains('active');
+  const calActive = document.getElementById('paneCalendar')?.classList.contains('active');
+  const galActive = document.getElementById('paneGallery')?.classList.contains('active');
+  if (bkActive)  loadBookings();
+  if (calActive) { calSum = {}; calLoaded = false; loadCalSum(); }
+  if (galActive) loadGallery(true);
+}
+
+document.addEventListener('DOMContentLoaded', _initPullToRefresh);
+
+// ══════════════════════════════════════════════════════
+//  NOTIFICATION SYSTEM
+// ══════════════════════════════════════════════════════
+let _notifs = [];   // [{id, type, msg, ts, read}]
+
+function _addNotif(type, msg, meta) {
+  const n = { id: Date.now() + Math.random(), type, msg, ts: new Date(), read: false, meta: meta || null };
+  _notifs.unshift(n);
+  if (_notifs.length > 50) _notifs.pop();
+  _renderNotifList();
+  _updateNotifBadge();
+}
+
+function _updateNotifBadge() {
+  const unread = _notifs.filter(n => !n.read).length;
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  if (unread > 0) {
+    badge.textContent = unread > 9 ? '9+' : unread;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function _renderNotifList() {
+  const el = document.getElementById('notifList');
+  if (!el) return;
+  if (!_notifs.length) {
+    el.innerHTML = '<div class="notif-empty">ไม่มีการแจ้งเตือน</div>';
+    return;
+  }
+  el.innerHTML = _notifs.map(n => {
+    const ago = _timeAgo(n.ts);
+    const icon = n.type === 'cancel' ? '⚠️' : 'ℹ️';
+    return `<div class="notif-item type-${n.type} ${n.read?'':'unread'}" onclick="_onNotifClick('${n.id}')">
+      <div class="ni-icon">${icon}</div>
+      <div class="ni-body">
+        <div class="ni-msg">${n.msg}</div>
+        <div class="ni-time">${ago}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _timeAgo(date) {
+  const s = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (s < 60) return 'เมื่อสักครู่';
+  if (s < 3600) return `${Math.floor(s/60)} นาทีที่แล้ว`;
+  if (s < 86400) return `${Math.floor(s/3600)} ชั่วโมงที่แล้ว`;
+  return `${Math.floor(s/86400)} วันที่แล้ว`;
+}
+
+function _onNotifClick(id) {
+  const n = _notifs.find(x => String(x.id) === String(id));
+  if (n) n.read = true;
+  _updateNotifBadge();
+  _renderNotifList();
+  closeNotifPanel();
+  if (n?.type === 'cancel') {
+    switchTab('bookings');
+    if (n.meta?.ids?.length) {
+      setTimeout(() => _flashBookingCards(n.meta.ids), 400);
+    }
+  }
+  if (n?.type === 'waitlist' && n.meta?.locId && n.meta?.date) {
+    // Jump to calendar and open the slot sheet for that date
+    switchTab('calendar');
+    const loc = locations.find(l => l.locId === n.meta.locId);
+    if (loc && loc.locId !== curLoc?.locId) {
+      pickLocFromChip(loc.locId);
+      setTimeout(() => pickDate(n.meta.date), 1500);
+    } else {
+      setTimeout(() => pickDate(n.meta.date), 300);
+    }
+  }
+}
+
+function _expandPast()  { _pastExpanded = true;  loadBookings(); }
+function _collapsePast(){ _pastExpanded = false; loadBookings(); }
+
+function _flashBookingCards(ids) {
+  ids.forEach(id => {
+    // Past booking cards have class .past; we highlight them
+    const cards = document.querySelectorAll('.booking-card');
+    cards.forEach(card => {
+      const bkIdEl = card.querySelector('.bk-id');
+      if (bkIdEl && ids.some(bid => bkIdEl.textContent.includes(bid))) {
+        card.style.transition = 'background .2s';
+        card.style.background = 'rgba(239,68,68,.18)';
+        setTimeout(() => { card.style.background = ''; }, 1800);
+      }
+    });
+  });
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  const overlay = document.getElementById('notifOverlay');
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) {
+    closeNotifPanel();
+  } else {
+    // Mark all as read when opening
+    _notifs.forEach(n => n.read = true);
+    _updateNotifBadge();
+    _renderNotifList();
+    panel.classList.add('open');
+    overlay.classList.add('open');
+  }
+}
+
+function closeNotifPanel() {
+  document.getElementById('notifPanel')?.classList.remove('open');
+  document.getElementById('notifOverlay')?.classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════
+//  WAITLIST  (client-side, localStorage)
+// ══════════════════════════════════════════════════════
+const _WL_KEY = 'bk_waitlist';
+function _getWaitlist() { try { return JSON.parse(localStorage.getItem(_WL_KEY)||'[]'); } catch { return []; } }
+function _saveWaitlist(list) { localStorage.setItem(_WL_KEY, JSON.stringify(list)); }
+function _wlId(locId,date,court,time){ return `${locId}|${date}|${court}|${time}`; }
+function _isWaitlisted(locId,date,court,time){ return _getWaitlist().some(w=>_wlId(w.locId,w.date,w.court,w.time)===_wlId(locId,date,court,time)); }
+
+function toggleWaitlist(locId, date, court, time) {
+  let list = _getWaitlist();
+  const id  = _wlId(locId, date, court, time);
+  const idx = list.findIndex(w => _wlId(w.locId,w.date,w.court,w.time) === id);
+  const adding = idx < 0;
+  if (adding) {
+    list.push({ locId, date, court, time, addedAt: Date.now() });
+    showToast('🔔', 'จะแจ้งเตือนเมื่อสล็อตว่าง!', 'success');
+  } else {
+    list.splice(idx, 1);
+    showToast('🔕', 'ยกเลิกแจ้งเตือนแล้ว', 'info');
+  }
+  _saveWaitlist(list);
+  // Toggle button state in-place without re-rendering
+  const btn = document.querySelector(`.btn-waitlist[data-wlkey="${CSS.escape(id)}"]`);
+  if (btn) {
+    btn.classList.toggle('active', adding);
+    btn.title = adding ? 'ยกเลิกแจ้งเตือน' : 'แจ้งเตือนเมื่อว่าง';
+  }
+}
+
+let _wlPollCount = 0;
+async function _pollWaitlist() {
+  // Prune past entries first
+  const today = todayStr();
+  let list = _getWaitlist().filter(w => w.date >= today);
+  _saveWaitlist(list);
+  if (!list.length) return;
+
+  // Group by locId+date to batch API calls
+  const groups = {};
+  list.forEach(w => {
+    const k = `${w.locId}|${w.date}`;
+    if (!groups[k]) groups[k] = { locId: w.locId, date: w.date, items: [] };
+    groups[k].items.push(w);
+  });
+
+  for (const g of Object.values(groups)) {
+    try {
+      const r = await get('getSlots', { date: g.date, locId: g.locId }, 10000);
+      if (!r.ok || !r.slots) continue;
+      const freeSet = new Set(
+        r.slots.filter(s => !s.booked && !s.isPast && !s.vip)
+               .map(s => _wlId(g.locId, g.date, s.court, s.time))
+      );
+      for (const w of g.items) {
+        if (freeSet.has(_wlId(w.locId, w.date, w.court, w.time))) {
+          const [,mo,dy] = w.date.split('-');
+          _addNotif('waitlist',
+            `🔔 สล็อตว่างแล้ว! สนาม ${w.court} เวลา ${w.time} (${+dy} ${TH_MS[+mo-1]})`,
+            { locId: w.locId, date: w.date, court: w.court, time: w.time }
+          );
+          list = list.filter(x => _wlId(x.locId,x.date,x.court,x.time) !== _wlId(w.locId,w.date,w.court,w.time));
+          _saveWaitlist(list);
         }
+      }
+    } catch { /* silent */ }
+  }
+}
 
-        // 4. สั่งให้ Iframe โหลดเว็บ
-        document.getElementById('gasFrame').src = gasUrl;
-    </script>
+function clearNotifs() {
+  _notifs = [];
+  _renderNotifList();
+  _updateNotifBadge();
+}
+
+// ── Admin-cancelled notification ─────────────────────
+let _cancelBannerTimer = null;
+let _cancelAlertedIds  = new Set();   // IDs we've already alerted — never re-alert
+
+function _showCancelledAlert(cancelledIds) {
+  // Filter out IDs we've already shown an alert for
+  const newIds = cancelledIds.filter(id => !_cancelAlertedIds.has(id));
+  if (!newIds.length) return;
+  newIds.forEach(id => _cancelAlertedIds.add(id));
+
+  const count = newIds.length;
+  const msg = `การจองของคุณ ${count > 1 ? count + ' รายการ' : '1 รายการ'} ถูกยกเลิกโดย Admin`;
+  _addNotif('cancel', msg, { ids: newIds });
+
+  let banner = document.getElementById('cancelledBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'cancelledBanner';
+    banner.className = 'cancelled-banner';
+    document.getElementById('screenApp')?.appendChild(banner);
+  }
+  banner.innerHTML = `
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span style="flex:1">${msg}</span>
+    <span class="cb-close" onclick="event.stopPropagation();document.getElementById('cancelledBanner').classList.remove('show')">✕</span>
+  `;
+  banner.onclick = () => { banner.classList.remove('show'); };
+  clearTimeout(_cancelBannerTimer);
+  banner.classList.add('show');
+  _cancelBannerTimer = setTimeout(() => banner.classList.remove('show'), 3000);
+}
+
+async function deleteMyPhoto(photoId, ev) {
+  ev.stopPropagation();
+  showAppConfirm('🗑️', 'ลบภาพ', 'ต้องการลบภาพนี้ออกจากแกลเลอรี่?', 'ลบ', '#dc2626', async () => {
+    const r = await post({ action:'deletePhoto', photoId, empId: user.empId });
+    if (r.ok) { galPhotos = []; loadGallery(true); }
+    else showAppAlert('❌', 'ลบไม่สำเร็จ', r.error || 'เกิดข้อผิดพลาด');
+  });
+}
+
+let _appAlertCb = null;
+function _appAlertClose() {
+  document.getElementById('appAlertModal').style.display = 'none';
+  _appAlertCb = null;
+}
+function showAppConfirm(icon, title, msg, okLabel, okColor, cb) {
+  _appAlertCb = cb;
+  document.getElementById('appAlertIcon').textContent   = icon;
+  document.getElementById('appAlertTitle').textContent  = title;
+  document.getElementById('appAlertMsg').textContent    = msg;
+  document.getElementById('appAlertCancel').style.display = '';
+  const okBtn = document.getElementById('appAlertOk');
+  okBtn.textContent        = okLabel || 'ตกลง';
+  okBtn.style.background   = okColor || 'var(--brand)';
+  okBtn.style.color        = '#fff';
+  document.getElementById('appAlertModal').style.display = 'flex';
+}
+function showAppAlert(icon, title, msg) {
+  _appAlertCb = null;
+  document.getElementById('appAlertIcon').textContent   = icon;
+  document.getElementById('appAlertTitle').textContent  = title;
+  document.getElementById('appAlertMsg').textContent    = msg;
+  document.getElementById('appAlertCancel').style.display = 'none';
+  const okBtn = document.getElementById('appAlertOk');
+  okBtn.textContent      = 'ตกลง';
+  okBtn.style.background = 'var(--brand)';
+  okBtn.style.color      = '#fff';
+  document.getElementById('appAlertModal').style.display = 'flex';
+}
+function _appAlertDo() {
+  const cb = _appAlertCb;
+  _appAlertClose();
+  if (cb) cb();
+}
+
+// ── Upload Modal ──
+function openUploadModal() {
+  const sel = document.getElementById('galBkSel');
+  sel.innerHTML = '<option value="">— ไม่เลือก —</option>';
+  // populate user's bookings
+  (window._myBookingsCache || []).forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.id;
+    opt.textContent = `${b.date} · สนาม ${b.court} (${b.locName||b.locId||''})`;
+    sel.appendChild(opt);
+  });
+  document.getElementById('galCapInput').value = '';
+  document.getElementById('galUploadProg').textContent = '';
+  document.getElementById('galSubmitBtn').disabled = true;
+  document.getElementById('galPreviewPh').style.display = '';
+  document.getElementById('galStampCanvas').style.display = 'none';
+  _galFile = null; _galBlob = null;
+  document.getElementById('galModalOv').classList.add('open');
+}
+function closeUploadModal(ev) {
+  if (ev && !ev.target.classList.contains('gal-modal-ov')) return;
+  document.getElementById('galModalOv').classList.remove('open');
+}
+
+function onPhotoSelected(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  _galFile = file;
+  stampAndPreview();
+}
+
+// Re-stamp when caption changes (debounce 600ms)
+let _stampTimer = null;
+document.addEventListener('DOMContentLoaded', () => {
+  const ci = document.getElementById('galCapInput');
+  if (ci) ci.addEventListener('input', () => {
+    clearTimeout(_stampTimer);
+    _stampTimer = setTimeout(() => { if (_galFile) stampAndPreview(); }, 600);
+  });
+});
+
+async function stampAndPreview() {
+  const caption = (document.getElementById('galCapInput').value || '').trim();
+  const prog    = document.getElementById('galUploadProg');
+  prog.textContent = '🖊️ กำลัง stamp ภาพ...';
+  try {
+    _galBlob = await stampImage(_galFile, caption);
+    // show preview on canvas
+    const cvs = document.getElementById('galStampCanvas');
+    const ctx = cvs.getContext('2d');
+    const bmp = await createImageBitmap(_galBlob);
+    cvs.width  = bmp.width;
+    cvs.height = bmp.height;
+    ctx.drawImage(bmp, 0, 0);
+    document.getElementById('galPreviewPh').style.display = 'none';
+    cvs.style.display = 'block';
+    document.getElementById('galSubmitBtn').disabled = false;
+    prog.textContent = '';
+  } catch(e) {
+    prog.textContent = '❌ ' + e.message;
+  }
+}
+
+async function stampImage(file, captionText) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const ow = img.naturalWidth, oh = img.naturalHeight;
+      // Resize to max 1600px on longest side (saves upload time + imgbb quota)
+      const MAX = 1600;
+      const scale = Math.min(1, MAX / Math.max(ow, oh));
+      const W = Math.round(ow * scale), H = Math.round(oh * scale);
+      const cvs = document.createElement('canvas');
+      cvs.width = W; cvs.height = H;
+      const ctx = cvs.getContext('2d');
+      ctx.drawImage(img, 0, 0, W, H);
+
+      // ── Watermark ──
+      const minDim   = Math.min(W, H);
+      const fontSize = Math.round(minDim * 0.045);  // ~4.5% for identity stamp
+      const capSize  = Math.round(minDim * 0.055);  // ~5.5% for caption
+      const fullName = `${user.empId} ${user.name}${user.surname ? ' ' + user.surname : ''}`;
+      const lines    = [fullName];
+      if (captionText) lines.push(captionText);
+
+      // Random position — keep stamp within 20–70% of image (avoid edges & center crowd)
+      const margin = minDim * 0.04;
+      const rx = margin + Math.random() * (W - margin * 2);
+      const ry = margin + Math.random() * (H - margin * 2);
+      const angle = (Math.random() - 0.5) * 0.35; // ±10°
+
+      ctx.save();
+      ctx.translate(rx, ry);
+      ctx.rotate(angle);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      // shadow for contrast
+      ctx.shadowColor   = 'rgba(0,0,0,0.85)';
+      ctx.shadowBlur    = fontSize * 0.5;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      ctx.globalAlpha   = 0.50;
+      ctx.fillStyle     = '#ffffff';
+
+      // Line 1: identity
+      ctx.font = `bold ${fontSize}px "Bai Jamjuree", Arial, sans-serif`;
+      ctx.fillText(fullName, 0, 0);
+
+      // Line 2: caption (bigger, bold)
+      if (captionText) {
+        ctx.font = `bold ${capSize}px "Bai Jamjuree", Arial, sans-serif`;
+        ctx.fillText(captionText, 0, fontSize * 1.25);
+      }
+      ctx.restore();
+
+      cvs.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error('toBlob failed'));
+      }, 'image/jpeg', 0.88);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load image failed')); };
+    img.src = url;
+  });
+}
+
+async function uploadToImgbb(blob) {
+  const fd = new FormData();
+  fd.append('key', IMGBB_KEY);
+  fd.append('image', blob, 'photo.jpg');
+  const resp = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body: fd });
+  const json = await resp.json();
+  if (!json.success) throw new Error(json.error?.message || 'imgbb upload failed');
+  return {
+    url   : json.data.url,
+    thumb : json.data.thumb?.url || json.data.url,
+  };
+}
+
+async function submitPhoto() {
+  if (!_galBlob) return;
+  const prog  = document.getElementById('galUploadProg');
+  const track = document.getElementById('galProgTrack');
+  const fill  = document.getElementById('galProgFill');
+  const btn   = document.getElementById('galSubmitBtn');
+  const caption = (document.getElementById('galCapInput').value || '').trim();
+  const bkId    = document.getElementById('galBkSel').value;
+  btn.disabled = true;
+  // Show progress bar
+  track.classList.add('show');
+  fill.style.width = '5%';
+  prog.textContent = '☁️ กำลังอัปโหลดภาพ...';
+  requestAnimationFrame(() => { fill.style.width = '45%'; });
+  try {
+    const { url, thumb } = await uploadToImgbb(_galBlob);
+    fill.style.width = '70%';
+    prog.textContent = '💾 กำลังบันทึกข้อมูล...';
+    const r = await post({
+      action: 'savePhoto',
+      empId: user.empId, name: user.name, surname: user.surname || '',
+      bookingId: bkId, caption, imageUrl: url, thumbUrl: thumb,
+      locId: curLoc?.locId || '',
+    });
+    if (!r.ok) throw new Error(r.error);
+    fill.style.width = '100%';
+    prog.textContent = '✅ อัปโหลดสำเร็จ!';
+    setTimeout(() => {
+      document.getElementById('galModalOv').classList.remove('open');
+      track.classList.remove('show');
+      fill.style.width = '0%';
+      galPhotos = []; loadGallery(true);
+      switchTab('gallery');
+    }, 900);
+  } catch(e) {
+    track.classList.remove('show');
+    fill.style.width = '0%';
+    prog.textContent = '❌ ' + (e.message || 'เกิดข้อผิดพลาด');
+    btn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  BOOKINGS — แสดงทุกรายการ ทุก location
+// ══════════════════════════════════════════════════════
+async function loadBookings() {
+  if (_bkLoading) return;
+  _bkLoading = true;
+  const el = document.getElementById('bookingsList');
+  if (!el) { _bkLoading = false; return; }
+  el.innerHTML = '<div class="load-wrap"><span class="spin-dk"></span></div>';
+  // DOM failsafe — if still spinning after 18s, force error (covers all edge cases)
+  const _fs = setTimeout(() => {
+    if (el && el.querySelector('.spin-dk')) {
+      el.innerHTML = `<div class="alert a-danger">หมดเวลาเชื่อมต่อ กรุณาลองใหม่<br><button onclick="loadBookings()" style="margin-top:.5rem;padding:.3rem .8rem;border-radius:8px;border:none;background:var(--red-1);color:#fff;cursor:pointer;font-size:.75rem">ลองใหม่</button></div>`;
+    }
+  }, 18000);
+  try {
+    const empId = user?.empId || '';
+    const r = await get('getMyBookings', { empId }, 15000);
+    clearTimeout(_fs);
+    if (!r.ok) { el.innerHTML = `<div class="alert a-danger">${r.error||'โหลดไม่ได้'}</div>`; return; }
+    // Cache for gallery upload modal
+    window._myBookingsCache = (r.bookings||[]).sort((a,b) => b.date > a.date ? 1:-1).slice(0,20);
+    // Detect admin-cancelled bookings (compare with previous poll)
+    const currentIds = new Set((r.bookings||[]).map(b => b.id));
+    if (_prevBkIds !== null) {
+      const cancelled = [..._prevBkIds].filter(id => !currentIds.has(id));
+      if (cancelled.length) _showCancelledAlert(cancelled);   // pass IDs array
+    }
+    _prevBkIds = currentIds;
+    // Sync hash so next _pollBookingHash won't re-trigger
+    const sortedIds = [...currentIds].sort();
+    _bkHash = sortedIds.length + ':' + sortedIds.join(',');
+    const today  = todayStr();
+    const curMo  = today.substring(0, 7);
+    // Show past bookings up to 3 months back
+    const pastLimit = (() => {
+      let [y, m] = today.split('-').map(Number);
+      m -= 3; while (m <= 0) { m += 12; y--; }
+      return `${y}-${String(m).padStart(2,'0')}-01`;
+    })();
+
+    const all = (r.bookings||[]).filter(b => b.date);
+    const upcoming = all.filter(b => b.date >= today).sort((a,b) => a.date > b.date ? 1 : -1);
+    const past     = all.filter(b => b.date < today && b.date >= pastLimit)
+                        .sort((a,b) => b.date > a.date ? 1 : -1);  // newest first
+
+    if (!upcoming.length && !past.length) {
+      el.innerHTML = emptyState('ไม่มีรายการจอง');
+      return;
+    }
+
+    // ── quota bar — per-location breakdown ───────────
+    const curMoUpcoming = all.filter(b => b.date >= today && b.date.startsWith(curMo));
+    const quotaHtml = (() => {
+      // Use loaded locations list; fall back to single row if empty
+      const locList = locations.length
+        ? locations
+        : [{locId:'', name:'ทุกสถานที่'}];
+      const rows = locList.map(loc => {
+        const used = loc.locId
+          ? all.filter(b => b.date.startsWith(curMo) && b.locId === loc.locId).length
+          : all.filter(b => b.date.startsWith(curMo)).length;
+        const full = used >= BOOKING_QUOTA;
+        const warn = !full && used >= BOOKING_QUOTA - 1;
+        const pips = Array.from({length: BOOKING_QUOTA}, (_,i) =>
+          `<div class="quota-pip${i<used?' used'+(warn||full?' warn':''):''}"></div>`
+        ).join('');
+        const cc = full ? '#ef4444' : warn ? '#f59e0b' : 'var(--muted)';
+        return `<div class="quota-loc-row">
+          <div class="quota-loc-name"><i class="fa-solid fa-location-dot" style="font-size:9px;margin-right:4px;opacity:.65"></i>${loc.name||loc.locId}</div>
+          <div class="quota-pips">${pips}</div>
+          <div class="quota-count" style="color:${cc}">${used}/${BOOKING_QUOTA}</div>
+        </div>`;
+      }).join('');
+      return `<div class="quota-bar-wrap">
+        <div class="quota-label"><i class="fa-solid fa-layer-group" style="margin-right:5px;font-size:10px"></i>โควต้าเดือนนี้</div>
+        ${rows}
+      </div>`;
+    })();
+
+    // ── card builder ──────────────────────────────────
+    function cardHtml(b, isPast) {
+      const [,m,d] = b.date.split('-');
+      const isToday  = b.date === today;
+      const checkedIn = b.checkinStatus === 'checked_in';
+      const locBadge = b.locName
+        ? `<span class="bk-loc"><i class="fa-solid fa-location-dot" style="font-size:9px"></i>${b.locName}</span>`
+        : '';
+      let ciHtml = '';
+      if (isPast || checkedIn) {
+        ciHtml = checkedIn
+          ? `<span class="ci-badge done"><i class="fa-solid fa-circle-check" style="font-size:10px"></i>เช็คอินแล้ว</span>`
+          : `<span class="ci-badge noshow"><i class="fa-solid fa-circle-xmark" style="font-size:10px"></i>ไม่ได้เข้าใช้งาน</span>`;
+      }
+      // Action buttons (right side)
+      _bkShareData.set(b.id, {id:b.id,date:b.date,time:b.time,court:b.court,locName:b.locName||''});
+      const shareBtn = `<button class="btn-share-card" onclick="shareBookingCard('${b.id}')"><i class="fa-solid fa-share-nodes" style="font-size:10px"></i>ส่งการจองนี้วางให้เพื่อนรัก</button>`;
+      let actionHtml = '';
+      if (!isPast) {
+        if (isToday && !checkedIn) {
+          actionHtml = `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
+            <button class="btn-checkin-card" id="ci-btn-${b.id}" onclick="doCheckinFromCard('${b.id}','${b.locId||''}')">
+              <i class="fa-solid fa-location-crosshairs" style="font-size:11px"></i>เช็คอิน
+            </button>
+            <button class="btn-cancel-sm" onclick="openCancel('${b.id}','${b.date}','${b.time}','${b.court}','${b.locName||''}')">ยกเลิก</button>
+            ${shareBtn}
+          </div>`;
+        } else if (!checkedIn) {
+          actionHtml = `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
+            <button class="btn-cancel-sm" onclick="openCancel('${b.id}','${b.date}','${b.time}','${b.court}','${b.locName||''}')">ยกเลิก</button>
+            ${shareBtn}
+          </div>`;
+        } else {
+          actionHtml = shareBtn;
+        }
+      }
+      return `<div class="booking-card${isPast?' past':''}">
+        <div class="bk-date-box"><div class="bk-day">${+d}</div><div class="bk-mon">${TH_MS[+m-1]}</div></div>
+        <div class="bk-info">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:2px">
+            <div class="bk-court"><img src="badminton-ico.png" style="width:14px;height:14px;object-fit:contain;margin-right:3px;vertical-align:middle">สนาม ${b.court}</div>
+            ${locBadge}
+          </div>
+          <div class="bk-time"><i class="fa-regular fa-clock" style="font-size:11px;margin-right:3px;vertical-align:middle"></i>${b.time}</div>
+          <div class="bk-id">${b.id}</div>
+          ${ciHtml}
+        </div>
+        ${actionHtml}
+      </div>`;
+    }
+
+    let html = quotaHtml;
+    let hasContent = false;
+
+    // Group upcoming by date-group: today / this month / future months
+    const todayItems  = upcoming.filter(b => b.date === today);
+    const curMoItems  = upcoming.filter(b => b.date > today && b.date.startsWith(curMo));
+    const futureByMo  = {};
+    upcoming.filter(b => b.date.substring(0,7) > curMo).forEach(b => {
+      const mo = b.date.substring(0,7);
+      if (!futureByMo[mo]) futureByMo[mo] = [];
+      futureByMo[mo].push(b);
+    });
+
+    if (todayItems.length) {
+      html += `<div class="bk-month-hd bk-hd-today"><i class="fa-solid fa-circle" style="font-size:7px;margin-right:6px;color:#22c55e;vertical-align:middle"></i>รายการจองวันนี้</div>`;
+      html += todayItems.map(b => cardHtml(b, false)).join('');
+      hasContent = true;
+    }
+    if (curMoItems.length) {
+      const [,mm] = curMo.split('-').map(Number);
+      html += `<div class="bk-month-hd"${hasContent?' style="margin-top:.75rem"':''}><i class="fa-regular fa-calendar" style="margin-right:5px"></i>รายการจองเดือน${TH_M[mm-1]}</div>`;
+      html += curMoItems.map(b => cardHtml(b, false)).join('');
+      hasContent = true;
+    }
+    Object.entries(futureByMo).forEach(([mo, items]) => {
+      const [,mm] = mo.split('-').map(Number);
+      html += `<div class="bk-month-hd"${hasContent?' style="margin-top:.75rem"':''}><i class="fa-regular fa-calendar" style="margin-right:5px"></i>รายการจองเดือน${TH_M[mm-1]}</div>`;
+      html += items.map(b => cardHtml(b, false)).join('');
+      hasContent = true;
+    });
+
+    // Past bookings group — show 3, expand on demand
+    const PAST_PREVIEW = 3;
+    if (past.length) {
+      const showAll = _pastExpanded;
+      const visible = showAll ? past : past.slice(0, PAST_PREVIEW);
+      html += `<div class="bk-month-hd" style="margin-top:1rem;color:var(--muted)"><i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;font-size:.75rem"></i>รายการจองที่ผ่านมา</div>`;
+      html += visible.map(b => cardHtml(b, true)).join('');
+      if (past.length > PAST_PREVIEW) {
+        if (!showAll) {
+          html += `<button onclick="_expandPast()" style="width:100%;margin-top:.45rem;padding:.6rem;border:1px dashed var(--border);background:transparent;border-radius:10px;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:inherit">
+            <i class="fa-solid fa-chevron-down" style="margin-right:5px;font-size:.7rem"></i>ดูทั้งหมด ${past.length} รายการ
+          </button>`;
+        } else {
+          html += `<button onclick="_collapsePast()" style="width:100%;margin-top:.45rem;padding:.6rem;border:1px dashed var(--border);background:transparent;border-radius:10px;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:inherit">
+            <i class="fa-solid fa-chevron-up" style="margin-right:5px;font-size:.7rem"></i>ย่อรายการ
+          </button>`;
+        }
+      }
+    }
+
+    el.innerHTML = html;
+  } catch(e) {
+    clearTimeout(_fs);
+    const msg = e?.name === 'AbortError' ? 'หมดเวลาเชื่อมต่อ กรุณาลองใหม่' : 'โหลดข้อมูลไม่ได้';
+    el.innerHTML = `<div class="alert a-danger">${msg}<br><button onclick="loadBookings()" style="margin-top:.5rem;padding:.3rem .8rem;border-radius:8px;border:none;background:var(--red-1);color:#fff;cursor:pointer;font-size:.75rem">ลองใหม่</button></div>`;
+  } finally {
+    _bkLoading = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  CALENDAR (ใช้ curLoc)
+// ══════════════════════════════════════════════════════
+
+// Jump to admin-configured target month, or search up to 6 months ahead
+let _findingMonth = false;
+async function findFirstBookableMonth() {
+  if (!curLoc || _findingMonth) return;
+  _findingMonth = true;
+  // Show loading spinner immediately
+  document.getElementById('calMonthLbl').textContent = TH_M[calM-1];
+  document.getElementById('calYearLbl').textContent  = 'พ.ศ. ' + (calY+543);
+  const grid = document.getElementById('calGrid');
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+  const ph = document.createElement('div');
+  ph.className = 'cal-loading';
+  ph.innerHTML = '<span class="spin-dk"></span>';
+  grid.appendChild(ph);
+
+  try {
+    // If admin has set a target month, jump straight to it
+    if (sysTargetMonth) {
+      const [ty, tm] = sysTargetMonth.split('-').map(Number);
+      if (!isNaN(ty) && !isNaN(tm)) {
+        calY = ty; calM = tm;
+        await loadCalSum();
+        return;
+      }
+    }
+
+    // Fallback: search up to 6 months from current
+    const startY = calY, startM = calM;
+    for (let i = 0; i < 6; i++) {
+      const y = startY + Math.floor((startM - 1 + i) / 12);
+      const m = ((startM - 1 + i) % 12) + 1;
+      const mo = y + '-' + String(m).padStart(2, '0');
+      try {
+        const r = await get('getMonthSummary', { month: mo, locId: curLoc.locId });
+        const sum = (r.ok && r.summary) ? r.summary : {};
+        const hasBookable = Object.values(sum).some(v => ['available','full'].includes(v));
+        if (hasBookable) {
+          calY = y; calM = m; calSum = sum; calLoaded = true;
+          renderCal();
+          return;
+        }
+      } catch {}
+    }
+    // Nothing found — stay on current month, show placeholder
+    calSum = {}; calLoaded = true; renderCal();
+  } finally {
+    _findingMonth = false;
+  }
+}
+
+function changeCalMonth(d) {
+  calM += d;
+  if (calM > 12) { calM = 1; calY++; }
+  if (calM < 1)  { calM = 12; calY--; }
+  calSum = {}; calLoaded = false;
+  // Show loading placeholder while fetching
+  document.getElementById('calMonthLbl').textContent = TH_M[calM-1];
+  document.getElementById('calYearLbl').textContent  = 'พ.ศ. ' + (calY+543);
+  const grid = document.getElementById('calGrid');
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+  const ph = document.createElement('div');
+  ph.className = 'cal-loading';
+  ph.innerHTML = '<span class="spin-dk"></span>';
+  grid.appendChild(ph);
+  loadCalSum();
+}
+
+function renderCal() {
+  document.getElementById('calMonthLbl').textContent = TH_M[calM-1];
+  document.getElementById('calYearLbl').textContent  = 'พ.ศ. ' + (calY+543);
+  const grid = document.getElementById('calGrid');
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+  const hint = document.getElementById('calHint');
+
+  // No location selected — prompt user to pick one
+  if (!curLoc) {
+    const ph = document.createElement('div');
+    ph.className = 'cal-no-month';
+    ph.innerHTML = `<i class="fa-solid fa-location-dot"></i><div class="cal-no-month-txt">เลือกสถานที่ก่อน</div><div class="cal-no-month-sub">กดเลือกสถานที่ด้านบนเพื่อดูปฏิทินจอง</div>`;
+    grid.appendChild(ph);
+    if (hint) hint.innerHTML = '';
+    return;
+  }
+
+  const today = todayStr();
+
+  // If loaded but no days configured at all, show placeholder
+  const hasAny = calLoaded && Object.keys(calSum).length > 0;
+  const hasBookable = hasAny && Object.values(calSum).some(v => ['available','full'].includes(v));
+
+  if (calLoaded && !hasBookable) {
+    const mo = document.createElement('div');
+    mo.className = 'cal-no-month';
+    mo.innerHTML = `<i class="fa-regular fa-calendar-xmark"></i><div class="cal-no-month-txt">ยังไม่เปิดรับจอง</div><div class="cal-no-month-sub">เดือนนี้ยังไม่มีสนามว่างในระบบ</div>`;
+    grid.appendChild(mo);
+    return;
+  }
+
+  const first = new Date(calY, calM-1, 1).getDay();
+  const days  = new Date(calY, calM, 0).getDate();
+  for (let i=0; i<first; i++) { const c=document.createElement('div'); c.className='cal-cell'; grid.appendChild(c); }
+  for (let d=1; d<=days; d++) {
+    const ds  = calY+'-'+String(calM).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const dow = new Date(calY,calM-1,d).getDay();
+    // After load: unknown future = closed (not configured)
+    const rawSt = calSum[ds];
+    let st;
+    if (rawSt) {
+      st = rawSt;
+    } else if (ds < today) {
+      st = 'past';
+    } else {
+      st = calLoaded ? 'closed' : 'unknown';
+    }
+    const isMine = myBookedDates.has(ds); // user already booked this day at this loc
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell ' + st;
+    if (isMine)        cell.classList.add('mybooked');
+    if (ds===today)    cell.classList.add('today');
+    if (ds===selDate)  cell.classList.add('selected');
+    if (dow===0) cell.classList.add('sun');
+    if (dow===6) cell.classList.add('sat');
+    const showDot = ['available','full','holiday'].includes(st);
+    // mybooked: show red dot instead of green
+    let dotHtml = '';
+    if (isMine && st==='available') {
+      dotHtml = '<div class="cal-dot" style="background:#ef4444"></div>';
+    } else if (showDot) {
+      dotHtml = '<div class="cal-dot"></div>';
+    }
+    cell.innerHTML = `<div class="cal-num">${d}</div>${dotHtml}`;
+    const quotaFull = myBookingCount >= BOOKING_QUOTA;
+    if (st==='available' && ds>=today)
+      cell.addEventListener('click', () => pickDate(ds, false, isMine, !isMine && quotaFull));
+    else if (st==='full' && ds>=today)
+      cell.addEventListener('click', () => pickDate(ds, true, isMine));
+    grid.appendChild(cell);
+  }
+
+  // Quota badge — show remaining slots for this month
+  // (hint already declared above)
+  if (hint && calLoaded && hasBookable) {
+    const remain = Math.max(0, BOOKING_QUOTA - myBookingCount);
+    const color  = remain === 0 ? '#ef4444' : remain <= 2 ? '#f59e0b' : '#16a34a';
+    hint.innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;background:${color}18;border:1px solid ${color}44;border-radius:20px;padding:.22rem .75rem;font-size:.72rem;color:${color};font-weight:700"><i class="fa-solid fa-ticket" style="font-size:10px"></i>สิทธิ์คงเหลือ ${remain}/${BOOKING_QUOTA} ครั้ง${remain===0?' — ใช้ครบแล้ว':''}</span>`;
+  } else if (hint) {
+    hint.innerHTML = 'เลือกวันที่เพื่อดูสล็อตว่าง';
+  }
+}
+
+async function loadCalSum() {
+  if (!curLoc) return;
+  const mo = calY+'-'+String(calM).padStart(2,'0');
+  const locId = curLoc.locId;
+  try {
+    // Only block on the two essential calls; holidays load in the background
+    const [sumR, bkR] = await Promise.all([
+      get('getMonthSummary', { month: mo, locId }),
+      get('getMyBookings',   { empId: user.empId }),
+    ]);
+    calLoaded = true;
+    calSum = (sumR.ok && sumR.summary) ? sumR.summary : {};
+    const allBk = (bkR.ok && bkR.bookings) ? bkR.bookings : [];
+    const normLoc = id => String(id||'').trim().toLowerCase();
+    const myThisMonthLoc = allBk.filter(b =>
+      String(b.date||'').startsWith(mo) && normLoc(b.locId) === normLoc(locId)
+    );
+    myBookedDates  = new Set(myThisMonthLoc.map(b => String(b.date)));
+    myBookingCount = myThisMonthLoc.length;
+    calHolidays    = [];
+    renderCal();
+    renderHolidayList();
+    // Load holidays separately — non-blocking so they never stall the calendar
+    get('getHolidaysForMonth', { month: mo, locId }).then(holR => {
+      // Only apply if still viewing the same month/loc
+      if (calY+'-'+String(calM).padStart(2,'0') === mo && curLoc && curLoc.locId === locId) {
+        calHolidays = (holR.ok && holR.holidays) ? holR.holidays : [];
+        if (calHolidays.length) { renderCal(); renderHolidayList(); }
+      }
+    }).catch(() => {});
+  } catch(e) {
+    console.error('[loadCalSum]', e);
+    calLoaded = true; calSum = {}; myBookedDates = new Set(); myBookingCount = 0; calHolidays = [];
+    renderCal(); renderHolidayList();
+  }
+}
+
+function renderHolidayList() {
+  const el = document.getElementById('calHolidayList');
+  if (!el) return;
+  if (!calHolidays.length) { el.innerHTML = ''; return; }
+  const locNames = {}; // cache locId→name from locations list
+  (locations||[]).forEach(l => { locNames[l.locId] = l.shortName || l.name; });
+  let html = `<div class="hol-list-hd"><i class="fa-solid fa-calendar-xmark"></i>วันหยุดเดือนนี้</div>`;
+  calHolidays.forEach(h => {
+    const [,m,d] = (h.date||'').split('-');
+    const dow = new Date(h.date+'T00:00:00').getDay();
+    const dowTh = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][dow];
+    const locLabel = h.locId
+      ? `<span class="bk-loc"><i class="fa-solid fa-location-dot" style="font-size:9px"></i>${locNames[h.locId]||h.locId}</span>`
+      : `<span class="bk-loc" style="background:#fef9c3;color:#854d0e;border-color:#fde047">ทุกสถานที่</span>`;
+    html += `<div class="hol-item">
+      <div class="hol-date-box"><div class="hol-day">${+d}</div><div class="hol-mon">${TH_MS[+m-1]}</div></div>
+      <div class="hol-info">
+        <div class="hol-name">${h.name || 'วันหยุด'}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:3px">${locLabel}<span style="font-size:.68rem;color:var(--muted)">วัน${dowTh}</span></div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function pickDate(ds, viewOnly=false, alreadyBooked=false, quotaFull=false) {
+  selDate=ds; selSlot=null; renderCal(); openSlotSheet(ds, viewOnly, alreadyBooked, quotaFull);
+}
+
+// ══════════════════════════════════════════════════════
+//  SLOT SHEET
+// ══════════════════════════════════════════════════════
+async function openSlotSheet(ds, viewOnly=false, alreadyBooked=false, quotaFull=false) {
+  const [y,m,d] = ds.split('-');
+  let title = 'เลือก Slot';
+  if (viewOnly)       title = 'รายการจอง (เต็มแล้ว)';
+  if (alreadyBooked)  title = 'รายการจอง (จองแล้ว)';
+  if (quotaFull)      title = 'รายการจอง (สิทธิ์เต็ม)';
+  document.getElementById('sheetTitle').textContent = title;
+  document.getElementById('sheetSub').textContent   = `${+d} ${TH_M[+m-1]} พ.ศ.${+y+543} · ${curLoc.shortName||curLoc.name}`;
+  document.getElementById('sheetBody').innerHTML    = '<div class="load-wrap"><span class="spin-dk"></span></div>';
+  document.getElementById('sheetFoot').style.display = 'none';
+  document.getElementById('slotSheet').classList.add('open');
+  try {
+    const r = await get('getSlots', { date: ds, locId: curLoc.locId });
+    if (!r.ok)     { document.getElementById('sheetBody').innerHTML=`<div class="alert a-danger">${r.error}</div>`; return; }
+    if (r.holiday) { document.getElementById('sheetBody').innerHTML=`<div class="alert a-warn">🎉 วันหยุด: ${r.holidayName}</div>`; return; }
+    if (r.closed||!r.slots?.length) { document.getElementById('sheetBody').innerHTML=`<div class="alert a-info">ไม่มีการเปิดสนามวันนี้</div>`; return; }
+    renderSlots(r.slots, viewOnly, alreadyBooked, quotaFull);
+  } catch { document.getElementById('sheetBody').innerHTML='<div class="alert a-danger">โหลดข้อมูลไม่ได้</div>'; }
+}
+
+function renderSlots(slots, viewOnly=false, alreadyBooked=false, quotaFull=false) {
+  const groups={};
+  slots.forEach(s=>{ if(!groups[s.time])groups[s.time]=[]; groups[s.time].push(s); });
+  let html='';
+  if (alreadyBooked) {
+    html += `<div class="alert a-danger" style="margin:.75rem .9rem .25rem;border-radius:10px"><i class="fa-solid fa-circle-xmark" style="margin-right:5px"></i>คุณได้จองวันนี้แล้ว — ดูรายการที่แท็บ "รายการจอง"</div>`;
+  } else if (quotaFull) {
+    html += `<div class="alert a-danger" style="margin:.75rem .9rem .25rem;border-radius:10px"><i class="fa-solid fa-circle-xmark" style="margin-right:5px"></i>ใช้สิทธิ์ครบ ${BOOKING_QUOTA}/${BOOKING_QUOTA} แล้ว — ไม่สามารถจองเพิ่มได้ในเดือนนี้</div>`;
+  } else if (viewOnly) {
+    html += `<div class="alert a-danger" style="margin:.75rem .9rem .25rem;border-radius:10px"><i class="fa-solid fa-circle-exclamation" style="margin-right:5px"></i>สนามเต็มแล้ว — ดูได้เท่านั้น</div>`;
+  }
+  Object.entries(groups).forEach(([time,grp])=>{
+    html+=`<div class="slot-grp"><div class="slot-grp-lbl">⏱ ${time}</div>`;
+    grp.forEach(s=>{
+      let cls='slot-row',bCls='badge-free',bTxt='ว่าง',can=false,showWL=false;
+      let vipNoteHtml = '';
+      if(s.isPast)           {cls+=' past';   bCls='badge-past';   bTxt='ผ่านแล้ว';}
+      else if(s.vip)         {cls+=' vip';    bCls='badge-vip';    bTxt='<span class="crown-anim">👑</span> VIP';
+                               if(s.vipNote)  vipNoteHtml=`<div class="slot-vip-note">💬 "${s.vipNote}"</div>`;}
+      else if(s.booked)      {cls+=' booked'; bCls='badge-booked'; bTxt='จองแล้ว'; showWL=!viewOnly&&!alreadyBooked&&curLoc;}
+      else if(viewOnly||alreadyBooked||quotaFull){cls+=' booked'; bCls='badge-booked'; bTxt= alreadyBooked?'จองแล้ว':'เต็ม';}
+      else                   {cls+=' free';   can=true;}
+      const oc=can?`onclick="pickSlot('${s.court}','${s.time.replace(/'/g,"\\'")}')"` :'';
+      let rightHtml = `<div class="badge ${bCls}">${bTxt}</div>`;
+      if (showWL && curLoc) {
+        const wlActive = _isWaitlisted(curLoc.locId, selDate||'', s.court, s.time);
+        const wlKey = `${curLoc.locId}|${selDate||''}|${s.court}|${s.time}`;
+        rightHtml = `<div style="display:flex;align-items:center;gap:5px">
+          <div class="badge ${bCls}">${bTxt}</div>
+          <button class="btn-waitlist${wlActive?' active':''}" data-wlkey="${wlKey}" title="${wlActive?'ยกเลิกแจ้งเตือน':'แจ้งเตือนเมื่อว่าง'}"
+            onclick="toggleWaitlist('${curLoc.locId}','${selDate||''}','${s.court}','${s.time.replace(/'/g,"\\'")}')">
+            <i class="fa-solid fa-bell" style="font-size:9px"></i>
+          </button>
+        </div>`;
+      }
+      html+=`<div class="${cls}" data-court="${s.court}" data-time="${s.time}" ${oc}>
+        <div><div class="slot-court">🏸 สนาม ${s.court}</div><div class="slot-time-txt">${s.time}</div>${vipNoteHtml}</div>
+        ${rightHtml}
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('sheetBody').innerHTML=html;
+}
+
+function pickSlot(court, time) {
+  selSlot = { court, time };
+  document.querySelectorAll('.slot-row').forEach(r=>{
+    if(r.classList.contains('free')||r.classList.contains('selected')){
+      r.classList.remove('selected');
+      const b=r.querySelector('.badge');
+      if(b){b.className='badge badge-free';b.textContent='ว่าง';}
+    }
+  });
+  const el = document.querySelector(`.slot-row[data-court="${court}"]`);
+  if(el){el.classList.add('selected');const b=el.querySelector('.badge');b.className='badge badge-sel';b.textContent='เลือก ✓';}
+  document.getElementById('sheetFoot').style.display='block';
+}
+
+function closeSlotSheet(e) {
+  if(e&&!e.target.classList.contains('sheet-ov'))return;
+  document.getElementById('slotSheet').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════
+//  CONFIRM
+// ══════════════════════════════════════════════════════
+function openConfirm() {
+  if(!selSlot||!selDate)return;
+  const [y,m,d]=selDate.split('-');
+  document.getElementById('confirmSum').innerHTML=`
+    <div class="bk-sum-row">📍 <div><strong>${curLoc.name}</strong></div></div>
+    <div class="bk-sum-row">📅 <div><strong>${+d} ${TH_M[+m-1]} พ.ศ.${+y+543}</strong></div></div>
+    <div class="bk-sum-row">🏸 <div><strong>สนาม ${selSlot.court}</strong></div></div>
+    <div class="bk-sum-row">⏰ <div>${selSlot.time}</div></div>
+    <div class="bk-sum-row">👤 <div>${user.name} ${user.surname}</div></div>`;
+  document.getElementById('phoneIn').value = localStorage.getItem('bk_phone') || '';
+  document.getElementById('emailIn').value  = localStorage.getItem('bk_email') || '';
+  document.getElementById('confirmAlert').innerHTML='';
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+async function doBook() {
+  // Re-check booking status before submitting (may have changed since modal opened)
+  if (!bookingOpen) {
+    setAlert('confirmAlert','danger','ระบบจองปิดแล้ว กรุณารีเฟรชหน้าใหม่');
+    await loadBookingStatus();
+    return;
+  }
+  const phone=document.getElementById('phoneIn').value.trim();
+  if(!phone){setAlert('confirmAlert','danger','กรุณากรอกเบอร์ติดต่อ');return;}
+  const btn=document.getElementById('btnDoBook');
+  loading(btn,true,'กำลังจอง...');
+  try {
+    const r=await post({action:'makeBooking',empId:user.empId,name:user.name,surname:user.surname,
+      dept:user.dept,phone,email:document.getElementById('emailIn').value.trim(),
+      date:selDate,time:selSlot.time,court:selSlot.court,locId:curLoc.locId});
+    if(!r.ok){setAlert('confirmAlert','danger',r.error||'เกิดข้อผิดพลาด');return;}
+    // Remember phone & email for next booking
+    if (phone) localStorage.setItem('bk_phone', phone);
+    const email = document.getElementById('emailIn').value.trim();
+    if (email) localStorage.setItem('bk_email', email);
+    if (navigator.vibrate) navigator.vibrate([80, 30, 80, 30, 120]);
+    closeModal('confirmModal');
+    document.getElementById('slotSheet').classList.remove('open');
+    showToast('✅','จองสำเร็จแล้ว!','success');
+    selSlot=null; calSum={}; calLoaded=false;
+    // Switch to bookings tab immediately, reload both in parallel
+    switchTab('bookings');
+    loadBookings();
+    loadCalSum();
+  } catch{setAlert('confirmAlert','danger','เชื่อมต่อไม่ได้');}
+  finally{loading(btn,false,'✓ ยืนยันจอง');}
+}
+
+// ══════════════════════════════════════════════════════
+//  CHECK-IN FROM BOOKING CARD
+// ══════════════════════════════════════════════════════
+async function doCheckinFromCard(bookingId, locId) {
+  const btn = document.getElementById('ci-btn-' + bookingId);
+  if (!btn || btn.disabled) return;
+
+  if (!navigator.geolocation) {
+    showStatusChangeToast('เบราว์เซอร์ไม่รองรับ GPS', 'closed'); return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i>กำลังตรวจสอบ...';
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    try {
+      const r = await post({
+        action: 'checkin',
+        empId: user.empId,
+        bookingId,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+      });
+      if (r.ok || r.alreadyDone) {
+        // Vibrate on success
+        if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+        showStatusChangeToast('เช็คอินสำเร็จ ✅', 'open');
+        // Update card UI without full reload
+        btn.closest('.booking-card')
+           ?.querySelector('.bk-info')
+           ?.insertAdjacentHTML('beforeend',
+             `<span class="ci-badge done" style="margin-top:5px"><i class="fa-solid fa-circle-check" style="font-size:10px"></i>เช็คอินแล้ว</span>`);
+        btn.closest('div[style]')?.remove();   // remove action button group
+        // Refresh full list after short delay to sync state
+        setTimeout(loadBookings, 1500);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-location-crosshairs" style="font-size:11px"></i>เช็คอิน';
+        if (r.tooFar) {
+          _showTooFarModal(r.distance || 0, r.radius || 150);
+        } else {
+          showStatusChangeToast(r.error || 'เช็คอินไม่สำเร็จ', 'closed');
+        }
+      }
+    } catch {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-location-crosshairs" style="font-size:11px"></i>เช็คอิน';
+      showStatusChangeToast('เชื่อมต่อไม่ได้ กรุณาลองใหม่', 'closed');
+    }
+  }, err => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-location-crosshairs" style="font-size:11px"></i>เช็คอิน';
+    const msg = err.code === 1 ? 'กรุณาอนุญาต GPS ในเบราว์เซอร์'
+              : err.code === 2 ? 'ไม่สามารถหาตำแหน่งได้'
+              : 'GPS หมดเวลา กรุณาลองใหม่';
+    showStatusChangeToast(msg, 'closed');
+  }, { timeout: 12000, maximumAge: 0, enableHighAccuracy: true });
+}
+
+// ══════════════════════════════════════════════════════
+//  SHARE BOOKING CARD (Canvas boarding-pass)
+// ══════════════════════════════════════════════════════
+const _bkShareData = new Map();   // bookingId → {id, date, time, court, locName}
+let _sharingInProgress = false;
+
+async function shareBookingCard(bookingId) {
+  if (_sharingInProgress) return;
+  _sharingInProgress = true;
+  setTimeout(() => { _sharingInProgress = false; }, 3000);
+
+  const b = _bkShareData.get(bookingId);
+  if (!b) { _sharingInProgress = false; return; }
+
+  const W = 800, H = 420;
+  const cvs = document.createElement('canvas');
+  cvs.width = W; cvs.height = H;
+  const ctx = cvs.getContext('2d');
+
+  // Green background
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#14532d');
+  grad.addColorStop(1, '#15803d');
+  ctx.fillStyle = grad;
+  ctx.beginPath(); roundRect(ctx, 0, 0, W, H, 28); ctx.fill();
+
+  // White panel (right 58%) — drawn once with square left edge, rounded right
+  ctx.save();
+  ctx.beginPath();
+  const px = W * .42;
+  ctx.moveTo(px, 0);
+  ctx.lineTo(W - 28, 0); ctx.arcTo(W, 0, W, 28, 28);
+  ctx.lineTo(W, H - 28); ctx.arcTo(W, H, W - 28, H, 28);
+  ctx.lineTo(px, H);
+  ctx.closePath();
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.restore();
+
+  // Perforated edge
+  ctx.setLineDash([6, 8]);
+  ctx.strokeStyle = 'rgba(255,255,255,.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W * .42, 20); ctx.lineTo(W * .42, H - 20); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Logo / emoji (left panel)
+  ctx.font = '52px serif'; ctx.textAlign = 'center';
+  ctx.fillText('🏸', W * .21, 120);
+
+  // Title
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 26px "Bai Jamjuree", sans-serif';
+  ctx.fillText('TQM ตบให้ยับ', W * .21, 168);
+  ctx.font = '14px "Bai Jamjuree", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.72)';
+  ctx.fillText('ใบจองสนามแบดมินตัน', W * .21, 195);
+
+  // Booking ID (bottom left)
+  ctx.font = 'bold 13px monospace'; ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.fillText(b.id, W * .21, H - 40);
+
+  // Right panel — details
+  const rx = W * .46;
+  const [yr, mo, dy] = b.date.split('-').map(Number);
+  const dateStr = `${dy} ${TH_M[mo-1]} พ.ศ.${yr + 543}`;
+
+  function detailRow(icon, label, value, y) {
+    ctx.font = '13px "Bai Jamjuree", sans-serif'; ctx.fillStyle = '#9ca3af'; ctx.textAlign = 'left';
+    ctx.fillText(label.toUpperCase(), rx, y);
+    ctx.font = 'bold 20px "Bai Jamjuree", sans-serif'; ctx.fillStyle = '#111827';
+    ctx.fillText(value, rx, y + 24);
+  }
+
+  detailRow('', 'วันที่', dateStr, 80);
+  detailRow('', 'เวลา', b.time, 150);
+  detailRow('', 'สนาม', `สนาม ${b.court}`, 220);
+  if (b.locName) detailRow('', 'สถานที่', b.locName, 290);
+
+  // Decorative dots
+  ctx.fillStyle = '#f3f4f6';
+  for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(W * .42, 60 + i * 75, 12, 0, Math.PI * 2); ctx.fill(); }
+
+  // Convert to blob and share/download
+  cvs.toBlob(async blob => {
+    // Try ClipboardItem first — avoids Safari share-sheet double-paste bug
+    if (navigator.clipboard?.write) {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        showBadge('📋 คัดลอกภาพแล้ว — นำไปวางใน LINE หรือแอปอื่นได้เลย');
+        _sharingInProgress = false;
+        return;
+      } catch { /* clipboard write blocked, fall through */ }
+    }
+    // Fallback: native share sheet
+    const file = new File([blob], 'booking.png', { type: 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'การจองสนามแบดมินตัน' }); }
+      catch { /* cancelled */ }
+    } else {
+      // Last resort: download
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `booking-${b.id}.png`;
+      a.click();
+    }
+  }, 'image/png');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// ══════════════════════════════════════════════════════
+//  TOO-FAR MODAL (check-in outside radius)
+// ══════════════════════════════════════════════════════
+const _TOO_FAR_MSGS = [
+  { emoji:'🛸', title:'GPS จับได้ว่าคุณกำลังล่องลอยอยู่ที่ไหนสักแห่ง',
+    body:'อยู่บ้านแล้วเช็คอินไม่ได้นะครับ ต้องมาอยู่ที่สนามจริงๆ ก่อน!' },
+  { emoji:'🤔', title:'แน่ใจนะว่ามาถึงสนามแล้ว?',
+    body:'อาจจะยังอยู่ในรถ อยู่ร้านกาแฟ หรือแค่คิดอยากมาก็ยังได้เลย 😅' },
+  { emoji:'🗺️', title:'ระบบหาคุณไม่เจอ!',
+    body:'เดินเข้ามาในบริเวณสนามก่อนนะ แล้วค่อยกดเช็คอินใหม่อีกที' },
+  { emoji:'🚶', title:'ยังไม่ถึงสักที…',
+    body:'เดินอีกนิดหน่อยน่าจะถึงแล้วแหละ ไปๆ มาๆ สู้ๆ! 💪' },
+  { emoji:'😂', title:'โอ้โห ไกลกันอยู่นะนี่!',
+    body:'ระบบไม่ได้เข้มงวดอะไรหรอก แค่อยากให้คุณมาสนามจริงๆ เท่านั้นเอง 🏸' },
+];
+
+function _showTooFarModal(dist, radius) {
+  const pick = _TOO_FAR_MSGS[Math.floor(Math.random() * _TOO_FAR_MSGS.length)];
+  document.getElementById('tooFarEmoji').textContent  = pick.emoji;
+  document.getElementById('tooFarTitle').textContent  = pick.title;
+  document.getElementById('tooFarBody').textContent   = pick.body;
+  document.getElementById('tooFarDist').textContent   =
+    `📍 คุณอยู่ห่างจากสนาม ${dist} เมตร (ต้องอยู่ภายใน ${radius} ม.)`;
+  document.getElementById('tooFarModal').classList.add('open');
+}
+
+function closeTooFarModal(e) {
+  // Allow direct close (button) or overlay-click close
+  if (e && e.target !== document.getElementById('tooFarModal')) return;
+  document.getElementById('tooFarModal').classList.remove('open');
+}
+function _closeTooFarDirect() {
+  document.getElementById('tooFarModal').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════
+//  CANCEL
+// ══════════════════════════════════════════════════════
+function openCancel(id,date,time,court,locName) {
+  cancelTgt={id,date,time,court};
+  const [y,m,d]=date.split('-');
+  document.getElementById('cancelSum').innerHTML=
+    `📍 ${locName}<br>📅 <strong>${+d} ${TH_M[+m-1]} พ.ศ.${+y+543}</strong><br>🏸 สนาม ${court} · ${time}`;
+  document.getElementById('cancelAlert').innerHTML='';
+
+  // ── Deadline check ─────────────────────────────────
+  const btn = document.getElementById('btnDoCancel');
+  const startStr = (time||'').split(/[-–]/)[0].trim();   // "08:00"
+  const m2 = startStr.match(/(\d+):(\d+)/);
+  const slotDt = m2 ? new Date(`${date}T${m2[1].padStart(2,'0')}:${m2[2].padStart(2,'0')}:00`) : null;
+  const deadline = slotDt ? new Date(slotDt - CANCEL_DEADLINE_HRS * 3_600_000) : null;
+  const tooLate  = deadline && new Date() > deadline;
+  btn.disabled = !!tooLate;
+  btn.style.opacity = tooLate ? '.45' : '';
+  if (tooLate) {
+    document.getElementById('cancelAlert').innerHTML =
+      `<div class="alert a-danger" style="font-size:.75rem"><i class="fa-solid fa-clock" style="margin-right:5px"></i>ยกเลิกไม่ได้แล้ว — ต้องยกเลิกก่อนเวลาจองอย่างน้อย ${CANCEL_DEADLINE_HRS} ชั่วโมง</div>`;
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '';
+  }
+  document.getElementById('cancelModal').classList.add('open');
+}
+
+async function doCancel() {
+  if(!cancelTgt)return;
+  const btn=document.getElementById('btnDoCancel');
+  loading(btn,true,'กำลังยกเลิก...');
+  try {
+    const r=await post({action:'cancelBooking',empId:user.empId,bookingId:cancelTgt.id});
+    if(!r.ok){setAlert('cancelAlert','danger',r.error||'เกิดข้อผิดพลาด');return;}
+    closeModal('cancelModal');
+    showToast('','ยกเลิกการจองแล้ว','');
+    calSum={}; calLoaded=false; loadBookings(); loadCalSum(); cancelTgt=null;
+  } catch{setAlert('cancelAlert','danger','เชื่อมต่อไม่ได้');}
+  finally{loading(btn,false,'🗑 ยืนยันยกเลิก');}
+}
+
+// ══════════════════════════════════════════════════════
+//  ADMIN PIN
+// ══════════════════════════════════════════════════════
+function openAdminPin() {
+  // If already verified this session, skip PIN
+  if (sessionStorage.getItem('admin_verified')) { enterAdmin(); return; }
+  document.getElementById('pinIn').value='';
+  document.getElementById('pinAlert').innerHTML='';
+  document.getElementById('pinModal').classList.add('open');
+  setTimeout(()=>document.getElementById('pinIn').focus(),150);
+}
+function closePin(){document.getElementById('pinModal').classList.remove('open')}
+function submitPin() {
+  if (document.getElementById('pinIn').value.trim()===ADMIN_PIN) {
+    closePin();
+    sessionStorage.setItem('admin_verified','1');
+    enterAdmin();
+  } else {
+    setAlert('pinAlert','danger','PIN ไม่ถูกต้อง');
+    document.getElementById('pinIn').value='';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('bk_user');
+  localStorage.removeItem('bk_loc');
+  sessionStorage.removeItem('admin_verified');
+  location.reload();
+}
+
+// ══════════════════════════════════════════════════════
+//  API
+// ══════════════════════════════════════════════════════
+function get(action, params={}, timeout=15000) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(GAS_URL);
+    url.searchParams.set('action', action);
+    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k,v));
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url.toString());
+    xhr.timeout = timeout; // browser-native timeout, always fires
+    xhr.onload = function() {
+      try { resolve(JSON.parse(this.responseText)); }
+      catch(e) { reject(new Error('parse error')); }
+    };
+    xhr.onerror = function() {
+      reject(Object.assign(new Error('network error'), {name:'AbortError'}));
+    };
+    xhr.ontimeout = function() {
+      reject(Object.assign(new Error('timeout'), {name:'AbortError'}));
+    };
+    xhr.send();
+  });
+}
+async function post(body) {
+  return (await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(body)})).json();
+}
+
+// ══════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════
+function closeModal(id,e){if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('open')}
+function setAlert(id,type,msg){document.getElementById(id).innerHTML=`<div class="alert a-${type}">${msg}</div>`}
+function loading(btn,on,label){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>${label}`:label}
+let _badgeTimer;
+function showBadge(msg) {
+  const el = document.getElementById('appBadge');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_badgeTimer);
+  _badgeTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+let _tTimer;
+function showToast(ico,msg,type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=(ico?ico+' ':'')+msg;el.className=`toast ${type} show`;
+  clearTimeout(_tTimer);_tTimer=setTimeout(()=>el.classList.remove('show'),3000);
+}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function emptyState(msg){return `<div class="empty-state"><div class="empty-ic"><i class="fa-regular fa-calendar-check" style="font-size:56px;color:var(--border)"></i></div><div class="empty-txt">${msg}</div><div class="empty-sub">กดปุ่ม 🏸 เพื่อเลือกวันและจองสนาม</div></div>`}
+
+setTimeout(()=>{const el=document.getElementById('empIdInput');if(el&&!localStorage.getItem('bk_user'))el.focus();},500);
+
+// ══════════════════════════════════════════════════════
+//  ADMIN (inline — Option B)
+// ══════════════════════════════════════════════════════
+let admConfAction = null;
+
+async function enterAdmin() {
+  document.getElementById('tbAvAdmin').textContent =
+    (user.name?.[0]||'') + (user.surname?.[0]||'') || '?';
+  showScreen('screenAdmin');
+
+  // Populate location filter (lazy-load if needed)
+  if (!locations.length) {
+    try { const r = await get('getLocations'); if (r.ok) locations = r.locations||[]; } catch {}
+  }
+  const sel = document.getElementById('aFLoc');
+  while (sel.options.length > 1) sel.remove(1);
+  locations.forEach(l => {
+    const o = document.createElement('option');
+    o.value = l.locId; o.textContent = l.shortName||l.name;
+    sel.appendChild(o);
+  });
+
+  switchAdminTab('bk');
+  loadAdminStats();
+  loadAdminBookings();
+}
+
+function exitAdmin() { showScreen('screenApp'); }
+
+function switchAdminTab(tab) {
+  const bk = tab === 'bk';
+  document.getElementById('paneAdminBk').classList.toggle('active', bk);
+  document.getElementById('paneAdminBan').classList.toggle('active', !bk);
+  document.getElementById('navAdmBk').classList.toggle('active', bk);
+  document.getElementById('navAdmBan').classList.toggle('active', !bk);
+  if (!bk) loadAdminBanList();
+}
+
+async function loadAdminStats() {
+  try {
+    const r = await get('adminStats', { pin: ADMIN_PIN });
+    if (!r.ok) return;
+    document.getElementById('aMonth').textContent  = r.totalBookings;
+    document.getElementById('aBanned').textContent = r.totalBanned;
+    document.getElementById('aTarget').textContent = r.targetMonth || '-';
+    const chips = document.getElementById('admLocChips');
+    if (r.byLocation?.length) {
+      chips.innerHTML = r.byLocation.map(l =>
+        `<span class="adm-loc-chip">📍 ${l.name}: ${l.count}</span>`
+      ).join('');
+    }
+  } catch {}
+  try {
+    const r2 = await get('adminGetAll', { pin: ADMIN_PIN });
+    if (r2.ok) document.getElementById('aTotal').textContent = r2.bookings?.length || 0;
+  } catch {}
+}
+
+async function loadAdminBookings() {
+  const el = document.getElementById('admBkList');
+  el.innerHTML = '<div class="load-wrap"><span class="spin-dk"></span></div>';
+  const locId = document.getElementById('aFLoc').value;
+  const date  = document.getElementById('aFDate').value;
+  const params = { pin: ADMIN_PIN };
+  if (locId) params.locId = locId;
+  if (date)  params.date  = date;
+  try {
+    const r = await get('adminGetAll', params);
+    if (!r.ok) { el.innerHTML=`<div class="alert a-danger">${r.error}</div>`; return; }
+    const list = r.bookings || [];
+    if (!list.length) { el.innerHTML='<div class="empty-state"><div class="empty-ic">📋</div><div class="empty-txt">ไม่พบข้อมูล</div></div>'; return; }
+    el.innerHTML = list.map(b => {
+      const [y,m,d] = String(b.date).split('-');
+      const ds = `${+d} ${TH_MS[+m-1]} ${+y+543}`;
+      const loc = locations.find(l => l.locId === b.locId);
+      const lname = loc ? (loc.shortName||loc.name) : (b.locId||'');
+      const safe = (s) => String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      return `<div class="adm-bk-card">
+        <div class="adm-bk-main">
+          <div class="adm-bk-loc">📍 ${lname}</div>
+          <div class="adm-bk-name">${b.name||'-'}</div>
+          <div class="adm-bk-detail">📅 ${ds} · ⏰ ${b.time} · 🏸 สนาม ${b.court}</div>
+        </div>
+        <button class="btn-cancel-sm" onclick="openAdmCancelConf('${b.id}','${safe(b.name)}','${ds}','${b.time}','สนาม ${b.court}')">ยกเลิก</button>
+      </div>`;
+    }).join('');
+  } catch { el.innerHTML='<div class="alert a-danger">โหลดไม่ได้</div>'; }
+}
+
+function openAdmCancelConf(id, name, date, time, court) {
+  admConfAction = async () => {
+    const btn = document.getElementById('btnAdmConfirm');
+    loading(btn, true, 'กำลังยกเลิก...');
+    try {
+      const r = await post({ action:'adminCancel', pin:ADMIN_PIN, bookingId:id });
+      if (!r.ok) { setAlert('admConfAlert','danger', r.error||'เกิดข้อผิดพลาด'); return; }
+      document.getElementById('admConfOv').classList.remove('open');
+      showAdmToast('','ยกเลิกการจองแล้ว');
+      loadAdminStats(); loadAdminBookings();
+    } catch { setAlert('admConfAlert','danger','เชื่อมต่อไม่ได้'); }
+    finally { loading(btn, false, 'ยืนยันยกเลิก'); }
+  };
+  document.getElementById('admConfIco').textContent = '🗑';
+  document.getElementById('admConfTtl').textContent = 'ยืนยันยกเลิก?';
+  document.getElementById('admConfSub').innerHTML = `👤 ${name}\n📅 ${date} · ${time}\n🏸 ${court}`;
+  document.getElementById('admConfAlert').innerHTML = '';
+  document.getElementById('btnAdmConfirm').textContent = 'ยืนยันยกเลิก';
+  document.getElementById('btnAdmConfirm').style.background = 'linear-gradient(135deg,#ef4444,#b91c1c)';
+  document.getElementById('admConfOv').classList.add('open');
+}
+
+async function runAdmConf() { if (admConfAction) await admConfAction(); }
+
+async function loadAdminBanList() {
+  const el = document.getElementById('admBanList');
+  el.innerHTML = '<div class="load-wrap"><span class="spin-dk"></span></div>';
+  try {
+    const r = await get('getBannedList', { pin: ADMIN_PIN });
+    if (!r.ok) { el.innerHTML=`<div class="alert a-danger">${r.error}</div>`; return; }
+    const list = r.banned||[];
+    if (!list.length) { el.innerHTML='<div class="empty-state"><div class="empty-ic">✅</div><div class="empty-txt">ไม่มีรายการระงับ</div></div>'; return; }
+    el.innerHTML = list.map(b => `
+      <div class="adm-ban-card">
+        <div class="adm-ban-main">
+          <div class="adm-ban-emp">${b.empId}</div>
+          <div class="adm-ban-info">${b.reason||'-'}</div>
+          <div class="adm-ban-info" style="color:var(--warn-text)">ครบ: ${b.until ? fmtAdmDate(b.until) : 'ไม่กำหนด'}</div>
+        </div>
+        <button class="btn-cancel-sm" style="color:#4ade80;border-color:rgba(21,128,61,.4);background:rgba(21,128,61,.08)"
+          onclick="openAdmPardonConf('${b.empId}')">ปลดแบน</button>
+      </div>`).join('');
+  } catch { el.innerHTML='<div class="alert a-danger">โหลดไม่ได้</div>'; }
+}
+
+async function doAdminBan() {
+  const empId  = document.getElementById('aBanEmpId').value.trim();
+  const reason = document.getElementById('aBanReason').value.trim();
+  const until  = document.getElementById('aBanUntil').value;
+  if (!empId) { setAlert('aBanAlert','danger','กรุณากรอกรหัสพนักงาน'); return; }
+  const btn = document.getElementById('btnAdmBan');
+  loading(btn, true, 'กำลังบันทึก...');
+  try {
+    const r = await post({ action:'adminBan', pin:ADMIN_PIN, empId, reason, until });
+    if (!r.ok) { setAlert('aBanAlert','danger', r.error||'เกิดข้อผิดพลาด'); return; }
+    setAlert('aBanAlert','success','✅ บันทึกแล้ว');
+    document.getElementById('aBanEmpId').value  = '';
+    document.getElementById('aBanReason').value = '';
+    document.getElementById('aBanUntil').value  = '';
+    loadAdminBanList(); loadAdminStats();
+  } catch { setAlert('aBanAlert','danger','เชื่อมต่อไม่ได้'); }
+  finally  { loading(btn, false, '🚫 ระงับพนักงาน'); }
+}
+
+function openAdmPardonConf(empId) {
+  admConfAction = async () => {
+    const btn = document.getElementById('btnAdmConfirm');
+    loading(btn, true, 'กำลังปลดแบน...');
+    try {
+      const r = await post({ action:'adminPardon', pin:ADMIN_PIN, empId });
+      if (!r.ok) { setAlert('admConfAlert','danger', r.error||'เกิดข้อผิดพลาด'); return; }
+      document.getElementById('admConfOv').classList.remove('open');
+      showAdmToast('✅','ปลดแบนแล้ว');
+      loadAdminBanList(); loadAdminStats();
+    } catch { setAlert('admConfAlert','danger','เชื่อมต่อไม่ได้'); }
+    finally { loading(btn, false, '✅ ปลดแบน'); }
+  };
+  document.getElementById('admConfIco').textContent = '✅';
+  document.getElementById('admConfTtl').textContent = 'ยืนยันปลดแบน?';
+  document.getElementById('admConfSub').textContent = `รหัสพนักงาน: ${empId}`;
+  document.getElementById('admConfAlert').innerHTML = '';
+  document.getElementById('btnAdmConfirm').textContent = 'ยืนยันปลดแบน';
+  document.getElementById('btnAdmConfirm').style.background = 'linear-gradient(135deg,#15803d,#166534)';
+  document.getElementById('admConfOv').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════════
+//  CHECK-IN MODE  (?mode=checkin&loc=LOC01)
+// ══════════════════════════════════════════════════════
+let ciLocId   = '';
+let ciLocData = null;
+
+async function initCheckinMode(locId) {
+  ciLocId = locId;
+  showScreen('screenCheckin');
+
+  // Try to fetch location name for display
+  if (locId) {
+    try {
+      const r = await get('getLocations');
+      if (r.ok && r.locations) {
+        ciLocData = r.locations.find(l => l.locId === locId) || null;
+        if (ciLocData) {
+          const locLabel = ciLocData.name + (ciLocData.shortName ? ` (${ciLocData.shortName})` : '');
+          document.getElementById('ciLocSub').textContent = ciLocData.shortName || ciLocData.name;
+          document.getElementById('ciLocName').textContent = locLabel;
+          document.getElementById('ciLocBadge').classList.remove('hidden');
+        }
+      }
+    } catch {}
+  }
+
+  // Pre-fill empId from existing session
+  try {
+    const su = localStorage.getItem('bk_user');
+    if (su) {
+      const u = JSON.parse(su);
+      if (u.empId) document.getElementById('ciEmpId').value = u.empId;
+    }
+  } catch {}
+
+  setTimeout(() => {
+    const el = document.getElementById('ciEmpId');
+    if (el && !el.value) el.focus();
+  }, 450);
+}
+
+async function doCheckin() {
+  const empId = document.getElementById('ciEmpId').value.trim();
+  if (!empId) { showCiErr('กรุณากรอกรหัสพนักงาน'); return; }
+
+  const btn = document.getElementById('btnCi');
+  loading(btn, true, 'กำลังตรวจสอบ...');
+  document.getElementById('ciResult').style.display = 'none';
+  setCiStatus('');
+
+  let success = false;
+  try {
+    // ── Step 1: GPS ──────────────────────────────────
+    setCiStatus('📡 กำลังระบุตำแหน่ง GPS...');
+    let lat, lng;
+    try {
+      const pos = await new Promise((resolve, reject) => {
+        if (!navigator.geolocation) { reject(new Error('no_geo')); return; }
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true, timeout: 15000, maximumAge: 0
+        });
+      });
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+    } catch (geoErr) {
+      if (geoErr.message === 'no_geo') throw new Error('เบราว์เซอร์ไม่รองรับ GPS');
+      if (geoErr.code === 1) throw new Error('กรุณาอนุญาตให้ใช้ GPS แล้วลองใหม่');
+      throw new Error('ไม่สามารถรับ GPS ได้ (timeout) กรุณาลองใหม่');
+    }
+
+    // ── Step 2: Find today's booking ─────────────────
+    setCiStatus('🔍 กำลังค้นหาการจองของวันนี้...');
+    const bookR = await get('getMyBookings', { empId });
+    if (!bookR.ok) throw new Error(bookR.error || 'ไม่พบข้อมูลพนักงาน กรุณาตรวจสอบรหัส');
+
+    const today    = todayStr();
+    const todayBks = (bookR.bookings || []).filter(b =>
+      b.date === today && (!ciLocId || b.locId === ciLocId)
+    );
+
+    if (!todayBks.length) {
+      const locHint = ciLocData ? ` ที่${ciLocData.shortName || ciLocData.name}` : '';
+      throw new Error(`ไม่พบการจองของวันนี้${locHint}`);
+    }
+
+    // Prefer pending over already-done
+    const booking = todayBks.find(b => !b.checkinStatus || b.checkinStatus === 'pending')
+                 || todayBks[0];
+
+    if (booking.checkinStatus === 'checked_in') {
+      throw new Error('คุณเช็คอินการจองนี้ไปแล้ว');
+    }
+
+    // ── Step 3: Call checkin API ──────────────────────
+    setCiStatus('✅ กำลังบันทึกเช็คอิน...');
+    const r = await post({ action: 'checkin', empId, bookingId: booking.id, lat, lng });
+
+    if (!r.ok) {
+      if (r.tooFar) {
+        throw new Error(
+          `คุณอยู่ห่างจากสนามเกินไป\n📏 ระยะทาง: ${r.distance} ม.\n✅ อนุญาต: ${r.radius} ม.`
+        );
+      }
+      if (r.alreadyDone) throw new Error('เช็คอินแล้วก่อนหน้านี้');
+      throw new Error(r.error || 'เช็คอินไม่สำเร็จ กรุณาลองใหม่');
+    }
+
+    // ── Success ───────────────────────────────────────
+    success = true;
+    setCiStatus('');
+    const [y, m, d] = booking.date.split('-');
+    const locLabel  = r.locName || ciLocData?.name || ciLocId;
+    document.getElementById('ciResultBody').innerHTML =
+      `<div class="ci-result-row">🏸 <strong>สนาม ${r.court || booking.court}</strong></div>` +
+      `<div class="ci-result-row">⏰ ${r.time || booking.time}</div>` +
+      `<div class="ci-result-row">📍 ${locLabel}</div>` +
+      `<div class="ci-result-row">📅 ${+d} ${TH_M[+m-1]} พ.ศ.${+y+543}</div>`;
+    document.getElementById('ciResult').style.display = 'block';
+    btn.innerHTML = '✅ เช็คอินสำเร็จแล้ว';
+    btn.style.background = '#14532d';
+    // Auto-reset after 6s for kiosk use
+    setTimeout(_resetCiScreen, 6000);
+
+  } catch (e) {
+    const msg = e.message || 'เกิดข้อผิดพลาด';
+    showCiErr(msg.replace(/\n/g, '<br>'));
+    setCiStatus('');
+  } finally {
+    if (!success) loading(btn, false, '📍 เช็คอิน');
+  }
+}
+
+function _resetCiScreen() {
+  document.getElementById('ciEmpId').value = '';
+  document.getElementById('ciErr').innerHTML = '';
+  document.getElementById('ciResult').style.display = 'none';
+  setCiStatus('');
+  const btn = document.getElementById('btnCi');
+  btn.innerHTML = '📍 เช็คอิน';
+  btn.style.background = '';
+  btn.disabled = false;
+  setTimeout(() => { const el = document.getElementById('ciEmpId'); if (el) el.focus(); }, 200);
+}
+
+function setCiStatus(msg) {
+  document.getElementById('ciStatus').innerHTML = msg
+    ? `<span style="color:#888">${msg}</span>`
+    : '';
+}
+
+function showCiErr(html) {
+  const el = document.getElementById('ciErr');
+  el.innerHTML = html;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+let _tAdmTimer;
+function showAdmToast(ico, msg) {
+  const el = document.getElementById('toastAdmin');
+  if (!el) return;
+  el.textContent = (ico?ico+' ':'')+msg;
+  el.className = 'toast show';
+  clearTimeout(_tAdmTimer);
+  _tAdmTimer = setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+function fmtAdmDate(ds) {
+  if (!ds) return '-';
+  try { const [y,m,d]=String(ds).split('-'); return `${+d} ${TH_MS[+m-1]} ${+y+543}`; }
+  catch { return ds; }
+}
+</script>
 </body>
 </html>
