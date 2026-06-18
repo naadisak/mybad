@@ -49,8 +49,11 @@
 html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:hidden;background:#e8e4dc}
 
 .mobile-shell{
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:min(430px,100vw);height:min(932px,100vh);overflow:hidden;
+  position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:min(430px,100vw);
+  height:100vh;height:100dvh; /* dvh = excludes browser address bar on mobile */
+  max-height:932px;
+  overflow:hidden;
   border-radius:clamp(0px,calc((100vw - 430px)*9999),36px);
   box-shadow:0 24px 80px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);
 }
@@ -100,11 +103,14 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 /* Ban screen */
 .ban-screen{display:none;text-align:center;padding:1.2rem 0 .5rem}
 .ban-screen.show{display:block}
-.ban-emoji{font-size:3.2rem;margin-bottom:.6rem}
 .ban-title{font-size:1.1rem;font-weight:700;color:#dc2626;margin-bottom:.45rem}
 .ban-msg{font-size:.8rem;color:#6b7280;line-height:1.55;margin-bottom:.75rem}
-.ban-reason-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:10px;padding:.55rem .8rem;font-size:.78rem;color:#dc2626;margin-bottom:.65rem;text-align:left}
-.ban-until{display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:20px;padding:.22rem .8rem;font-size:.72rem;color:#b91c1c;font-weight:600;margin-bottom:1rem}
+.ban-reason-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:10px;padding:.55rem .8rem;font-size:.78rem;color:#dc2626;margin-bottom:.65rem;text-align:left;line-height:1.6}
+.ban-countdown{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:.75rem}
+.ban-countdown-num{font-size:2rem;font-weight:800;color:#dc2626;line-height:1}
+.ban-countdown-label{font-size:.7rem;color:#6b7280;line-height:1.4;text-align:left}
+.ban-until{display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:20px;padding:.22rem .8rem;font-size:.72rem;color:#b91c1c;font-weight:600;margin-bottom:.5rem}
+.ban-auto-note{font-size:.72rem;color:#9ca3af;margin-bottom:1rem;line-height:1.5}
 .ban-back-btn{width:100%;padding:.72rem;border:1.5px solid #e5e5e5;background:#fff;color:#555;border-radius:12px;font-size:.85rem;font-family:'Bai Jamjuree',sans-serif;cursor:pointer;font-weight:600}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .btn-login{width:100%;padding:clamp(.85rem,3.5vw,1.05rem);border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent-2),var(--accent));color:#fff;font-size:clamp(.9rem,3.5vw,1rem);font-weight:700;font-family:'Bai Jamjuree',sans-serif;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 20px rgba(22,101,52,.35);transition:all .18s;position:relative;overflow:hidden}
@@ -207,15 +213,15 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 .month-nav-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
 .month-nav-label{font-size:.85rem;font-weight:700;color:var(--text)}
 
-.booking-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem .9rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.85rem;position:relative;overflow:hidden;transition:background .25s,border-color .25s}
-.booking-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--red-1),var(--red-2))}
-.bk-date-box{flex-shrink:0;width:46px;height:46px;background:linear-gradient(135deg,var(--red-2),var(--red-3));border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.booking-card{background:var(--cbg,var(--card-bg));border:1px solid var(--cborder,var(--border));border-radius:var(--radius);padding:.75rem .9rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.85rem;position:relative;overflow:hidden;transition:background .25s,border-color .25s}
+.booking-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--cs1,var(--red-1)),var(--cs2,var(--red-2)))}
+.bk-date-box{flex-shrink:0;width:46px;height:46px;background:linear-gradient(135deg,var(--cdb1,var(--red-2)),var(--cdb2,var(--red-3)));border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
 .bk-day{font-size:1.15rem;font-weight:700;line-height:1}
 .bk-mon{font-size:.6rem;font-weight:500;opacity:.85}
 .bk-info{flex:1;min-width:0}
 .bk-court{font-size:.82rem;font-weight:700;color:var(--text)}
 .bk-time{font-size:.72rem;color:var(--muted);margin-top:2px}
-.bk-loc{font-size:.64rem;margin-top:3px;display:inline-flex;align-items:center;gap:3px;background:rgba(21,128,61,.1);border:1px solid rgba(21,128,61,.2);color:var(--red-1);padding:.12rem .5rem;border-radius:10px;font-weight:700}
+.bk-loc{font-size:.64rem;margin-top:3px;display:inline-flex;align-items:center;gap:3px;background:var(--clbg,rgba(21,128,61,.1));border:1px solid var(--clborder,rgba(21,128,61,.2));color:var(--clcolor,var(--red-1));padding:.12rem .5rem;border-radius:10px;font-weight:700}
 .bk-month-hd{font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.04em;padding:.9rem .1rem .35rem}
 .bk-hd-today{color:#16a34a;font-size:.75rem}
 .bk-id{font-size:.58rem;color:var(--muted);margin-top:3px;opacity:.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -225,11 +231,18 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 .booking-card.past::before{background:var(--border)}
 .booking-card.past .bk-date-box{background:linear-gradient(135deg,#9ca3af,#6b7280);filter:grayscale(1)}
 .booking-card.past .bk-court,.booking-card.past .bk-time,.booking-card.past .bk-id,.booking-card.past .bk-loc{color:var(--muted)}
-.ci-badge{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:.2rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700}
-.ci-badge.done{background:rgba(22,101,52,.12);color:#15803d;border:1px solid rgba(22,101,52,.25)}
+.ci-badge{display:inline-flex;align-items:center;gap:4px;padding:.22rem .6rem;border-radius:20px;font-size:.68rem;font-weight:700}
+.ci-badge.done{background:rgba(249,115,22,.13);color:#ea580c;border:1px solid rgba(249,115,22,.32)}
 .ci-badge.noshow{background:rgba(107,114,128,.1);color:#6b7280;border:1px solid rgba(107,114,128,.2)}
-[data-theme="dark"] .ci-badge.done{background:rgba(22,101,52,.2);color:#4ade80}
+[data-theme="dark"] .ci-badge.done{background:rgba(249,115,22,.2);color:#fb923c;border-color:rgba(249,115,22,.4)}
 [data-theme="dark"] .ci-badge.noshow{background:rgba(107,114,128,.15);color:#9ca3af}
+/* Checked-in card — orange translucent theme */
+.booking-card.checked-in{background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.28);flex-wrap:wrap;align-items:flex-start}
+.booking-card.checked-in::before{background:linear-gradient(to bottom,#f97316,#ea580c)}
+.booking-card.checked-in .bk-date-box{background:linear-gradient(135deg,#ea580c,#c2410c)}
+.booking-card.checked-in .bk-loc{background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.22);color:#ea580c}
+.bk-ci-row{width:100%;display:flex;justify-content:flex-end;padding-left:calc(46px + .85rem);margin-top:2px}
+[data-theme="dark"] .booking-card.checked-in{background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.35)}
 /* Quota bar */
 .quota-bar-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:.65rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
 .quota-label{font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:1px}
@@ -254,6 +267,25 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 .toofar-btn{width:100%;padding:.78rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:14px;font-size:.88rem;font-family:inherit;font-weight:700;cursor:pointer;margin-top:.5rem}
 .btn-checkin-card:active{transform:scale(.95)}
 .btn-checkin-card:disabled{opacity:.6;cursor:not-allowed;transform:none}
+/* Location guide modal */
+.locguide-ov{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:920;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;transition:background .3s ease}
+.locguide-ov.open{background:rgba(0,0,0,.65);pointer-events:all}
+.locguide-card{background:var(--surface);border-radius:22px 22px 0 0;padding:0 1.25rem calc(1.8rem + var(--safe-bot));width:100%;transform:translateY(105%);transition:transform .38s cubic-bezier(.32,0,.16,1);overflow:hidden;max-height:88vh;overflow-y:auto}
+.locguide-ov.open .locguide-card{transform:translateY(0)}
+.locguide-hero{text-align:center;padding:1.1rem 0 .6rem}
+.locguide-icon{font-size:2.8rem;line-height:1;margin-bottom:.5rem}
+.locguide-title{font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:.3rem}
+.locguide-subtitle{font-size:.78rem;color:var(--muted);line-height:1.5}
+.locguide-device{display:inline-flex;align-items:center;gap:5px;margin-top:.5rem;padding:.2rem .75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:20px;font-size:.7rem;font-weight:700;color:#2563eb}
+.locguide-steps{margin:1rem 0;display:flex;flex-direction:column;gap:.55rem}
+.locguide-step{display:flex;align-items:flex-start;gap:.75rem;padding:.7rem .85rem;background:var(--surface2);border-radius:12px;border:1px solid var(--border)}
+.locguide-step-num{flex-shrink:0;width:22px;height:22px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;margin-top:1px}
+.locguide-step-txt{font-size:.8rem;color:var(--text);line-height:1.55}
+.locguide-step-txt strong{color:var(--text)}
+.locguide-note{margin:.25rem 0 .9rem;padding:.6rem .85rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;font-size:.72rem;color:#92400e;line-height:1.55}
+[data-theme="dark"] .locguide-note{color:#fbbf24}
+.locguide-btn-retry{width:100%;padding:.8rem;border:none;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:14px;font-size:.9rem;font-family:inherit;font-weight:700;cursor:pointer;margin-bottom:.55rem}
+.locguide-btn-close{width:100%;padding:.7rem;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:14px;font-size:.85rem;font-family:inherit;font-weight:600;cursor:pointer}
 .btn-share-card{flex-shrink:0;padding:.3rem .6rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:16px;font-size:.65rem;font-family:inherit;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
 .btn-share-card:active{transform:scale(.93)}
 
@@ -285,7 +317,7 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 
 
 /* ── Status change toast ── */
-.sct{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);z-index:500;padding:.65rem 1.2rem;border-radius:12px;font-size:.82rem;font-weight:600;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.sct{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);z-index:500;padding:.65rem 1.1rem;border-radius:14px;font-size:.8rem;font-weight:600;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;white-space:normal;max-width:calc(100vw - 2rem);width:max-content;text-align:center;line-height:1.45;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 .sct-show{opacity:1;transform:translateX(-50%) translateY(0)}
 .sct-closed{background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5}
 .sct-open{background:#dcfce7;color:#14532d;border:1px solid #86efac}
@@ -613,11 +645,17 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
     <div class="login-card">
       <!-- Ban screen overlay (shown if account is banned) -->
       <div class="ban-screen" id="banScreen">
-        <div class="ban-emoji">🚫</div>
-        <div class="ban-title">บัญชีถูกระงับการจอง</div>
-        <div class="ban-msg">รหัสพนักงานของคุณถูกระงับสิทธิ์การจองสนาม<br>กรุณาติดต่อผู้ดูแลระบบเพื่อขอปลดบล็อก</div>
+        <img src="hand-holding-sign.gif" style="width:72px;height:72px;object-fit:contain;margin-bottom:.6rem;display:block;margin-left:auto;margin-right:auto">
+        <div class="ban-title">ถูกระงับสิทธิ์การจอง</div>
         <div class="ban-reason-box" id="banReason">ไม่ระบุเหตุผล</div>
-        <div class="ban-until" id="banUntil"><i class="fa-regular fa-clock"></i>สิ้นสุดการระงับ: —</div>
+        <div class="ban-countdown" id="banCountdown" style="display:none">
+          <div>
+            <div class="ban-countdown-num" id="banDaysLeft">0</div>
+          </div>
+          <div class="ban-countdown-label">วัน<br>จนกว่าจะหมดอายุ</div>
+        </div>
+        <div class="ban-until" id="banUntil">⏰ สิ้นสุดการระงับ: —</div>
+        <div class="ban-auto-note">ระบบจะปลดล็อกอัตโนมัติเมื่อถึงวันที่ระบุ — ไม่ต้องติดต่อ Admin</div>
         <button class="ban-back-btn" onclick="_hideBanScreen()">← ใช้รหัสพนักงานอื่น</button>
       </div>
       <!-- Normal login form -->
@@ -857,6 +895,7 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
         </div>
         <div class="card-body" id="admBanList"><div class="load-wrap"><span class="spin-dk"></span></div></div>
       </div>
+
     </div>
   </div>
 
@@ -996,6 +1035,25 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
   </div>
 </div>
 
+<!-- ═══════════════ LOCATION GUIDE MODAL ═══════════════ -->
+<div class="locguide-ov" id="locGuideModal" onclick="_closeLocGuide(event)">
+  <div class="locguide-card" onclick="event.stopPropagation()">
+    <div class="mhandle" style="background:var(--border);width:40px;height:4px;border-radius:2px;margin:12px auto 0"></div>
+    <div class="locguide-hero">
+      <div class="locguide-icon">📍</div>
+      <div class="locguide-title">เปิด GPS ก่อนนะ!</div>
+      <div class="locguide-subtitle">ระบบต้องการตำแหน่งเพื่อยืนยันว่าคุณอยู่ที่สนามจริงๆ<br>ทำตาม step ด้านล่างแล้วกลับมากดใหม่ได้เลย</div>
+      <div class="locguide-device" id="locGuideDevice">🔍 ตรวจสอบอุปกรณ์...</div>
+    </div>
+    <div class="locguide-steps" id="locGuideSteps"></div>
+    <div class="locguide-note" id="locGuideNote" style="display:none"></div>
+    <button class="locguide-btn-retry" onclick="_retryCheckin()">
+      <i class="fa-solid fa-rotate-right" style="margin-right:6px"></i>เปิดแล้ว ลองเช็คอินใหม่!
+    </button>
+    <button class="locguide-btn-close" onclick="_closeLocGuideDirect()">ปิด</button>
+  </div>
+</div>
+
 <!-- ═══════════════ CANCEL MODAL ═══════════════ -->
 <div class="modal-ov" id="cancelModal" onclick="closeModal('cancelModal',event)">
   <div class="modal-card">
@@ -1096,6 +1154,7 @@ let cancelTgt = null;
 let bookingOpen       = true;   // global flag — other functions check this before booking
 let _lastBookingOpen  = null;   // detect open↔closed transitions
 let _prevBkIds        = null;   // Set of booking IDs from last poll (null = first load)
+let _prevBkStatuses   = null;   // Map of id -> checkinStatus from last poll
 let _statusPollTimer  = null;
 let _calPollTimer     = null;
 let _bkHashTimer      = null;   // fast booking-hash poll
@@ -1136,10 +1195,65 @@ function showScreen(id) {
 // ══════════════════════════════════════════════════════
 //  LOGIN
 function _showBanScreen(r) {
-  const until = r.until ? r.until : 'ไม่มีกำหนด';
+  // แสดงเหตุผล
   document.getElementById('banReason').textContent = r.reason || 'ไม่ระบุเหตุผล';
-  document.getElementById('banUntil').innerHTML =
-    `<i class="fa-regular fa-clock"></i>สิ้นสุดการระงับ: ${until}`;
+
+  // Format วันหมดอายุ + คำนวณวันที่เหลือ
+  const untilRaw = (r.until || '').trim();
+  const thMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  let untilDisplay = 'ไม่มีกำหนด';
+  let daysLeft = null;
+
+  function _parseBanDate(s) {
+    if (!s || s === 'ไม่มีกำหนด' || s === 'ถาวร') return null;
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      const [y,m,d] = s.split('-').map(Number);
+      return new Date(y, m-1, d);
+    }
+    // DD/MM/YYYY
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+      const [d,m,y] = s.split('/').map(Number);
+      return new Date(y, m-1, d);
+    }
+    // Thai: "28 มิ.ย. 2569" (Buddhist Era)
+    const thMatch = s.match(/^(\d{1,2})\s+(.+?)\s+(\d{4})$/);
+    if (thMatch) {
+      const d = parseInt(thMatch[1]);
+      const mIdx = thMonths.indexOf(thMatch[2].trim());
+      const y = parseInt(thMatch[3]) - 543; // BE → CE
+      if (mIdx !== -1 && !isNaN(y)) return new Date(y, mIdx, d);
+    }
+    // Fallback: JS Date string เช่น "Sun Jun 28 2026 00:00:00 GMT+0700"
+    const fb = new Date(s);
+    if (!isNaN(fb)) return fb;
+    return null;
+  }
+
+  if (untilRaw && untilRaw !== 'ไม่มีกำหนด' && untilRaw !== 'ถาวร') {
+    const untilDate = _parseBanDate(untilRaw);
+    if (untilDate && !isNaN(untilDate)) {
+      untilDisplay = `${untilDate.getDate()} ${thMonths[untilDate.getMonth()]} ${untilDate.getFullYear() + 543}`;
+      const today = new Date(); today.setHours(0,0,0,0);
+      daysLeft = Math.max(0, Math.ceil((untilDate - today) / 86400000));
+    } else {
+      untilDisplay = untilRaw; // แสดงตรงๆ ถ้า parse ไม่ได้
+    }
+  } else if (untilRaw === 'ถาวร') {
+    untilDisplay = 'ถาวร';
+  }
+
+  document.getElementById('banUntil').textContent = `⏰ สิ้นสุดการระงับ: ${untilDisplay}`;
+
+  // แสดง countdown ถ้ามีวันหมดอายุ
+  const cdEl = document.getElementById('banCountdown');
+  if (daysLeft !== null) {
+    document.getElementById('banDaysLeft').textContent = daysLeft;
+    cdEl.style.display = 'flex';
+  } else {
+    cdEl.style.display = 'none';
+  }
+
   document.getElementById('loginFormWrap').style.display = 'none';
   document.getElementById('banScreen').classList.add('show');
 }
@@ -1870,6 +1984,32 @@ function _showCancelledAlert(cancelledIds) {
   _cancelBannerTimer = setTimeout(() => banner.classList.remove('show'), 3000);
 }
 
+// ── Admin check-in notification ──────────────────────
+let _adminCiBannerTimer = null;
+
+function _showAdminCheckinAlert(count) {
+  const msg = `✅ Admin เช็คอินให้คุณแล้ว${count > 1 ? ` (${count} รายการ)` : ''}`;
+  _addNotif('checkin', msg, null);
+  showStatusToast(msg, 'open');
+
+  let banner = document.getElementById('adminCiBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'adminCiBanner';
+    banner.className = 'cancelled-banner';
+    banner.style.cssText = 'background:linear-gradient(135deg,#059669,#10b981);';
+    document.getElementById('screenApp')?.appendChild(banner);
+  }
+  banner.innerHTML = `
+    <i class="fa-solid fa-circle-check"></i>
+    <span style="flex:1">${msg}</span>
+    <span class="cb-close" onclick="event.stopPropagation();this.closest('#adminCiBanner').classList.remove('show')">✕</span>
+  `;
+  clearTimeout(_adminCiBannerTimer);
+  banner.classList.add('show');
+  _adminCiBannerTimer = setTimeout(() => banner.classList.remove('show'), 5000);
+}
+
 async function deleteMyPhoto(photoId, ev) {
   ev.stopPropagation();
   showAppConfirm('🗑️', 'ลบภาพ', 'ต้องการลบภาพนี้ออกจากแกลเลอรี่?', 'ลบ', '#dc2626', async () => {
@@ -2122,12 +2262,20 @@ async function loadBookings() {
     const currentIds = new Set((r.bookings||[]).map(b => b.id));
     if (_prevBkIds !== null) {
       const cancelled = [..._prevBkIds].filter(id => !currentIds.has(id));
-      if (cancelled.length) _showCancelledAlert(cancelled);   // pass IDs array
+      if (cancelled.length) _showCancelledAlert(cancelled);
     }
     _prevBkIds = currentIds;
-    // Sync hash so next _pollBookingHash won't re-trigger
-    const sortedIds = [...currentIds].sort();
-    _bkHash = sortedIds.length + ':' + sortedIds.join(',');
+    // Detect admin check-in on behalf of user
+    const newStatuses = new Map((r.bookings||[]).map(b => [b.id, b.checkinStatus||'pending']));
+    if (_prevBkStatuses !== null) {
+      const adminCheckedIn = [...newStatuses.entries()]
+        .filter(([id, status]) => status === 'checked_in' && _prevBkStatuses.get(id) === 'pending');
+      if (adminCheckedIn.length) _showAdminCheckinAlert(adminCheckedIn.length);
+    }
+    _prevBkStatuses = newStatuses;
+    // Sync hash so next _pollBookingHash won't re-trigger (include status for full detection)
+    const items = (r.bookings||[]).map(b => b.id + ':' + (b.checkinStatus||'pending')).sort();
+    _bkHash = items.length + ':' + items.join(',');
     const today  = todayStr();
     const curMo  = today.substring(0, 7);
     // Show past bookings up to 3 months back
@@ -2176,8 +2324,30 @@ async function loadBookings() {
       </div>`;
     })();
 
+    // ── card colour palettes (orange reserved for checked-in, grey for past) ──
+    const _PALETTES = [
+      // 1 green
+      {cs1:'#16a34a',cs2:'#15803d',cdb1:'#166534',cdb2:'#14532d',cbg:'rgba(21,128,61,.06)',cborder:'rgba(21,128,61,.22)',clbg:'rgba(21,128,61,.1)',clborder:'rgba(21,128,61,.2)',clcolor:'#15803d'},
+      // 2 blue
+      {cs1:'#3b82f6',cs2:'#2563eb',cdb1:'#1d4ed8',cdb2:'#1e40af',cbg:'rgba(59,130,246,.06)',cborder:'rgba(59,130,246,.25)',clbg:'rgba(59,130,246,.1)',clborder:'rgba(59,130,246,.2)',clcolor:'#2563eb'},
+      // 3 purple
+      {cs1:'#8b5cf6',cs2:'#7c3aed',cdb1:'#6d28d9',cdb2:'#5b21b6',cbg:'rgba(139,92,246,.06)',cborder:'rgba(139,92,246,.25)',clbg:'rgba(139,92,246,.1)',clborder:'rgba(139,92,246,.2)',clcolor:'#7c3aed'},
+      // 4 teal
+      {cs1:'#14b8a6',cs2:'#0d9488',cdb1:'#0f766e',cdb2:'#115e59',cbg:'rgba(20,184,166,.06)',cborder:'rgba(20,184,166,.25)',clbg:'rgba(20,184,166,.1)',clborder:'rgba(20,184,166,.2)',clcolor:'#0d9488'},
+      // 5 rose
+      {cs1:'#f43f5e',cs2:'#e11d48',cdb1:'#be123c',cdb2:'#9f1239',cbg:'rgba(244,63,94,.06)',cborder:'rgba(244,63,94,.25)',clbg:'rgba(244,63,94,.1)',clborder:'rgba(244,63,94,.2)',clcolor:'#e11d48'},
+      // 6 indigo
+      {cs1:'#6366f1',cs2:'#4f46e5',cdb1:'#4338ca',cdb2:'#3730a3',cbg:'rgba(99,102,241,.06)',cborder:'rgba(99,102,241,.25)',clbg:'rgba(99,102,241,.1)',clborder:'rgba(99,102,241,.2)',clcolor:'#4f46e5'},
+      // 7 sky
+      {cs1:'#38bdf8',cs2:'#0284c7',cdb1:'#0369a1',cdb2:'#075985',cbg:'rgba(56,189,248,.06)',cborder:'rgba(56,189,248,.25)',clbg:'rgba(56,189,248,.1)',clborder:'rgba(56,189,248,.2)',clcolor:'#0284c7'},
+      // 8 lime
+      {cs1:'#84cc16',cs2:'#65a30d',cdb1:'#4d7c0f',cdb2:'#3f6212',cbg:'rgba(132,204,22,.06)',cborder:'rgba(132,204,22,.25)',clbg:'rgba(132,204,22,.1)',clborder:'rgba(132,204,22,.2)',clcolor:'#65a30d'},
+    ];
+    // ใช้ index ของการ์ดในลิสต์ (ไม่ใช่ booking ID) เพื่อไม่ให้ซ้ำ
+    function _pickPalette(idx) { return _PALETTES[idx % _PALETTES.length]; }
+
     // ── card builder ──────────────────────────────────
-    function cardHtml(b, isPast) {
+    function cardHtml(b, isPast, idx) {
       const [,m,d] = b.date.split('-');
       const isToday  = b.date === today;
       const checkedIn = b.checkinStatus === 'checked_in';
@@ -2212,23 +2382,31 @@ async function loadBookings() {
           actionHtml = shareBtn;
         }
       }
-      return `<div class="booking-card${isPast?' past':''}">
-        <div class="bk-date-box"><div class="bk-day">${+d}</div><div class="bk-mon">${TH_MS[+m-1]}</div></div>
-        <div class="bk-info">
-          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:2px">
-            <div class="bk-court"><img src="badminton-ico.png" style="width:14px;height:14px;object-fit:contain;margin-right:3px;vertical-align:middle">สนาม ${b.court}</div>
-            ${locBadge}
-          </div>
-          <div class="bk-time"><i class="fa-regular fa-clock" style="font-size:11px;margin-right:3px;vertical-align:middle"></i>${b.time}</div>
-          <div class="bk-id">${b.id}</div>
-          ${ciHtml}
+      const cardClass = `booking-card${isPast?' past':''}${checkedIn?' checked-in':''}`;
+      // Palette: only for future/active cards (not past, not checked-in); use list index to avoid repeats
+      const _pal = (!isPast && !checkedIn) ? _pickPalette(idx || 0) : null;
+      const paletteStyle = _pal
+        ? ` style="--cs1:${_pal.cs1};--cs2:${_pal.cs2};--cdb1:${_pal.cdb1};--cdb2:${_pal.cdb2};--cbg:${_pal.cbg};--cborder:${_pal.cborder};--clbg:${_pal.clbg};--clborder:${_pal.clborder};--clcolor:${_pal.clcolor}"`
+        : '';
+      const infoInner = `
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:2px">
+          <div class="bk-court"><img src="badminton-ico.png" style="width:14px;height:14px;object-fit:contain;margin-right:3px;vertical-align:middle">สนาม ${b.court}</div>
+          ${locBadge}
         </div>
+        <div class="bk-time"><i class="fa-regular fa-clock" style="font-size:11px;margin-right:3px;vertical-align:middle"></i>${b.time}</div>
+        <div class="bk-id">${b.id}</div>
+        ${checkedIn ? '' : ciHtml}`;
+      return `<div class="${cardClass}"${paletteStyle}>
+        <div class="bk-date-box"><div class="bk-day">${+d}</div><div class="bk-mon">${TH_MS[+m-1]}</div></div>
+        <div class="bk-info">${infoInner}</div>
         ${actionHtml}
+        ${checkedIn ? `<div class="bk-ci-row">${ciHtml}</div>` : ''}
       </div>`;
     }
 
     let html = quotaHtml;
     let hasContent = false;
+    let _ci = 0; // global card index — ensures no palette repeats across sections
 
     // Group upcoming by date-group: today / this month / future months
     const todayItems  = upcoming.filter(b => b.date === today);
@@ -2242,19 +2420,19 @@ async function loadBookings() {
 
     if (todayItems.length) {
       html += `<div class="bk-month-hd bk-hd-today"><i class="fa-solid fa-circle" style="font-size:7px;margin-right:6px;color:#22c55e;vertical-align:middle"></i>รายการจองวันนี้</div>`;
-      html += todayItems.map(b => cardHtml(b, false)).join('');
+      html += todayItems.map(b => cardHtml(b, false, _ci++)).join('');
       hasContent = true;
     }
     if (curMoItems.length) {
       const [,mm] = curMo.split('-').map(Number);
       html += `<div class="bk-month-hd"${hasContent?' style="margin-top:.75rem"':''}><i class="fa-regular fa-calendar" style="margin-right:5px"></i>รายการจองเดือน${TH_M[mm-1]}</div>`;
-      html += curMoItems.map(b => cardHtml(b, false)).join('');
+      html += curMoItems.map(b => cardHtml(b, false, _ci++)).join('');
       hasContent = true;
     }
     Object.entries(futureByMo).forEach(([mo, items]) => {
       const [,mm] = mo.split('-').map(Number);
       html += `<div class="bk-month-hd"${hasContent?' style="margin-top:.75rem"':''}><i class="fa-regular fa-calendar" style="margin-right:5px"></i>รายการจองเดือน${TH_M[mm-1]}</div>`;
-      html += items.map(b => cardHtml(b, false)).join('');
+      html += items.map(b => cardHtml(b, false, _ci++)).join('');
       hasContent = true;
     });
 
@@ -2264,7 +2442,7 @@ async function loadBookings() {
       const showAll = _pastExpanded;
       const visible = showAll ? past : past.slice(0, PAST_PREVIEW);
       html += `<div class="bk-month-hd" style="margin-top:1rem;color:var(--muted)"><i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;font-size:.75rem"></i>รายการจองที่ผ่านมา</div>`;
-      html += visible.map(b => cardHtml(b, true)).join('');
+      html += visible.map(b => cardHtml(b, true, _ci++)).join('');
       if (past.length > PAST_PREVIEW) {
         if (!showAll) {
           html += `<button onclick="_expandPast()" style="width:100%;margin-top:.45rem;padding:.6rem;border:1px dashed var(--border);background:transparent;border-radius:10px;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:inherit">
@@ -2654,7 +2832,20 @@ async function doCheckinFromCard(bookingId, locId) {
   if (!btn || btn.disabled) return;
 
   if (!navigator.geolocation) {
-    showStatusChangeToast('เบราว์เซอร์ไม่รองรับ GPS', 'closed'); return;
+    showStatusToast('เบราว์เซอร์ไม่รองรับ GPS', 'closed'); return;
+  }
+
+  // Store locId on button for retry
+  btn.dataset.locId = locId || '';
+
+  // ── ตรวจ permission state ก่อนขอ GPS ─────────────────
+  if (navigator.permissions) {
+    try {
+      const perm = await navigator.permissions.query({ name: 'geolocation' });
+      if (perm.state === 'denied') {
+        _showLocGuide(btn); return; // แสดง guide ทันที ไม่รอ error
+      }
+    } catch(_) { /* browser ไม่รองรับ permissions API ก็ข้ามไป */ }
   }
 
   btn.disabled = true;
@@ -2672,13 +2863,21 @@ async function doCheckinFromCard(bookingId, locId) {
       if (r.ok || r.alreadyDone) {
         // Vibrate on success
         if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
-        showStatusChangeToast('เช็คอินสำเร็จ ✅', 'open');
+        showStatusToast('เช็คอินสำเร็จ ✅', 'open');
         // Update card UI without full reload
-        btn.closest('.booking-card')
-           ?.querySelector('.bk-info')
-           ?.insertAdjacentHTML('beforeend',
-             `<span class="ci-badge done" style="margin-top:5px"><i class="fa-solid fa-circle-check" style="font-size:10px"></i>เช็คอินแล้ว</span>`);
-        btn.closest('div[style]')?.remove();   // remove action button group
+        const card = btn.closest('.booking-card');
+        if (card) {
+          card.classList.add('checked-in');
+          card.querySelector('.bk-date-box')?.style.setProperty('background','linear-gradient(135deg,#ea580c,#c2410c)');
+          btn.closest('div[style]')?.remove(); // remove action button group
+          const ciRow = document.createElement('div');
+          ciRow.className = 'bk-ci-row';
+          ciRow.innerHTML = `<span class="ci-badge done"><i class="fa-solid fa-circle-check" style="font-size:10px"></i>เช็คอินแล้ว</span>`;
+          card.appendChild(ciRow);
+        }
+        // Pre-update _prevBkStatuses so _pollBookingHash won't mistake self-checkin
+        // as an admin check-in when loadBookings() fires next
+        if (_prevBkStatuses) _prevBkStatuses.set(bookingId, 'checked_in');
         // Refresh full list after short delay to sync state
         setTimeout(loadBookings, 1500);
       } else {
@@ -2687,22 +2886,156 @@ async function doCheckinFromCard(bookingId, locId) {
         if (r.tooFar) {
           _showTooFarModal(r.distance || 0, r.radius || 150);
         } else {
-          showStatusChangeToast(r.error || 'เช็คอินไม่สำเร็จ', 'closed');
+          showStatusToast(r.error || 'เช็คอินไม่สำเร็จ', 'closed');
         }
       }
     } catch {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-location-crosshairs" style="font-size:11px"></i>เช็คอิน';
-      showStatusChangeToast('เชื่อมต่อไม่ได้ กรุณาลองใหม่', 'closed');
+      showStatusToast('เชื่อมต่อไม่ได้ กรุณาลองใหม่', 'closed');
     }
   }, err => {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-location-crosshairs" style="font-size:11px"></i>เช็คอิน';
-    const msg = err.code === 1 ? 'กรุณาอนุญาต GPS ในเบราว์เซอร์'
-              : err.code === 2 ? 'ไม่สามารถหาตำแหน่งได้'
-              : 'GPS หมดเวลา กรุณาลองใหม่';
-    showStatusChangeToast(msg, 'closed');
+    if (err.code === 1) {
+      // PERMISSION_DENIED → แสดง guide แทน toast
+      _showLocGuide(btn);
+    } else {
+      const msg = err.code === 2 ? 'ไม่สามารถหาตำแหน่งได้ กรุณาลองใหม่'
+                : 'GPS หมดเวลา กรุณาลองใหม่';
+      showStatusToast(msg, 'closed');
+    }
   }, { timeout: 12000, maximumAge: 0, enableHighAccuracy: true });
+}
+
+// ══════════════════════════════════════════════════════
+//  LOCATION GUIDE — detect device + show step-by-step
+// ══════════════════════════════════════════════════════
+let _locGuideBtn = null; // เก็บปุ่มที่กดไว้เพื่อ retry
+
+function _detectDevice() {
+  const ua = navigator.userAgent;
+  const isIOS     = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  return {
+    isIOS,
+    isAndroid,
+    isSafari        : isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua),
+    isChromeiOS     : /CriOS/.test(ua),
+    isFirefoxiOS    : /FxiOS/.test(ua),
+    isSamsungBrowser: /SamsungBrowser/.test(ua),
+    isChromeAndroid : isAndroid && /Chrome/.test(ua) && !/SamsungBrowser/.test(ua),
+    isFirefoxAndroid: isAndroid && /Firefox/.test(ua),
+  };
+}
+
+function _getLocGuide() {
+  const d = _detectDevice();
+  if (d.isSafari) return {
+    label: '📱 iPhone · Safari',
+    steps: [
+      'เปิดแอป <strong>ตั้งค่า</strong> (Settings) บนมือถือ',
+      'เลื่อนลงหา <strong>Safari</strong> แล้วแตะเข้าไป',
+      'แตะ <strong>ตำแหน่งที่ตั้ง</strong> (Location)',
+      'เลือก <strong>"ถามครั้งต่อไป"</strong> หรือ <strong>"อนุญาต"</strong>',
+      'กลับมาแอปแล้วกด <strong>ลองเช็คอินใหม่</strong> ด้านล่าง',
+    ],
+    note: null,
+  };
+  if (d.isChromeiOS) return {
+    label: '📱 iPhone · Chrome',
+    steps: [
+      'เปิดแอป <strong>ตั้งค่า</strong> (Settings) บนมือถือ',
+      'เลื่อนลงหา <strong>Chrome</strong> แล้วแตะเข้าไป',
+      'แตะ <strong>ตำแหน่งที่ตั้ง</strong> (Location)',
+      'เลือก <strong>"ขณะใช้งาน"</strong> หรือ <strong>"ถามทุกครั้ง"</strong>',
+      'กลับมาแอปแล้วกด <strong>ลองเช็คอินใหม่</strong> ด้านล่าง',
+    ],
+    note: null,
+  };
+  if (d.isFirefoxiOS) return {
+    label: '📱 iPhone · Firefox',
+    steps: [
+      'เปิดแอป <strong>ตั้งค่า</strong> (Settings) บนมือถือ',
+      'เลื่อนลงหา <strong>Firefox</strong> แล้วแตะ',
+      'แตะ <strong>ตำแหน่งที่ตั้ง</strong> (Location) แล้วเปลี่ยนเป็น อนุญาต',
+      'กลับมาแอปแล้วกด <strong>ลองเช็คอินใหม่</strong> ด้านล่าง',
+    ],
+    note: null,
+  };
+  if (d.isChromeAndroid) return {
+    label: '🤖 Android · Chrome',
+    steps: [
+      'แตะ <strong>ไอคอนกุญแจ 🔒</strong> (หรือ ⓘ) ทางซ้ายของ address bar ด้านบน',
+      'แตะ <strong>สิทธิ์การใช้งาน</strong> หรือ <strong>ข้อมูลไซต์</strong>',
+      'หา <strong>ตำแหน่งที่ตั้ง</strong> แล้วเปลี่ยนเป็น <strong>"อนุญาต"</strong>',
+      'รีเฟรชหน้า แล้วกด <strong>ลองเช็คอินใหม่</strong>',
+    ],
+    note: '💡 ถ้าไม่เจอ ให้ไปที่ เมนู Chrome (⋮) → ตั้งค่า → การตั้งค่าไซต์ → ตำแหน่งที่ตั้ง',
+  };
+  if (d.isSamsungBrowser) return {
+    label: '🤖 Android · Samsung Browser',
+    steps: [
+      'แตะ <strong>ไอคอนกุญแจ</strong> ที่ address bar',
+      'แตะ <strong>การตั้งค่าไซต์</strong>',
+      'เปิด <strong>ตำแหน่งที่ตั้ง</strong>',
+      'กด <strong>ลองเช็คอินใหม่</strong> ด้านล่าง',
+    ],
+    note: null,
+  };
+  if (d.isFirefoxAndroid) return {
+    label: '🤖 Android · Firefox',
+    steps: [
+      'แตะ <strong>⋮</strong> (เมนู มุมบนขวา)',
+      'แตะ <strong>การตั้งค่า</strong> → <strong>การตั้งค่าไซต์</strong>',
+      'แตะ <strong>ตำแหน่งที่ตั้ง</strong> แล้วเปิดสิทธิ์',
+      'กลับมากด <strong>ลองเช็คอินใหม่</strong>',
+    ],
+    note: null,
+  };
+  // Fallback (desktop / unknown)
+  return {
+    label: '🌐 เบราว์เซอร์ทั่วไป',
+    steps: [
+      'มองหา <strong>ไอคอนกุญแจ 🔒</strong> หรือ <strong>ไอคอน GPS</strong> ที่ address bar',
+      'คลิกแล้วหา <strong>ตำแหน่งที่ตั้ง / Location</strong>',
+      'เปลี่ยนเป็น <strong>"อนุญาต" (Allow)</strong>',
+      'รีเฟรชหน้าแล้วกด <strong>ลองเช็คอินใหม่</strong>',
+    ],
+    note: '💡 บน Desktop: เปิด Chrome Settings → Privacy → Site Settings → Location → Allow',
+  };
+}
+
+function _showLocGuide(btn) {
+  _locGuideBtn = btn; // เก็บ ref เพื่อ retry
+  const guide = _getLocGuide();
+  document.getElementById('locGuideDevice').textContent = guide.label;
+  document.getElementById('locGuideSteps').innerHTML = guide.steps
+    .map((s, i) => `<div class="locguide-step">
+      <div class="locguide-step-num">${i + 1}</div>
+      <div class="locguide-step-txt">${s}</div>
+    </div>`).join('');
+  const noteEl = document.getElementById('locGuideNote');
+  if (guide.note) { noteEl.textContent = guide.note; noteEl.style.display = ''; }
+  else { noteEl.style.display = 'none'; }
+  document.getElementById('locGuideModal').classList.add('open');
+}
+
+function _closeLocGuide(e) {
+  if (e && e.target !== document.getElementById('locGuideModal')) return;
+  document.getElementById('locGuideModal').classList.remove('open');
+}
+function _closeLocGuideDirect() {
+  document.getElementById('locGuideModal').classList.remove('open');
+}
+
+function _retryCheckin() {
+  _closeLocGuideDirect();
+  if (_locGuideBtn) {
+    const bookingId = _locGuideBtn.id.replace('ci-btn-', '');
+    const locId = _locGuideBtn.dataset.locId || '';
+    setTimeout(() => doCheckinFromCard(bookingId, locId), 300);
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -3036,6 +3369,7 @@ function switchAdminTab(tab) {
   document.getElementById('navAdmBan').classList.toggle('active', !bk);
   if (!bk) loadAdminBanList();
 }
+
 
 async function loadAdminStats() {
   try {

@@ -649,6 +649,9 @@ img[src*="cdn-icons-gif.flaticon.com"]{mix-blend-mode:multiply;background:transp
       <a class="nav-item" onclick="nav('banned')">
         <img src="https://cdn-icons-gif.flaticon.com/12132/12132914.gif" class="nav-icon-img" alt="ban">แบนพนักงาน
       </a>
+      <a class="nav-item" onclick="nav('archive')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/></svg>Archive
+      </a>
 
       <div class="nav-group-label">บริหารสมาชิก</div>
       <a class="nav-item" onclick="nav('members')">
@@ -1068,6 +1071,115 @@ img[src*="cdn-icons-gif.flaticon.com"]{mix-blend-mode:multiply;background:transp
                 </tr></thead>
                 <tbody id="banTbl"><tr><td colspan="5" class="tbl-loading">กำลังโหลด…</td></tr></tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ ARCHIVE ════ -->
+      <div id="sec-archive" class="section">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Archive ข้อมูลการจอง</h1>
+            <p>ย้ายข้อมูลเดือนก่อนหน้าไปยัง <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-size:12px">archive_bookitem</code> เพื่อประสิทธิภาพ</p>
+          </div>
+          <button class="btn btn-ghost" onclick="loadArchivePreview()" style="font-size:13px;display:flex;align-items:center;gap:6px">
+            <span id="archRefreshIcon">🔄</span> ตรวจสอบข้อมูล
+          </button>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <div>
+                <div class="stat-lbl">รายการพร้อม Archive</div>
+                <div class="stat-val" id="archStatCount" style="color:#d97706">—</div>
+                <div class="stat-sub" id="archStatSub">กด ตรวจสอบข้อมูล ก่อน</div>
+              </div>
+              <div class="stat-icon stat-icon-orange">🗄️</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <div>
+                <div class="stat-lbl">ทั้งหมดใน bookitem</div>
+                <div class="stat-val" id="archStatTotal">—</div>
+                <div class="stat-sub" id="archStatRange">รายการที่ยังใช้งานอยู่</div>
+              </div>
+              <div class="stat-icon stat-icon-blue">📋</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <div>
+                <div class="stat-lbl">คงเหลือหลัง Archive</div>
+                <div class="stat-val" id="archStatRemain" style="color:var(--green)">—</div>
+                <div class="stat-sub" id="archStatRemainSub">—</div>
+              </div>
+              <div class="stat-icon stat-icon-green">✅</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date range info -->
+        <div id="archDateBanner" style="display:none;background:var(--orange-l);border:1px solid #fcd34d;border-radius:var(--radius);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:20px">📅</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#92400e">ช่วงข้อมูลที่จะ Archive</div>
+            <div id="archDateRange" style="font-size:13px;color:#78350f;margin-top:2px">—</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <!-- How it works -->
+          <div class="card" style="margin-bottom:0">
+            <div class="card-header">
+              <div class="card-header-title">⚙️ วิธีการทำงาน</div>
+            </div>
+            <div class="card-body" style="padding:20px">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="background:var(--blue-l);color:#1e40af;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">1</div>
+                  <div style="font-size:13px;color:var(--gray-600);line-height:1.6">เขียนรายการเก่าทั้งหมดไปยัง <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">archive_bookitem</code> ก่อน</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="background:var(--blue-l);color:#1e40af;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">2</div>
+                  <div style="font-size:13px;color:var(--gray-600);line-height:1.6">ตรวจนับว่าข้อมูลเขียนครบถ้วน</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="background:var(--blue-l);color:#1e40af;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">3</div>
+                  <div style="font-size:13px;color:var(--gray-600);line-height:1.6">ลบออกจาก <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">bookitem</code> เฉพาะเมื่อขั้นที่ 2 สำเร็จ</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning + Action -->
+          <div class="card" style="margin-bottom:0">
+            <div class="card-header">
+              <div class="card-header-title">⚠️ ข้อควรระวัง</div>
+            </div>
+            <div class="card-body" style="padding:20px">
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+                <div style="display:flex;gap:8px;font-size:13px;color:var(--gray-600)">
+                  <span style="color:var(--green);font-weight:700">✓</span>ข้อมูลทุกรายการจะไม่ถูกลบ — ย้ายเท่านั้น
+                </div>
+                <div style="display:flex;gap:8px;font-size:13px;color:var(--gray-600)">
+                  <span style="color:var(--green);font-weight:700">✓</span>Archive เฉพาะรายการ <strong>ก่อนเดือนปัจจุบัน</strong>
+                </div>
+                <div style="display:flex;gap:8px;font-size:13px;color:var(--gray-600)">
+                  <span style="color:var(--orange);font-weight:700">!</span>ควรทำทุก 1–2 เดือน เพื่อประสิทธิภาพสูงสุด
+                </div>
+                <div style="display:flex;gap:8px;font-size:13px;color:var(--gray-600)">
+                  <span style="color:var(--red);font-weight:700">✕</span>ไม่สามารถ undo ได้ง่าย — ตรวจสอบก่อนกด
+                </div>
+              </div>
+              <div id="archiveAlert" style="margin-bottom:12px"></div>
+              <button class="btn btn-primary" id="btnDoArchive" onclick="doArchiveBookings()" disabled
+                style="width:100%;background:linear-gradient(135deg,#d97706,#b45309);border-color:#b45309;opacity:.45;cursor:not-allowed;justify-content:center;gap:8px">
+                🗄️ Archive รายการเก่า
+              </button>
             </div>
           </div>
         </div>
@@ -1922,7 +2034,9 @@ const TITLES = {
   'holiday-cfg': ['วันหยุด','holiday_config'],
   'vip-cfg'    : ['VIP','vip_config'],
   'banned'     : ['แบนพนักงาน','banned_users'],
+  'archive'    : ['Archive','ย้ายข้อมูลการจองเก่าไปยัง archive_bookitem'],
   'members'    : ['สมาชิก','member'],
+  'heatmap'    : ['Court Heatmap','สถิติการใช้งานสนามแยกตามช่วงเวลา'],
 };
 
 function nav(sec) {
@@ -2046,8 +2160,93 @@ function loadSection(sec) {
     case 'holiday-cfg': loadHolidayCfg(); break;
     case 'vip-cfg'    : loadVipCfg(); break;
     case 'banned'     : loadBanned(); break;
+    case 'archive'    : loadArchivePreview(); break;
     case 'members'    : loadMembers(); break;
     case 'heatmap'    : loadHeatmap(); break;
+  }
+}
+
+/* ── Archive ─────────────────────────────────────────────── */
+const TH_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function fmtThaiDate(iso) {
+  if (!iso) return '—';
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${TH_MONTHS_SHORT[m-1]} ${y+543}`;
+}
+
+async function loadArchivePreview() {
+  const btn     = document.getElementById('btnDoArchive');
+  const banner  = document.getElementById('archDateBanner');
+  const setTxt  = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+
+  setTxt('archStatCount', '…'); setTxt('archStatTotal', '…'); setTxt('archStatRemain', '…');
+  setTxt('archStatSub', 'กำลังโหลด…'); setTxt('archStatRange', ''); setTxt('archStatRemainSub', '');
+  document.getElementById('archiveAlert').innerHTML = '';
+  if (banner) banner.style.display = 'none';
+  if (btn) { btn.disabled = true; btn.style.opacity = '.45'; btn.style.cursor = 'not-allowed'; }
+
+  try {
+    const r = await apiGet({ action: 'adminArchivePreview', pin: PIN });
+    if (!r.ok) {
+      setTxt('archStatSub', '⚠️ ' + (r.error || 'เกิดข้อผิดพลาด'));
+      setTxt('archStatCount', '—'); setTxt('archStatTotal', '—'); setTxt('archStatRemain', '—');
+      return;
+    }
+    const total  = r.totalRows || 0;
+    const remain = total - r.count;
+    setTxt('archStatCount', r.count.toLocaleString());
+    setTxt('archStatTotal', total.toLocaleString());
+    setTxt('archStatRemain', remain.toLocaleString());
+    setTxt('archStatRange', 'รายการที่ยังใช้งานอยู่');
+    setTxt('archStatRemainSub', remain > 0 ? `คงเหลือหลัง Archive` : 'ว่างเปล่าหลัง Archive');
+
+    if (r.count === 0) {
+      setTxt('archStatSub', '✅ ไม่มีรายการเก่า — bookitem สะอาดแล้ว');
+      if (banner) banner.style.display = 'none';
+    } else {
+      setTxt('archStatSub', `${fmtThaiDate(r.oldestDate)} ถึง ${fmtThaiDate(r.newestDate)}`);
+      if (banner) {
+        banner.style.display = 'flex';
+        setTxt('archDateRange',
+          `ตั้งแต่ ${fmtThaiDate(r.oldestDate)} จนถึง ${fmtThaiDate(r.newestDate)} (ก่อนเดือน ${r.beforeMonth})`);
+      }
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+    }
+  } catch(e) {
+    setTxt('archStatSub', '⚠️ ' + e.message);
+    setTxt('archStatCount', '!'); setTxt('archStatTotal', '—'); setTxt('archStatRemain', '—');
+  }
+}
+
+async function doArchiveBookings() {
+  const btn = document.getElementById('btnDoArchive');
+  if (!btn || btn.disabled) return;
+  const r_preview = {
+    count: parseInt(document.getElementById('archStatCount').textContent.replace(/,/g,'')) || 0
+  };
+  if (!confirm(`⚠️ ยืนยันการ Archive?\n\nจะย้าย ${r_preview.count.toLocaleString()} รายการไปยัง archive_bookitem\nข้อมูลไม่หาย แต่ดำเนินการต่อ?`)) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลัง Archive…';
+  document.getElementById('archiveAlert').innerHTML = '';
+  try {
+    const r = await apiPost({ action: 'adminArchiveBookings', pin: PIN });
+    if (!r.ok) {
+      document.getElementById('archiveAlert').innerHTML =
+        `<div class="alert alert-danger">⚠️ ${r.error || 'เกิดข้อผิดพลาด'}</div>`;
+      btn.disabled = false;
+      btn.textContent = '🗄️ Archive รายการเก่า';
+    } else {
+      document.getElementById('archiveAlert').innerHTML =
+        `<div class="alert alert-success">✅ ${r.message}</div>`;
+      await loadArchivePreview();
+      btn.textContent = '🗄️ Archive รายการเก่า';
+    }
+  } catch(e) {
+    document.getElementById('archiveAlert').innerHTML =
+      `<div class="alert alert-danger">⚠️ ${e.message}</div>`;
+    btn.disabled = false;
+    btn.textContent = '🗄️ Archive รายการเก่า';
   }
 }
 
@@ -2323,7 +2522,7 @@ async function loadBookings() {
 
 function _bkGetFiltered() {
   return _bkStatusFilter
-    ? _bkAllData.filter(b => (b.checkinStatus||'pending') === _bkStatusFilter)
+    ? _bkAllData.filter(b => (b.checkinStatus||b.checkin_status||'pending') === _bkStatusFilter)
     : _bkAllData;
 }
 
@@ -2366,7 +2565,7 @@ function _bkUpdateBulkBar() {
   const n = _bkSelected.size;
   const pendingN = [..._bkSelected].filter(id => {
     const b = _bkAllData.find(x => x.id === id);
-    return b && (b.checkinStatus||'pending') === 'pending';
+    return b && (b.checkinStatus||b.checkin_status||'pending') === 'pending';
   }).length;
   if (n > 0) {
     bar.classList.add('show');
@@ -2380,7 +2579,7 @@ function _bkUpdateBulkBar() {
 async function bulkCheckin() {
   const pendingIds = [..._bkSelected].filter(id => {
     const b = _bkAllData.find(x => x.id === id);
-    return b && (b.checkinStatus||'pending') === 'pending';
+    return b && (b.checkinStatus||b.checkin_status||'pending') === 'pending';
   });
   if (!pendingIds.length) { toast('ไม่มีรายการที่รอเช็คอิน','error'); return; }
   showConfirm('Bulk Check-in', `เช็คอิน ${pendingIds.length} รายการ?`, 'ยืนยัน', async () => {
@@ -2408,7 +2607,7 @@ function _renderBkPage() {
   const tb    = document.getElementById('bkTbl');
 
   tb.innerHTML = slice.length ? slice.map(b => {
-    const ci = b.checkinStatus || 'pending';
+    const ci = b.checkinStatus || b.checkin_status || 'pending';
     const ciBadge = ci === 'checked_in' ? '<span class="badge badge-green">เช็คอินแล้ว</span>'
                   : ci === 'noshow'     ? '<span class="badge badge-red">No-show</span>'
                   :                       '<span class="badge badge-gray">รอเช็คอิน</span>';
@@ -2513,7 +2712,7 @@ function exportBkCsv() {
   const rows = _bkAllData.map(b => [
     b.id, b.empId, b.name, b.phone||'', b.email||'', b.dept||'',
     locName(b.locId), b.date, b.court, b.time,
-    b.checkinStatus === 'checked_in' ? 'เช็คอินแล้ว' : b.checkinStatus === 'noshow' ? 'No-show' : 'รอเช็คอิน'
+    (b.checkinStatus||b.checkin_status) === 'checked_in' ? 'เช็คอินแล้ว' : (b.checkinStatus||b.checkin_status) === 'noshow' ? 'No-show' : 'รอเช็คอิน'
   ]);
   const csv = BOM + [hdrs, ...rows].map(r =>
     r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')
@@ -3928,27 +4127,48 @@ function _dismissAlert() {
 }
 
 /* ── Real-time polling ────────────────────────────────────────── */
-let _rtHash = null;
-let _rtTimer = null;
-let _rtCount = null;
+let _rtHash    = null;
+let _rtTimer   = null;
+let _rtCount   = null;   // totalBookings
+let _rtCheckin = null;   // checkedIn count
 
 async function _rtPoll() {
   if (!PIN) return;
   try {
     const r = await apiGet({ action: 'adminStats', pin: PIN });
     if (!r.ok) return;
-    const newCount = (r.totalBookings || 0);
+    const newCount   = (r.totalBookings || 0);
+    const newCheckin = (r.checkedIn     || 0);
+    const needRefresh = currentSection === 'dashboard' || currentSection === 'bookings';
+
+    // New bookings added
     if (_rtCount !== null && newCount > _rtCount) {
       const diff = newCount - _rtCount;
-      const msg = `📋 มีการจองใหม่ ${diff} รายการ`;
-      adminAlert(msg);
-      _addNotif('การจองใหม่', `เพิ่มขึ้น ${diff} รายการ`, () => nav('dashboard'));
-      // Auto-refresh current section if it shows bookings
-      if (currentSection === 'dashboard' || currentSection === 'bookings') {
-        loadSection(currentSection);
-      }
+      adminAlert(`📋 มีการจองใหม่ ${diff} รายการ`);
+      _addNotif('การจองใหม่', `เพิ่มขึ้น ${diff} รายการ`, () => nav('bookings'));
+      if (needRefresh) loadSection(currentSection);
     }
-    _rtCount = newCount;
+
+    // Booking cancelled (count decreased)
+    if (_rtCount !== null && newCount < _rtCount) {
+      const diff = _rtCount - newCount;
+      adminAlert(`🗑️ มีการยกเลิกจอง ${diff} รายการ`);
+      _addNotif('ยกเลิกการจอง', `ลดลง ${diff} รายการ`, () => nav('bookings'));
+      if (needRefresh) loadSection(currentSection);
+    }
+
+    // Check-in status changed
+    if (_rtCheckin !== null && newCheckin !== _rtCheckin) {
+      const diff = newCheckin - _rtCheckin;
+      if (diff > 0) {
+        adminAlert(`✅ มีการเช็คอิน ${diff} รายการ`);
+        _addNotif('เช็คอินใหม่', `${diff} รายการเช็คอินแล้ว`, () => nav('bookings'));
+      }
+      if (needRefresh) loadSection(currentSection);
+    }
+
+    _rtCount   = newCount;
+    _rtCheckin = newCheckin;
   } catch(e) {}
 }
 
