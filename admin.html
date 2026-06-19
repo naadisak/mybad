@@ -1740,9 +1740,22 @@ function fmtMonthTH(val) {
 }
 
 /* ── API ─────────────────────────────────────────────────── */
+function _handleApiResult(data) {
+  if (data && !data.ok && data.error === 'Unauthorized') {
+    _clearCred();
+    PIN = ''; ADMIN_EMPID = ''; ADMIN_NAME = '';
+    if (typeof _stopRtPolling === 'function') _stopRtPolling();
+    document.getElementById('adminWrap').style.display = 'none';
+    document.getElementById('pinGate').style.display   = 'flex';
+    document.getElementById('empIdInput').value        = '';
+    document.getElementById('pinErr').textContent      = '⚠️ Session หมดอายุ กรุณาเข้าสู่ระบบใหม่';
+    goLoginStep(1);
+  }
+  return data;
+}
 async function apiGet(params) {
   const r = await fetch(API + '?' + new URLSearchParams(params));
-  return r.json();
+  return _handleApiResult(await r.json());
 }
 async function apiPost(body) {
   const r = await fetch(API, {
@@ -1750,7 +1763,7 @@ async function apiPost(body) {
     headers:{'Content-Type':'text/plain;charset=UTF-8'},
     body: JSON.stringify(body)
   });
-  return r.json();
+  return _handleApiResult(await r.json());
 }
 
 /* ── Toast ───────────────────────────────────────────────── */
@@ -3983,31 +3996,44 @@ async function submitImport() {
   const rows = _importRaw.map(_getMappedRow).filter(r => r.empId);
   if (!rows.length) { toast('ไม่มีข้อมูลที่พร้อม import','error'); return; }
 
-  const btn  = document.getElementById('importSubmitBtn');
-  const prog = document.getElementById('importProgress');
-  const bar  = document.getElementById('importProgressBar');
+  const btn      = document.getElementById('importSubmitBtn');
+  const prog     = document.getElementById('importProgress');
+  const bar      = document.getElementById('importProgressBar');
+  const statsEl  = document.getElementById('importStats');
 
   btn.disabled = true;
   prog.style.display = '';
-  bar.style.width = '30%';
+
+  // แสดง progress แบบ animated ระหว่างรอ
+  bar.style.transition = 'none'; bar.style.width = '0%';
+  requestAnimationFrame(() => {
+    bar.style.transition = 'width 25s cubic-bezier(0.1,0,0.3,1)';
+    bar.style.width = '85%';
+  });
+  if (statsEl) statsEl.innerHTML = `<span style="font-size:12px;color:var(--gray-500)">⏳ กำลัง import ${rows.length.toLocaleString()} รายการ...</span>`;
+
+  // หยุด RT polling ระหว่าง import เพื่อไม่ให้ Unauthorized trigger logout
+  _stopRtPolling();
 
   try {
     const r = await apiPost({ action:'adminImportMembers', pin:PIN, members:rows });
-    bar.style.width = '100%';
+    bar.style.transition = 'width .3s'; bar.style.width = '100%';
     if (r.ok) {
-      const parts = [`เพิ่มใหม่ ${r.added}`];
+      const parts = [`✅ เพิ่มใหม่ ${r.added}`];
       if (r.updated) parts.push(`อัพเดต ${r.updated}`);
       if (r.skipped) parts.push(`ข้าม ${r.skipped}`);
       toast(parts.join(' · ') + ' รายการ', 'success');
-      closeModal('importOverlay');
-      loadMembers();
+      setTimeout(() => { closeModal('importOverlay'); loadMembers(); }, 600);
     } else {
+      bar.style.width = '0%';
       toast('Import ผิดพลาด: ' + (r.error || 'ไม่ทราบสาเหตุ'), 'error');
     }
   } catch(e) {
+    bar.style.width = '0%';
     toast('เชื่อมต่อไม่ได้: ' + e.message, 'error');
   } finally {
     btn.disabled = false;
+    _startRtPolling(); // เปิด RT polling กลับหลัง import เสร็จ
   }
 }
 
