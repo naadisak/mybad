@@ -142,8 +142,9 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 @keyframes tbPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}60%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
 @keyframes tbPulseAmber{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.5)}60%{box-shadow:0 0 0 5px rgba(245,158,11,0)}}
 .tb-logo{width:32px;height:32px;border-radius:9px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.tb-name{font-size:.88rem;font-weight:700;letter-spacing:-.2px;color:var(--text);flex:1;overflow:hidden}
+.tb-name{font-size:.88rem;font-weight:700;letter-spacing:-.2px;color:var(--text);flex:1;overflow:hidden;line-height:1.25}
 .tb-name-main{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-name-sub{font-size:.75rem;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .tb-loc-chip{
   display:inline-flex;align-items:center;gap:4px;
   background:rgba(21,128,61,.12);border:1px solid rgba(21,128,61,.3);
@@ -682,6 +683,7 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
     <div class="tb-logo"><img src="applogo-02.gif" style="width:32px;height:32px;object-fit:cover;border-radius:9px" alt="logo"></div>
     <div class="tb-name" style="flex:1;min-width:0">
       <div class="tb-name-main" id="tbName">—</div>
+      <div class="tb-name-sub" id="tbSurname"></div>
     </div>
     <!-- Center status indicator -->
     <div class="tb-status" id="tbStatusIndicator">
@@ -1447,7 +1449,8 @@ async function _pollBookingHash() {
 // ══════════════════════════════════════════════════════
 async function enterApp() {
   // Show app immediately — no blocking on API calls
-  document.getElementById('tbName').textContent = (user.name||'') + ' ' + (user.surname||'');
+  document.getElementById('tbName').textContent    = user.name    || '';
+  document.getElementById('tbSurname').textContent = user.surname || '';
   showScreen('screenApp');
   applyTheme();
   const admBtn = document.getElementById('btnAdminTopbar');
