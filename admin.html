@@ -808,8 +808,10 @@ img[src*="cdn-icons-gif.flaticon.com"]{mix-blend-mode:multiply;background:transp
             <select class="fi" id="bkFLoc" onchange="_bkFilter()">
               <option value="">ทุกสถานที่</option>
             </select>
-            <label>วันที่</label>
-            <input type="text" class="fi fp-date" id="bkFDate" placeholder="เลือกวันที่" onchange="_bkFilter()" autocomplete="off"/>
+            <label>ตั้งแต่</label>
+            <input type="text" class="fi fp-date" id="bkFDateFrom" placeholder="วันเริ่มต้น" onchange="_bkFilter()" autocomplete="off"/>
+            <label>ถึง</label>
+            <input type="text" class="fi fp-date" id="bkFDateTo" placeholder="วันสิ้นสุด" onchange="_bkFilter()" autocomplete="off"/>
             <label>รหัสพนักงาน</label>
             <input type="text" class="fi" id="bkFEmp" placeholder="ค้นหา..." oninput="_bkFilter()"/>
             <button class="btn btn-ghost btn-sm" onclick="resetBkFilter()" style="align-self:center;padding:4px 10px;font-size:12px">✕ ล้างตัวกรอง</button>
@@ -2474,17 +2476,18 @@ function locName(id) {
 
 /* ── Dashboard ───────────────────────────────────────────── */
 async function loadDashboard() {
+  let _dashR = null;
   try {
-    const r = await apiGet({ action:'adminStats', pin:PIN });
-    if (r.ok) {
-      document.getElementById('dTotal').textContent   = r.totalBookings;
-      document.getElementById('dBanned').textContent  = r.totalBanned;
+    _dashR = await apiGet({ action:'adminStats', pin:PIN });
+    if (_dashR.ok) {
+      document.getElementById('dTotal').textContent   = _dashR.totalBookings;
+      document.getElementById('dBanned').textContent  = _dashR.totalBanned;
       document.getElementById('dLocCount').textContent= locs.filter(l=>l.active!=='0').length;
-      document.getElementById('dMonth').textContent   = fmtMonthTH(r.targetMonth);
-      document.getElementById('dTargetM').textContent = fmtMonthTH(r.targetMonth);
-      document.getElementById('targetMonthDisplay').textContent = fmtMonthTH(r.targetMonth);
+      document.getElementById('dMonth').textContent   = fmtMonthTH(_dashR.targetMonth);
+      document.getElementById('dTargetM').textContent = fmtMonthTH(_dashR.targetMonth);
+      document.getElementById('targetMonthDisplay').textContent = fmtMonthTH(_dashR.targetMonth);
       const locCards = document.getElementById('dashLocCards');
-      locCards.innerHTML = (r.byLocation||[]).map(l =>
+      locCards.innerHTML = (_dashR.byLocation||[]).map(l =>
         `<div class="loc-card">
           <div class="loc-card-name"><img src="https://cdn-icons-gif.flaticon.com/11201/11201834.gif" style="width:16px;height:16px;vertical-align:middle;margin-right:4px" alt="pin">${esc(l.name)}</div>
           <div class="loc-card-count">${l.count}</div>
@@ -2494,7 +2497,8 @@ async function loadDashboard() {
     }
   } catch(e) { toast('โหลด Dashboard ไม่ได้','error'); }
 
-  // Load full bookings table (defined below)
+  // Set default date range = target month, then load bookings table
+  if (_dashR?.ok && _dashR.targetMonth) _bkSetDateRange(_dashR.targetMonth);
   loadBookings();
 }
 
@@ -2502,6 +2506,20 @@ async function loadDashboard() {
 const _BK_PER_PAGE = 20;
 let _bkAllData     = [];
 let _bkPage        = 1;
+let _bkTargetMonth = '';  // เดือนเป้าหมายล่าสุด เช่น "2026-07"
+
+function _bkSetDateRange(month) {
+  if (!month) return;
+  _bkTargetMonth = month;
+  const [y, m] = month.split('-').map(Number);
+  const from = `${month}-01`;
+  const lastDay = new Date(y, m, 0).getDate();
+  const to = `${month}-${String(lastDay).padStart(2,'0')}`;
+  const fpFrom = document.getElementById('bkFDateFrom')?._flatpickr;
+  const fpTo   = document.getElementById('bkFDateTo')?._flatpickr;
+  if (fpFrom) fpFrom.setDate(from, true); else document.getElementById('bkFDateFrom').value = from;
+  if (fpTo)   fpTo.setDate(to, true);     else document.getElementById('bkFDateTo').value   = to;
+}
 let _bkFetchTimer  = null;
 let _bkStatusFilter = '';          // '', 'pending', 'checked_in', 'noshow'
 let _bkSelected    = new Set();    // booking IDs currently checked
@@ -2512,13 +2530,15 @@ function _bkFilter() {
 }
 
 async function loadBookings() {
-  const loc  = document.getElementById('bkFLoc').value;
-  const date = document.getElementById('bkFDate').value;
-  const emp  = document.getElementById('bkFEmp').value.trim();
-  const p    = { action:'adminGetAll', pin:PIN };
-  if (loc)  p.locId = loc;
-  if (date) p.date  = date;
-  if (emp)  p.empId = emp;
+  const loc      = document.getElementById('bkFLoc').value;
+  const dateFrom = document.getElementById('bkFDateFrom').value;
+  const dateTo   = document.getElementById('bkFDateTo').value;
+  const emp      = document.getElementById('bkFEmp').value.trim();
+  const p        = { action:'adminGetAll', pin:PIN };
+  if (loc)      p.locId    = loc;
+  if (dateFrom) p.dateFrom = dateFrom;
+  if (dateTo)   p.dateTo   = dateTo;
+  if (emp)      p.empId    = emp;
   const tb = document.getElementById('bkTbl');
   tb.innerHTML = '<tr><td colspan="13" class="tbl-loading">กำลังโหลด…</td></tr>';
   document.getElementById('bkPager').style.display = 'none';
@@ -3425,8 +3445,15 @@ function resetVipFilter() {
 function resetBkFilter() {
   document.getElementById('bkFLoc').value = '';
   document.getElementById('bkFEmp').value = '';
-  const fp = document.getElementById('bkFDate')?._flatpickr;
-  if (fp) fp.clear(); else document.getElementById('bkFDate').value = '';
+  // Reset date range กลับไป target month
+  if (_bkTargetMonth) {
+    _bkSetDateRange(_bkTargetMonth);
+  } else {
+    ['bkFDateFrom','bkFDateTo'].forEach(id => {
+      const fp = document.getElementById(id)?._flatpickr;
+      if (fp) fp.clear(); else document.getElementById(id).value = '';
+    });
+  }
   // Reset status tab to "ทั้งหมด"
   _bkStatusFilter = '';
   document.querySelectorAll('.status-tab').forEach(t => t.classList.toggle('active', t.dataset.s === ''));

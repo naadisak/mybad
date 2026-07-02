@@ -2141,33 +2141,37 @@ async function stampImage(file, captionText) {
       const lines    = [fullName];
       if (captionText) lines.push(captionText);
 
-      // Random position — keep stamp within 20–70% of image (avoid edges & center crowd)
-      const margin = minDim * 0.04;
-      const rx = margin + Math.random() * (W - margin * 2);
-      const ry = margin + Math.random() * (H - margin * 2);
-      const angle = (Math.random() - 0.5) * 0.35; // ±10°
+      // Watermark — center of image, 30° diagonal
+      // Random diagonal: 20°–45° สุ่มทิศบวก/ลบ
+      const deg = 20 + Math.random() * 25; // 20–45°
+      const ANGLE = (Math.random() < 0.5 ? 1 : -1) * deg * Math.PI / 180;
+      const lineGap = fontSize * 0.35;
+      const totalH  = captionText
+        ? fontSize + lineGap + capSize
+        : fontSize;
 
       ctx.save();
-      ctx.translate(rx, ry);
-      ctx.rotate(angle);
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      // shadow for contrast
+      ctx.translate(W / 2, H / 2);   // ตรงกลางรูป
+      ctx.rotate(ANGLE);              // 30 องศา
+      ctx.textAlign     = 'center';
+      ctx.textBaseline  = 'top';
       ctx.shadowColor   = 'rgba(0,0,0,0.85)';
       ctx.shadowBlur    = fontSize * 0.5;
       ctx.shadowOffsetX = 2;
       ctx.shadowOffsetY = 2;
-      ctx.globalAlpha   = 0.50;
+      ctx.globalAlpha   = 0.55;
       ctx.fillStyle     = '#ffffff';
+
+      const startY = -(totalH / 2);
 
       // Line 1: identity
       ctx.font = `bold ${fontSize}px "Bai Jamjuree", Arial, sans-serif`;
-      ctx.fillText(fullName, 0, 0);
+      ctx.fillText(fullName, 0, startY);
 
-      // Line 2: caption (bigger, bold)
+      // Line 2: caption (bigger)
       if (captionText) {
         ctx.font = `bold ${capSize}px "Bai Jamjuree", Arial, sans-serif`;
-        ctx.fillText(captionText, 0, fontSize * 1.25);
+        ctx.fillText(captionText, 0, startY + fontSize + lineGap);
       }
       ctx.restore();
 
