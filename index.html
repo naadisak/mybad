@@ -3259,7 +3259,7 @@ async function submitPin() {
   const btn = document.getElementById('pinSubmitBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ...'; }
   try {
-    const r = await get('verifyAdminPin', { pin });
+    const r = await post({ action: 'verifyAdminPin', pin });
     if (r.ok) {
       _adminPin = pin;
       sessionStorage.setItem('admin_pin', pin);
