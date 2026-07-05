@@ -814,6 +814,7 @@ img[src*="cdn-icons-gif.flaticon.com"]{mix-blend-mode:multiply;background:transp
             <input type="text" class="fi fp-date" id="bkFDateTo" placeholder="วันสิ้นสุด" onchange="_bkFilter()" autocomplete="off"/>
             <label>รหัสพนักงาน</label>
             <input type="text" class="fi" id="bkFEmp" placeholder="ค้นหา..." oninput="_bkFilter()"/>
+            <button class="btn btn-primary btn-sm" onclick="_bkGoToTargetMonth()" style="align-self:center;padding:4px 12px;font-size:12px;flex-shrink:0">📅 เดือนเป้าหมาย</button>
             <button class="btn btn-ghost btn-sm" onclick="resetBkFilter()" style="align-self:center;padding:4px 10px;font-size:12px">✕ ล้างตัวกรอง</button>
             <button class="btn btn-outline btn-sm" onclick="exportBkCsv()" style="align-self:center;padding:4px 12px;font-size:12px;margin-left:auto" title="ส่งออก CSV">⬇ Export CSV</button>
           </div>
@@ -3440,6 +3441,16 @@ function resetVipFilter() {
   const fp = document.getElementById('vipFDate')?._flatpickr;
   if (fp) fp.clear(); else document.getElementById('vipFDate').value = '';
   renderVipTbl();
+}
+
+function _bkGoToTargetMonth() {
+  if (_bkTargetMonth) _bkSetDateRange(_bkTargetMonth);
+  document.getElementById('bkFLoc').value = '';
+  document.getElementById('bkFEmp').value = '';
+  _bkStatusFilter = '';
+  document.querySelectorAll('.status-tab').forEach(t => t.classList.toggle('active', t.dataset.s === ''));
+  _bkSelected.clear(); _bkPage = 1;
+  loadBookings();
 }
 
 function resetBkFilter() {

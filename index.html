@@ -494,6 +494,8 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
 .adm-bk-loc{display:inline-block;font-size:.6rem;background:rgba(21,128,61,.1);color:var(--red-1);border-radius:10px;padding:.1rem .4rem;margin-bottom:.2rem;font-weight:700}
 .adm-bk-name{font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:.12rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adm-bk-detail{font-size:.68rem;color:var(--muted)}
+.adm-filter-chip{border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:20px;padding:.28rem .75rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s}
+.adm-filter-chip.active{background:var(--red-1);border-color:var(--red-1);color:#fff}
 .adm-ban-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;margin-bottom:.45rem;display:flex;align-items:center;gap:.55rem;transition:background .25s,border-color .25s}
 .adm-ban-main{flex:1;min-width:0}
 .adm-ban-emp{font-size:.82rem;font-weight:700;color:var(--text)}
@@ -855,6 +857,10 @@ html,body{width:100%;height:100%;font-family:'Bai Jamjuree',sans-serif;overflow:
         <select id="aFLoc" class="adm-sel" onchange="loadAdminBookings()"><option value="">📍 ทุกที่</option></select>
         <input type="date" id="aFDate" class="adm-sel">
         <button class="btn-cta" style="padding:.42rem .75rem;font-size:.75rem;margin:0;flex-shrink:0" onclick="loadAdminBookings()">ค้นหา</button>
+      </div>
+      <div style="display:flex;gap:.4rem;padding:0 0 .5rem;flex-wrap:wrap">
+        <button class="adm-filter-chip active" id="chipTargetMonth" onclick="filterByTargetMonth()" style="font-size:.68rem">📅 เดือนเป้าหมาย</button>
+        <button class="adm-filter-chip" id="chipAllMonth" onclick="filterAllMonth()" style="font-size:.68rem">ทั้งหมด</button>
       </div>
       <div id="admBkList"><div class="load-wrap"><span class="spin-dk"></span></div></div>
     </div>
@@ -3362,8 +3368,9 @@ async function enterAdmin() {
   });
 
   switchAdminTab('bk');
-  loadAdminStats();
-  loadAdminBookings();
+  _setAdmChip('chipTargetMonth');
+  await loadAdminStats();
+  loadAdminBookings(true);
 }
 
 function exitAdmin() { showScreen('screenApp'); }
@@ -3378,13 +3385,41 @@ function switchAdminTab(tab) {
 }
 
 
+let _admTargetMonth = ''; // "2026-07"
+
+function _fmtTargetMonthTH(val) {
+  if (!val) return '-';
+  const [y, m] = val.split('-').map(Number);
+  if (isNaN(y) || isNaN(m)) return val;
+  return `${TH_M[m-1]} ${y+543}`;
+}
+
+function _setAdmChip(id) {
+  ['chipTargetMonth','chipAllMonth'].forEach(c => {
+    document.getElementById(c)?.classList.toggle('active', c === id);
+  });
+}
+
+function filterByTargetMonth() {
+  _setAdmChip('chipTargetMonth');
+  document.getElementById('aFDate').value = '';
+  loadAdminBookings(true);
+}
+
+function filterAllMonth() {
+  _setAdmChip('chipAllMonth');
+  document.getElementById('aFDate').value = '';
+  loadAdminBookings(false, true);
+}
+
 async function loadAdminStats() {
   try {
     const r = await get('adminStats', { pin: _adminPin });
     if (!r.ok) return;
+    _admTargetMonth = r.targetMonth || '';
     document.getElementById('aMonth').textContent  = r.totalBookings;
     document.getElementById('aBanned').textContent = r.totalBanned;
-    document.getElementById('aTarget').textContent = r.targetMonth || '-';
+    document.getElementById('aTarget').textContent = _fmtTargetMonthTH(r.targetMonth);
     const chips = document.getElementById('admLocChips');
     if (r.byLocation?.length) {
       chips.innerHTML = r.byLocation.map(l =>
@@ -3398,14 +3433,20 @@ async function loadAdminStats() {
   } catch {}
 }
 
-async function loadAdminBookings() {
+async function loadAdminBookings(useTarget = false, useAll = false) {
   const el = document.getElementById('admBkList');
   el.innerHTML = '<div class="load-wrap"><span class="spin-dk"></span></div>';
   const locId = document.getElementById('aFLoc').value;
   const date  = document.getElementById('aFDate').value;
   const params = { pin: _adminPin };
   if (locId) params.locId = locId;
-  if (date)  params.date  = date;
+  if (useTarget && _admTargetMonth) {
+    const [y, m] = _admTargetMonth.split('-').map(Number);
+    params.dateFrom = _admTargetMonth + '-01';
+    params.dateTo   = _admTargetMonth + '-' + String(new Date(y, m, 0).getDate()).padStart(2,'0');
+  } else if (!useAll && date) {
+    params.date = date;
+  }
   try {
     const r = await get('adminGetAll', params);
     if (!r.ok) { el.innerHTML=`<div class="alert a-danger">${r.error}</div>`; return; }
